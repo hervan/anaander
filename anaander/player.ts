@@ -1,4 +1,4 @@
-﻿class Player {
+class Player {
 
     color: Color;
     state: boolean;
@@ -10,6 +10,7 @@
         this.color = color;
         this.state = true;
 
+        this.meeples = new Array();
         this.meeples.push(baseMeeple);
     }
 

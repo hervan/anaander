@@ -1,14 +1,24 @@
-﻿class Meeple {
+class Meeple {
 
     color: Color;
     state: boolean;
     tile: Tile;
+    
+    sprite: Phaser.Sprite;
 
-    constructor(color: Color, tile: Tile) {
+    constructor(color: Color, tile: Tile, anaander: Anaander) {
 
         this.color = color;
         this.tile = tile;
         this.state = true;
+        
+        this.sprite = anaander.game.add.sprite(this.tile.position.x * anaander.tileSize.x, this.tile.position.y * anaander.tileSize.y, 'tiles');
+        if (this.color == Color.Neutral) {
+            this.sprite.frame = 6;
+        }
+        else {
+            this.sprite.frame = 2 * (this.color - 1);
+        }
     }
 
     move(player: Player, direction: Direction) {

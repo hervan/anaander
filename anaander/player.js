@@ -1,10 +1,15 @@
 var Player = (function () {
     function Player(color, baseMeeple) {
         this.color = color;
-        this.state = State.Front;
+        this.state = true;
         this.meeples.push(baseMeeple);
     }
     Player.prototype.move = function (direction) {
+        var _this = this;
+        this.state = !this.state;
+        this.meeples.forEach(function (meeple) {
+            meeple.move(_this, direction);
+        });
     };
     return Player;
 }());
