@@ -33,7 +33,7 @@ class Board {
             }
         }
 
-        /*for (var x = 0; x < this.size.x; x++) {
+        for (var x = 0; x < this.size.x; x++) {
             for (var y = 0; y < this.size.y; y++) {
 
                 if (y > 0) {
@@ -64,7 +64,7 @@ class Board {
                     this.tileMap[x][y].neighbours.push(null);
                 }
             }
-        }*/
+        }
     }
 
     tile(position: Vector): Tile {

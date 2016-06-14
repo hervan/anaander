@@ -1,4 +1,4 @@
-enum Color {
+﻿enum Color {
 
     Neutral,
     Red,
@@ -57,11 +57,11 @@ class Anaander {
 
     create() {
         
-        this.playerCount = 1;
+        this.playerCount = 3;
         this.players = new Array();
 
         this.tileSize = new Vector(40, 40);
-        this.boardSize = new Vector(Math.floor(1200 / this.tileSize.x), Math.floor(800 / this.tileSize.y));
+        this.boardSize = new Vector(Math.trunc(1200 / this.tileSize.x), Math.trunc(800 / this.tileSize.y));
 
         this.board = new Board(this);
         
@@ -70,8 +70,8 @@ class Anaander {
             var baseTile: Tile;
             do {
                 baseTile = this.board.tile(new Vector(
-                    Math.floor(Math.random() * this.boardSize.x),
-                    Math.floor(Math.random() * this.boardSize.y)));
+                    Math.trunc(Math.random() * this.boardSize.x),
+                    Math.trunc(Math.random() * this.boardSize.y)));
             } while (baseTile.meeples.length > 0);
 
             var baseMeeple = new Meeple(i, baseTile, this);
@@ -79,6 +79,31 @@ class Anaander {
 
             this.players.push(new Player(i, baseMeeple));
         }
+
+        this.game.input.keyboard.addKey(Phaser.Keyboard.UP)
+            .onDown.add(() => {
+                this.players[Color.Red - 1].move(Direction.Up);
+                //this.players[Color.Green - 1].move(Direction.Up);
+                //this.players[Color.Blue - 1].move(Direction.Up);
+            });
+        this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
+            .onDown.add(() => {
+                this.players[Color.Red - 1].move(Direction.Left);
+                //this.players[Color.Green - 1].move(Direction.Left);
+                //this.players[Color.Blue - 1].move(Direction.Left);
+            });
+        this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
+            .onDown.add(() => {
+                this.players[Color.Red - 1].move(Direction.Down);
+                //this.players[Color.Green - 1].move(Direction.Down);
+                //this.players[Color.Blue - 1].move(Direction.Down);
+            });
+        this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
+            .onDown.add(() => {
+                this.players[Color.Red - 1].move(Direction.Right);
+                //this.players[Color.Green - 1].move(Direction.Right);
+                //this.players[Color.Blue - 1].move(Direction.Right);
+            });
     }
 
     update() {

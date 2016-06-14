@@ -1,8 +1,15 @@
 var Meeple = (function () {
-    function Meeple(color, tile) {
+    function Meeple(color, tile, anaander) {
         this.color = color;
         this.tile = tile;
         this.state = true;
+        this.sprite = anaander.game.add.sprite(this.tile.position.x * anaander.tileSize.x, this.tile.position.y * anaander.tileSize.y, 'tiles');
+        if (this.color == Color.Neutral) {
+            this.sprite.frame = 6;
+        }
+        else {
+            this.sprite.frame = 2 * (this.color - 1);
+        }
     }
     Meeple.prototype.move = function (player, direction) {
         if (player.color != this.color)

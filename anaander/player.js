@@ -2,6 +2,7 @@ var Player = (function () {
     function Player(color, baseMeeple) {
         this.color = color;
         this.state = true;
+        this.meeples = new Array();
         this.meeples.push(baseMeeple);
     }
     Player.prototype.move = function (direction) {

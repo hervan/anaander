@@ -32,20 +32,45 @@ var Anaander = (function () {
         this.game.load.spritesheet('tiles', 'tiles.png', 40, 40);
     };
     Anaander.prototype.create = function () {
-        this.playerCount = 1;
+        var _this = this;
+        this.playerCount = 3;
         this.players = new Array();
         this.tileSize = new Vector(40, 40);
-        this.boardSize = new Vector(Math.floor(1200 / this.tileSize.x), Math.floor(800 / this.tileSize.y));
+        this.boardSize = new Vector(Math.trunc(1200 / this.tileSize.x), Math.trunc(800 / this.tileSize.y));
         this.board = new Board(this);
         for (var i = 1; i <= this.playerCount; i++) {
             var baseTile;
             do {
-                baseTile = this.board.tile(new Vector(Math.floor(Math.random() * this.boardSize.x), Math.floor(Math.random() * this.boardSize.y)));
+                baseTile = this.board.tile(new Vector(Math.trunc(Math.random() * this.boardSize.x), Math.trunc(Math.random() * this.boardSize.y)));
             } while (baseTile.meeples.length > 0);
             var baseMeeple = new Meeple(i, baseTile, this);
             baseTile.meeples.push(baseMeeple);
             this.players.push(new Player(i, baseMeeple));
         }
+        this.game.input.keyboard.addKey(Phaser.Keyboard.UP)
+            .onDown.add(function () {
+            _this.players[Color.Red - 1].move(Direction.Up);
+            //this.players[Color.Green - 1].move(Direction.Up);
+            //this.players[Color.Blue - 1].move(Direction.Up);
+        });
+        this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
+            .onDown.add(function () {
+            _this.players[Color.Red - 1].move(Direction.Left);
+            //this.players[Color.Green - 1].move(Direction.Left);
+            //this.players[Color.Blue - 1].move(Direction.Left);
+        });
+        this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
+            .onDown.add(function () {
+            _this.players[Color.Red - 1].move(Direction.Down);
+            //this.players[Color.Green - 1].move(Direction.Down);
+            //this.players[Color.Blue - 1].move(Direction.Down);
+        });
+        this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
+            .onDown.add(function () {
+            _this.players[Color.Red - 1].move(Direction.Right);
+            //this.players[Color.Green - 1].move(Direction.Right);
+            //this.players[Color.Blue - 1].move(Direction.Right);
+        });
     };
     Anaander.prototype.update = function () {
     };
@@ -76,30 +101,26 @@ var Board = (function () {
                 this.tileMap[x].push(tile);
             }
         }
-        /*for (var x = 0; x < this.size.x; x++) {
+        for (var x = 0; x < this.size.x; x++) {
             for (var y = 0; y < this.size.y; y++) {
-
                 if (y > 0) {
                     this.tileMap[x][y].neighbours.push(this.tileMap[x][y - 1]);
                 }
                 else {
                     this.tileMap[x][y].neighbours.push(null);
                 }
-
                 if (x > 0) {
                     this.tileMap[x][y].neighbours.push(this.tileMap[x - 1][y]);
                 }
                 else {
                     this.tileMap[x][y].neighbours.push(null);
                 }
-
                 if (y + 1 < this.size.y) {
                     this.tileMap[x][y].neighbours.push(this.tileMap[x][y + 1]);
                 }
                 else {
                     this.tileMap[x][y].neighbours.push(null);
                 }
-
                 if (x + 1 < this.size.x) {
                     this.tileMap[x][y].neighbours.push(this.tileMap[x + 1][y]);
                 }
@@ -107,7 +128,7 @@ var Board = (function () {
                     this.tileMap[x][y].neighbours.push(null);
                 }
             }
-        }*/
+        }
     }
     Board.prototype.tile = function (position) {
         return this.tileMap[position.x][position.y];
@@ -125,13 +146,9 @@ var Meeple = (function () {
         this.color = color;
         this.tile = tile;
         this.state = true;
-        this.sprite = anaander.game.add.sprite(this.tile.position.x * anaander.tileSize.x, this.tile.position.y * anaander.tileSize.y, 'tiles');
-        if (this.color == Color.Neutral) {
-            this.sprite.frame = 6;
-        }
-        else {
-            this.sprite.frame = 2 * (this.color - 1);
-        }
+        this.sprite = anaander.game.add.sprite(this.tile.sprite.position.x + 10, this.tile.sprite.position.y + 10, 'tiles');
+        this.sprite.scale.set(0.5, 0.5);
+        this.update();
     }
     Meeple.prototype.move = function (player, direction) {
         if (player.color != this.color)
@@ -141,33 +158,62 @@ var Meeple = (function () {
         this.state = player.state;
         var topMeeple = this.tile.meeples.pop();
         if (topMeeple != this) {
-            this.tile.meeples.push(topMeeple);
+            if (topMeeple != null)
+                this.tile.meeples.push(topMeeple);
             return;
         }
+        this.tile.meeples.forEach(function (meeple) {
+            meeple.state = player.state;
+        });
         var destinationTile = this.tile.neighbour(direction);
+        if (destinationTile == null) {
+            this.tile.meeples.push(this);
+            return;
+        }
         var destinationMeeple = destinationTile.meeples.pop();
         if (destinationMeeple == null) {
             this.moveAfloat(destinationTile);
+            this.update();
         }
         else if (destinationMeeple.color == this.color) {
+            destinationTile.meeples.push(destinationMeeple);
             destinationMeeple.move(player, direction);
             this.moveAfloat(destinationTile);
+            destinationMeeple.update();
+            this.update();
         }
         else if (destinationMeeple.color == Color.Neutral) {
-            destinationMeeple.assimilate(player);
+            destinationTile.meeples.push(destinationMeeple);
+            destinationMeeple.assimilateBy(player);
             this.moveAfloat(destinationTile);
+            destinationMeeple.update();
+            this.update();
         }
         else {
+            // TODO: fight!
+            this.tile.meeples.push(this);
+            destinationTile.meeples.push(destinationMeeple);
+            this.update();
+            destinationMeeple.update();
         }
     };
-    Meeple.prototype.moveAfloat = function (tileTo) {
-        tileTo.meeples.push(this);
-        this.tile = tileTo;
+    Meeple.prototype.moveAfloat = function (destinationTile) {
+        destinationTile.meeples.push(this);
+        this.tile = destinationTile;
     };
-    Meeple.prototype.assimilate = function (player) {
+    Meeple.prototype.assimilateBy = function (player) {
         this.color = player.color;
         this.state = player.state;
         player.meeples.push(this);
+    };
+    Meeple.prototype.update = function () {
+        this.sprite.position.set(this.tile.sprite.position.x + 10, this.tile.sprite.position.y + 10);
+        if (this.color == Color.Neutral) {
+            this.sprite.frame = 6;
+        }
+        else {
+            this.sprite.frame = 2 * (this.color - 1);
+        }
     };
     return Meeple;
 }());

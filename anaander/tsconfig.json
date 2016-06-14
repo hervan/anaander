@@ -1,12 +1,13 @@
 ﻿{
   "compilerOptions": {
-    "target": "es5",
-    "moduleResolution": "node",
-    "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "outFile": "app.js",
     "removeComments": false,
-    "noImplicitAny": false
+    "sourceMap": true,
+    "target": "es5"
   },
   "exclude": [
     "node_modules"

@@ -1,63 +1,58 @@
 var Board = (function () {
-    /*tileMap: Tile[][];
-    meepleSpread: number = 0.1;
-    citySpread: number = 0.02;
-    size: Vector;*/
-    function Board(size) {
-        //this.size = size;
-        /*for (var x = 0; x < this.size.x; x++) {
+    function Board(anaander) {
+        this.meepleSpread = 0.1;
+        this.citySpread = 0.025;
+        this.size = anaander.boardSize;
+        this.tileMap = new Array();
+        for (var x = 0; x < this.size.x; x++) {
+            this.tileMap.push(new Array());
             for (var y = 0; y < this.size.y; y++) {
-
-                var tile = new Tile(new Vector(x, y));
-
+                var tile = new Tile(new Vector(x, y), anaander);
                 if (Math.random() < this.meepleSpread) {
-
-                    tile.meeples.push(new Meeple(Color.Neutral, tile));
+                    tile.meeples.push(new Meeple(Color.Neutral, tile, anaander));
                 }
-
                 if (Math.random() < this.citySpread) {
-
                     tile.city = new City();
                 }
-
-                this.tileMap[x][y] = tile;
+                tile.sprite.frame = tile.city == null ? 9 : 8;
+                this.tileMap[x].push(tile);
             }
-        }*/
+        }
         /*for (var x = 0; x < this.size.x; x++) {
             for (var y = 0; y < this.size.y; y++) {
 
                 if (y > 0) {
-                    this.tileMap[x][y].neighbours[Direction.Up] = this.tileMap[x][y - 1];
+                    this.tileMap[x][y].neighbours.push(this.tileMap[x][y - 1]);
                 }
                 else {
-                    this.tileMap[x][y].neighbours[Direction.Up] = null;
+                    this.tileMap[x][y].neighbours.push(null);
                 }
 
                 if (x > 0) {
-                    this.tileMap[x][y].neighbours[Direction.Left] = this.tileMap[x - 1][y];
+                    this.tileMap[x][y].neighbours.push(this.tileMap[x - 1][y]);
                 }
                 else {
-                    this.tileMap[x][y].neighbours[Direction.Left] = null;
+                    this.tileMap[x][y].neighbours.push(null);
                 }
 
                 if (y + 1 < this.size.y) {
-                    this.tileMap[x][y].neighbours[Direction.Down] = this.tileMap[x][y + 1];
+                    this.tileMap[x][y].neighbours.push(this.tileMap[x][y + 1]);
                 }
                 else {
-                    this.tileMap[x][y].neighbours[Direction.Down] = null;
+                    this.tileMap[x][y].neighbours.push(null);
                 }
 
                 if (x + 1 < this.size.x) {
-                    this.tileMap[x][y].neighbours[Direction.Right] = this.tileMap[x + 1][y];
+                    this.tileMap[x][y].neighbours.push(this.tileMap[x + 1][y]);
                 }
                 else {
-                    this.tileMap[x][y].neighbours[Direction.Right] = null;
+                    this.tileMap[x][y].neighbours.push(null);
                 }
             }
         }*/
     }
     Board.prototype.tile = function (position) {
-        return null; //this.tileMap[position.x][position.y];
+        return this.tileMap[position.x][position.y];
     };
     return Board;
 }());
