@@ -41,15 +41,25 @@ class Tile {
     repositionMeeples() {
         
         var distance = 20 / (this.meeples.length + 1);
-        var position = new Vector(this.sprite.position.x, this.sprite.position.y);
+        var position = new Vector(this.sprite.x, this.sprite.y);
         
         this.meeples.forEach((meeple) => {
             
             position.x += distance;
             position.y += distance;
-            
-            meeple.sprite.position.x = position.x;
-            meeple.sprite.position.y = position.y;
+
+            if (meeple.tween != null && meeple.tween.isRunning) {
+
+                meeple.tween.onComplete.addOnce(() => {
+                    meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                        .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
+                });
+            }
+            else {
+
+                meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                    .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
+            }
         });
     }
 }

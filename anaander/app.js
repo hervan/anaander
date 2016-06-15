@@ -49,25 +49,29 @@ var Anaander = (function () {
         }
         this.game.input.keyboard.addKey(Phaser.Keyboard.UP)
             .onDown.add(function () {
-            _this.players[Color.Red - 1].move(Direction.Up);
+            if (_this.game.tweens.getAll().length == 0)
+                _this.players[Color.Red - 1].move(Direction.Up);
             //this.players[Color.Green - 1].move(Direction.Up);
             //this.players[Color.Blue - 1].move(Direction.Up);
         });
         this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
             .onDown.add(function () {
-            _this.players[Color.Red - 1].move(Direction.Left);
+            if (_this.game.tweens.getAll().length == 0)
+                _this.players[Color.Red - 1].move(Direction.Left);
             //this.players[Color.Green - 1].move(Direction.Left);
             //this.players[Color.Blue - 1].move(Direction.Left);
         });
         this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
             .onDown.add(function () {
-            _this.players[Color.Red - 1].move(Direction.Down);
+            if (_this.game.tweens.getAll().length == 0)
+                _this.players[Color.Red - 1].move(Direction.Down);
             //this.players[Color.Green - 1].move(Direction.Down);
             //this.players[Color.Blue - 1].move(Direction.Down);
         });
         this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
             .onDown.add(function () {
-            _this.players[Color.Red - 1].move(Direction.Right);
+            if (_this.game.tweens.getAll().length == 0)
+                _this.players[Color.Red - 1].move(Direction.Right);
             //this.players[Color.Green - 1].move(Direction.Right);
             //this.players[Color.Blue - 1].move(Direction.Right);
         });
@@ -146,7 +150,7 @@ var Meeple = (function () {
         this.color = color;
         this.tile = tile;
         this.state = true;
-        this.sprite = anaander.game.add.sprite(this.tile.sprite.position.x + 10, this.tile.sprite.position.y + 10, 'tiles');
+        this.sprite = anaander.game.add.sprite(this.tile.sprite.x + 10, this.tile.sprite.y + 10, 'tiles');
         this.sprite.scale.set(0.5, 0.5);
         this.update();
     }
@@ -253,12 +257,20 @@ var Tile = (function () {
     };
     Tile.prototype.repositionMeeples = function () {
         var distance = 20 / (this.meeples.length + 1);
-        var position = new Vector(this.sprite.position.x, this.sprite.position.y);
+        var position = new Vector(this.sprite.x, this.sprite.y);
         this.meeples.forEach(function (meeple) {
             position.x += distance;
             position.y += distance;
-            meeple.sprite.position.x = position.x;
-            meeple.sprite.position.y = position.y;
+            if (meeple.tween != null && meeple.tween.isRunning) {
+                meeple.tween.onComplete.addOnce(function () {
+                    meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                        .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
+                });
+            }
+            else {
+                meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                    .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
+            }
         });
     };
     return Tile;

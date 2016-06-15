@@ -5,6 +5,7 @@ class Meeple {
     tile: Tile;
     
     sprite: Phaser.Sprite;
+    tween: Phaser.Tween;
 
     constructor(color: Color, tile: Tile, anaander: Anaander) {
 
@@ -12,7 +13,7 @@ class Meeple {
         this.tile = tile;
         this.state = true;
         
-        this.sprite = anaander.game.add.sprite(this.tile.sprite.position.x + 10, this.tile.sprite.position.y + 10, 'tiles');
+        this.sprite = anaander.game.add.sprite(this.tile.sprite.x + 10, this.tile.sprite.y + 10, 'tiles');
         this.sprite.scale.set(0.5, 0.5);
         this.update();
     }

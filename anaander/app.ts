@@ -82,32 +82,36 @@ class Anaander {
 
         this.game.input.keyboard.addKey(Phaser.Keyboard.UP)
             .onDown.add(() => {
-                this.players[Color.Red - 1].move(Direction.Up);
+                if (this.game.tweens.getAll().length == 0)
+                    this.players[Color.Red - 1].move(Direction.Up);
                 //this.players[Color.Green - 1].move(Direction.Up);
                 //this.players[Color.Blue - 1].move(Direction.Up);
             });
         this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
             .onDown.add(() => {
-                this.players[Color.Red - 1].move(Direction.Left);
+                if (this.game.tweens.getAll().length == 0)
+                    this.players[Color.Red - 1].move(Direction.Left);
                 //this.players[Color.Green - 1].move(Direction.Left);
                 //this.players[Color.Blue - 1].move(Direction.Left);
             });
         this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
             .onDown.add(() => {
-                this.players[Color.Red - 1].move(Direction.Down);
+                if (this.game.tweens.getAll().length == 0)
+                    this.players[Color.Red - 1].move(Direction.Down);
                 //this.players[Color.Green - 1].move(Direction.Down);
                 //this.players[Color.Blue - 1].move(Direction.Down);
             });
         this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
             .onDown.add(() => {
-                this.players[Color.Red - 1].move(Direction.Right);
+                if (this.game.tweens.getAll().length == 0)
+                    this.players[Color.Red - 1].move(Direction.Right);
                 //this.players[Color.Green - 1].move(Direction.Right);
                 //this.players[Color.Blue - 1].move(Direction.Right);
             });
     }
 
     update() {
-
+        
     }
     
     render() {
