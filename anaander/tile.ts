@@ -23,4 +23,33 @@ class Tile {
 
         return this.neighbours[direction];
     }
+    
+    push(arrivingMeeple: Meeple) {
+        
+        this.meeples.push(arrivingMeeple);
+        this.repositionMeeples();
+    }
+    
+    pop(): Meeple {
+        
+        var departingMeeple: Meeple = this.meeples.pop();
+        this.repositionMeeples();
+        
+        return departingMeeple;
+    }
+    
+    repositionMeeples() {
+        
+        var distance = 20 / (this.meeples.length + 1);
+        var position = new Vector(this.sprite.position.x, this.sprite.position.y);
+        
+        this.meeples.forEach((meeple) => {
+            
+            position.x += distance;
+            position.y += distance;
+            
+            meeple.sprite.position.x = position.x;
+            meeple.sprite.position.y = position.y;
+        });
+    }
 }

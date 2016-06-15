@@ -17,24 +17,24 @@ class Board {
 
                 var tile = new Tile(new Vector(x, y), anaander);
 
+                this.tileMap[x].push(tile);
+            }
+        }
+        
+        for (var x = 0; x < this.size.x; x++) {
+            for (var y = 0; y < this.size.y; y++) {
+
                 if (Math.random() < this.meepleSpread) {
 
-                    tile.meeples.push(new Meeple(Color.Neutral, tile, anaander));
+                    this.tileMap[x][y].push(new Meeple(Color.Neutral, this.tileMap[x][y], anaander));
                 }
 
                 if (Math.random() < this.citySpread) {
 
-                    tile.city = new City();
+                    this.tileMap[x][y].city = new City();
                 }
                 
-                tile.sprite.frame = tile.city == null ? 9 : 8;
-
-                this.tileMap[x].push(tile);
-            }
-        }
-
-        for (var x = 0; x < this.size.x; x++) {
-            for (var y = 0; y < this.size.y; y++) {
+                this.tileMap[x][y].sprite.frame = this.tileMap[x][y].city == null ? 9 : 8;
 
                 if (y > 0) {
                     this.tileMap[x][y].neighbours.push(this.tileMap[x][y - 1]);

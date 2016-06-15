@@ -27,11 +27,11 @@ class Meeple {
 
         this.state = player.state;
 
-        var topMeeple = this.tile.meeples.pop();
+        var topMeeple = this.tile.pop();
         if (topMeeple != this) {
 
             if (topMeeple != null)
-                this.tile.meeples.push(topMeeple);
+                this.tile.push(topMeeple);
 
             return;
         }
@@ -43,11 +43,11 @@ class Meeple {
         var destinationTile = this.tile.neighbour(direction);
         if (destinationTile == null) {
 
-            this.tile.meeples.push(this);
+            this.tile.push(this);
             return;
         }
 
-        var destinationMeeple = destinationTile.meeples.pop();
+        var destinationMeeple = destinationTile.pop();
 
         if (destinationMeeple == null) {
 
@@ -56,7 +56,7 @@ class Meeple {
         }
         else if (destinationMeeple.color == this.color) {
 
-            destinationTile.meeples.push(destinationMeeple);
+            destinationMeeple.moveAfloat(destinationTile);
             destinationMeeple.move(player, direction);
             this.moveAfloat(destinationTile);
 
@@ -65,7 +65,7 @@ class Meeple {
         }
         else if (destinationMeeple.color == Color.Neutral) {
 
-            destinationTile.meeples.push(destinationMeeple);
+            destinationMeeple.moveAfloat(destinationTile);
             destinationMeeple.assimilateBy(player);
             this.moveAfloat(destinationTile);
 
@@ -74,18 +74,18 @@ class Meeple {
         }
         else {
             // TODO: fight!
-            this.tile.meeples.push(this);
-            destinationTile.meeples.push(destinationMeeple);
+            destinationMeeple.moveAfloat(destinationTile);
+            this.moveAfloat(destinationTile);
 
-            this.update();
             destinationMeeple.update();
+            this.update();
         }
     }
 
     moveAfloat(destinationTile: Tile) {
 
-        destinationTile.meeples.push(this);
         this.tile = destinationTile;
+        destinationTile.push(this);
     }
 
     assimilateBy(player: Player) {
@@ -97,8 +97,6 @@ class Meeple {
     }
 
     update() {
-
-        this.sprite.position.set(this.tile.sprite.position.x + 10, this.tile.sprite.position.y + 10);
 
         if (this.color == Color.Neutral) {
             this.sprite.frame = 6;

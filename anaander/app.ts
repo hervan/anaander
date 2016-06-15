@@ -1,4 +1,4 @@
-﻿enum Color {
+enum Color {
 
     Neutral,
     Red,
@@ -75,7 +75,7 @@ class Anaander {
             } while (baseTile.meeples.length > 0);
 
             var baseMeeple = new Meeple(i, baseTile, this);
-            baseTile.meeples.push(baseMeeple);
+            baseTile.push(baseMeeple);
 
             this.players.push(new Player(i, baseMeeple));
         }
