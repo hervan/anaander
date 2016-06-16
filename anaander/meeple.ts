@@ -5,7 +5,6 @@ class Meeple {
     tile: Tile;
     
     sprite: Phaser.Sprite;
-    tween: Phaser.Tween;
 
     constructor(color: Color, tile: Tile, anaander: Anaander) {
 

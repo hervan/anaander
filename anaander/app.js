@@ -261,16 +261,8 @@ var Tile = (function () {
         this.meeples.forEach(function (meeple) {
             position.x += distance;
             position.y += distance;
-            if (meeple.tween != null && meeple.tween.isRunning) {
-                meeple.tween.onComplete.addOnce(function () {
-                    meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
-                        .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
-                });
-            }
-            else {
-                meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
-                    .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
-            }
+            meeple.sprite.game.add.tween(meeple.sprite)
+                .to({ x: position.x, y: position.y }, 100, Phaser.Easing.Default, true);
         });
     };
     return Tile;
