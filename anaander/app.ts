@@ -35,6 +35,7 @@ class Anaander {
 
     playerCount: number;
     players: Player[];
+    currentPlayer: Color;
 
     board: Board;
 
@@ -59,6 +60,7 @@ class Anaander {
         
         this.playerCount = 3;
         this.players = new Array();
+        this.currentPlayer = Color.Red;
 
         this.tileSize = new Vector(40, 40);
         this.boardSize = new Vector(Math.trunc(1200 / this.tileSize.x), Math.trunc(800 / this.tileSize.y));
@@ -82,31 +84,62 @@ class Anaander {
 
         this.game.input.keyboard.addKey(Phaser.Keyboard.UP)
             .onDown.add(() => {
-                if (this.game.tweens.getAll().length == 0)
-                    this.players[Color.Red - 1].move(Direction.Up);
-                //this.players[Color.Green - 1].move(Direction.Up);
-                //this.players[Color.Blue - 1].move(Direction.Up);
+                if (this.game.tweens.getAll().length == 0) {
+
+                    this.players[this.currentPlayer - 1].move(Direction.Up);
+                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+
+                    this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
+
+                        meeple.tween = this.game.add.tween(meeple.sprite.scale)
+                            .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                    });
+                }
             });
+
         this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
             .onDown.add(() => {
-                if (this.game.tweens.getAll().length == 0)
-                    this.players[Color.Red - 1].move(Direction.Left);
-                //this.players[Color.Green - 1].move(Direction.Left);
-                //this.players[Color.Blue - 1].move(Direction.Left);
+                if (this.game.tweens.getAll().length == 0) {
+
+                    this.players[this.currentPlayer - 1].move(Direction.Left);
+                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+
+                    this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
+
+                        meeple.tween = this.game.add.tween(meeple.sprite.scale)
+                            .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                    });
+                }
             });
+
         this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
             .onDown.add(() => {
-                if (this.game.tweens.getAll().length == 0)
-                    this.players[Color.Red - 1].move(Direction.Down);
-                //this.players[Color.Green - 1].move(Direction.Down);
-                //this.players[Color.Blue - 1].move(Direction.Down);
+                if (this.game.tweens.getAll().length == 0) {
+
+                    this.players[this.currentPlayer - 1].move(Direction.Down);
+                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+
+                    this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
+
+                        meeple.tween = this.game.add.tween(meeple.sprite.scale)
+                            .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                    });
+                }
             });
+
         this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
             .onDown.add(() => {
-                if (this.game.tweens.getAll().length == 0)
-                    this.players[Color.Red - 1].move(Direction.Right);
-                //this.players[Color.Green - 1].move(Direction.Right);
-                //this.players[Color.Blue - 1].move(Direction.Right);
+                if (this.game.tweens.getAll().length == 0) {
+
+                    this.players[this.currentPlayer - 1].move(Direction.Right);
+                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+
+                    this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
+
+                        meeple.tween = this.game.add.tween(meeple.sprite.scale)
+                            .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                    });
+                }
             });
     }
 

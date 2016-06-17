@@ -44,12 +44,6 @@ class Tile {
         var position = new Vector(this.sprite.x, this.sprite.y);
         
         this.meeples.forEach((meeple) => {
-            
-            /*position.x += distance;
-            position.y += distance;
-            
-            meeple.sprite.game.add.tween(meeple.sprite)
-                    .to({ x: position.x, y: position.y }, 100, Phaser.Easing.Default, true);*/
 
             if (meeple.tween != null && meeple.tween.isRunning) {
 

@@ -35,6 +35,7 @@ var Anaander = (function () {
         var _this = this;
         this.playerCount = 3;
         this.players = new Array();
+        this.currentPlayer = Color.Red;
         this.tileSize = new Vector(40, 40);
         this.boardSize = new Vector(Math.trunc(1200 / this.tileSize.x), Math.trunc(800 / this.tileSize.y));
         this.board = new Board(this);
@@ -49,31 +50,47 @@ var Anaander = (function () {
         }
         this.game.input.keyboard.addKey(Phaser.Keyboard.UP)
             .onDown.add(function () {
-            if (_this.game.tweens.getAll().length == 0)
-                _this.players[Color.Red - 1].move(Direction.Up);
-            //this.players[Color.Green - 1].move(Direction.Up);
-            //this.players[Color.Blue - 1].move(Direction.Up);
+            if (_this.game.tweens.getAll().length == 0) {
+                _this.players[_this.currentPlayer - 1].move(Direction.Up);
+                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
+                    meeple.tween = _this.game.add.tween(meeple.sprite.scale)
+                        .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                });
+            }
         });
         this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT)
             .onDown.add(function () {
-            if (_this.game.tweens.getAll().length == 0)
-                _this.players[Color.Red - 1].move(Direction.Left);
-            //this.players[Color.Green - 1].move(Direction.Left);
-            //this.players[Color.Blue - 1].move(Direction.Left);
+            if (_this.game.tweens.getAll().length == 0) {
+                _this.players[_this.currentPlayer - 1].move(Direction.Left);
+                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
+                    meeple.tween = _this.game.add.tween(meeple.sprite.scale)
+                        .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                });
+            }
         });
         this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN)
             .onDown.add(function () {
-            if (_this.game.tweens.getAll().length == 0)
-                _this.players[Color.Red - 1].move(Direction.Down);
-            //this.players[Color.Green - 1].move(Direction.Down);
-            //this.players[Color.Blue - 1].move(Direction.Down);
+            if (_this.game.tweens.getAll().length == 0) {
+                _this.players[_this.currentPlayer - 1].move(Direction.Down);
+                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
+                    meeple.tween = _this.game.add.tween(meeple.sprite.scale)
+                        .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                });
+            }
         });
         this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT)
             .onDown.add(function () {
-            if (_this.game.tweens.getAll().length == 0)
-                _this.players[Color.Red - 1].move(Direction.Right);
-            //this.players[Color.Green - 1].move(Direction.Right);
-            //this.players[Color.Blue - 1].move(Direction.Right);
+            if (_this.game.tweens.getAll().length == 0) {
+                _this.players[_this.currentPlayer - 1].move(Direction.Right);
+                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
+                    meeple.tween = _this.game.add.tween(meeple.sprite.scale)
+                        .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
+                });
+            }
         });
     };
     Anaander.prototype.update = function () {
@@ -259,11 +276,6 @@ var Tile = (function () {
         var distance = 20 / (this.meeples.length + 1);
         var position = new Vector(this.sprite.x, this.sprite.y);
         this.meeples.forEach(function (meeple) {
-            /*position.x += distance;
-            position.y += distance;
-            
-            meeple.sprite.game.add.tween(meeple.sprite)
-                    .to({ x: position.x, y: position.y }, 100, Phaser.Easing.Default, true);*/
             if (meeple.tween != null && meeple.tween.isRunning) {
                 meeple.tween.onComplete.addOnce(function () {
                     position.x += distance;
