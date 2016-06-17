@@ -259,10 +259,25 @@ var Tile = (function () {
         var distance = 20 / (this.meeples.length + 1);
         var position = new Vector(this.sprite.x, this.sprite.y);
         this.meeples.forEach(function (meeple) {
-            position.x += distance;
+            /*position.x += distance;
             position.y += distance;
+            
             meeple.sprite.game.add.tween(meeple.sprite)
-                .to({ x: position.x, y: position.y }, 100, Phaser.Easing.Default, true);
+                    .to({ x: position.x, y: position.y }, 100, Phaser.Easing.Default, true);*/
+            if (meeple.tween != null && meeple.tween.isRunning) {
+                meeple.tween.onComplete.addOnce(function () {
+                    position.x += distance;
+                    position.y += distance;
+                    meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                        .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
+                });
+            }
+            else {
+                position.x += distance;
+                position.y += distance;
+                meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                    .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
+            }
         });
     };
     return Tile;
