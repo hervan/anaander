@@ -8,7 +8,7 @@ class Player {
     constructor(color: Color, baseMeeple: Meeple) {
 
         this.color = color;
-        this.state = true;
+        this.state = false;
 
         this.meeples = new Array();
         this.meeples.push(baseMeeple);

@@ -33,7 +33,7 @@ var Anaander = (function () {
     };
     Anaander.prototype.create = function () {
         var _this = this;
-        this.playerCount = 3;
+        this.playerCount = 2;
         this.players = new Array();
         this.currentPlayer = Color.Red;
         this.tileSize = new Vector(40, 40);
@@ -52,7 +52,7 @@ var Anaander = (function () {
             .onDown.add(function () {
             if (_this.game.tweens.getAll().length == 0) {
                 _this.players[_this.currentPlayer - 1].move(Direction.Up);
-                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.currentPlayer = (_this.currentPlayer % _this.playerCount) + 1;
                 _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
                     meeple.tween = _this.game.add.tween(meeple.sprite.scale)
                         .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
@@ -63,7 +63,7 @@ var Anaander = (function () {
             .onDown.add(function () {
             if (_this.game.tweens.getAll().length == 0) {
                 _this.players[_this.currentPlayer - 1].move(Direction.Left);
-                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.currentPlayer = (_this.currentPlayer % _this.playerCount) + 1;
                 _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
                     meeple.tween = _this.game.add.tween(meeple.sprite.scale)
                         .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
@@ -74,7 +74,7 @@ var Anaander = (function () {
             .onDown.add(function () {
             if (_this.game.tweens.getAll().length == 0) {
                 _this.players[_this.currentPlayer - 1].move(Direction.Down);
-                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.currentPlayer = (_this.currentPlayer % _this.playerCount) + 1;
                 _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
                     meeple.tween = _this.game.add.tween(meeple.sprite.scale)
                         .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
@@ -85,7 +85,7 @@ var Anaander = (function () {
             .onDown.add(function () {
             if (_this.game.tweens.getAll().length == 0) {
                 _this.players[_this.currentPlayer - 1].move(Direction.Right);
-                _this.currentPlayer = (_this.currentPlayer % 3) + 1;
+                _this.currentPlayer = (_this.currentPlayer % _this.playerCount) + 1;
                 _this.players[_this.currentPlayer - 1].meeples.forEach(function (meeple) {
                     meeple.tween = _this.game.add.tween(meeple.sprite.scale)
                         .from({ x: 0.6, y: 0.6 }, 100, Phaser.Easing.Default, true, 200);
@@ -166,7 +166,15 @@ var Meeple = (function () {
     function Meeple(color, tile, anaander) {
         this.color = color;
         this.tile = tile;
-        this.state = true;
+        this.state = false;
+        if (this.color == Color.Neutral) {
+            this.strength = 128 + (Math.random() * 128);
+            this.power = 50 + (Math.random() * 50);
+        }
+        else {
+            this.strength = 256 + (Math.random() * 256);
+            this.power = 100 + (Math.random() * 100);
+        }
         this.sprite = anaander.game.add.sprite(this.tile.sprite.x + 10, this.tile.sprite.y + 10, 'tiles');
         this.sprite.scale.set(0.5, 0.5);
         this.update();
@@ -179,8 +187,17 @@ var Meeple = (function () {
         this.state = player.state;
         var topMeeple = this.tile.pop();
         if (topMeeple != this) {
-            if (topMeeple != null)
+            if (topMeeple != null) {
+                var underneathMeeple = this.tile.pop();
+                if (underneathMeeple == this) {
+                    topMeeple.strength -= this.power;
+                }
+                if (underneathMeeple != null) {
+                    this.tile.push(underneathMeeple);
+                }
                 this.tile.push(topMeeple);
+                topMeeple.update();
+            }
             return;
         }
         this.tile.meeples.forEach(function (meeple) {
@@ -211,9 +228,9 @@ var Meeple = (function () {
             this.update();
         }
         else {
-            // TODO: fight!
             destinationMeeple.moveAfloat(destinationTile);
             this.moveAfloat(destinationTile);
+            destinationMeeple.strength -= this.power / 2;
             destinationMeeple.update();
             this.update();
         }
@@ -234,13 +251,14 @@ var Meeple = (function () {
         else {
             this.sprite.frame = 2 * (this.color - 1);
         }
+        this.sprite.alpha = Math.min(256, this.strength) / 256;
     };
     return Meeple;
 }());
 var Player = (function () {
     function Player(color, baseMeeple) {
         this.color = color;
-        this.state = true;
+        this.state = false;
         this.meeples = new Array();
         this.meeples.push(baseMeeple);
     }

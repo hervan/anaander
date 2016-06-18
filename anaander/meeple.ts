@@ -7,11 +7,25 @@ class Meeple {
     sprite: Phaser.Sprite;
     tween: Phaser.Tween;
 
+    strength: number;
+    power: number;
+
     constructor(color: Color, tile: Tile, anaander: Anaander) {
 
         this.color = color;
         this.tile = tile;
-        this.state = true;
+        this.state = false;
+
+        if (this.color == Color.Neutral) {
+
+            this.strength = 128 + (Math.random() * 128);
+            this.power = 50 + (Math.random() * 50);
+        }
+        else {
+
+            this.strength = 256 + (Math.random() * 256);
+            this.power = 100 + (Math.random() * 100);
+        }
         
         this.sprite = anaander.game.add.sprite(this.tile.sprite.x + 10, this.tile.sprite.y + 10, 'tiles');
         this.sprite.scale.set(0.5, 0.5);
@@ -31,8 +45,21 @@ class Meeple {
         var topMeeple = this.tile.pop();
         if (topMeeple != this) {
 
-            if (topMeeple != null)
+            if (topMeeple != null) {
+
+                var underneathMeeple = this.tile.pop();
+                if (underneathMeeple == this) {
+
+                    topMeeple.strength -= this.power;
+                }
+                if (underneathMeeple != null) {
+
+                    this.tile.push(underneathMeeple);
+                }
+
                 this.tile.push(topMeeple);
+                topMeeple.update();
+            }
 
             return;
         }
@@ -74,9 +101,10 @@ class Meeple {
             this.update();
         }
         else {
-            // TODO: fight!
+            
             destinationMeeple.moveAfloat(destinationTile);
             this.moveAfloat(destinationTile);
+            destinationMeeple.strength -= this.power / 2;
 
             destinationMeeple.update();
             this.update();
@@ -105,5 +133,7 @@ class Meeple {
         else {
             this.sprite.frame = 2 * (this.color - 1);
         }
+
+        this.sprite.alpha = Math.min(256, this.strength) / 256;
     }
 }

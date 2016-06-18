@@ -58,7 +58,7 @@ class Anaander {
 
     create() {
         
-        this.playerCount = 3;
+        this.playerCount = 2;
         this.players = new Array();
         this.currentPlayer = Color.Red;
 
@@ -87,7 +87,7 @@ class Anaander {
                 if (this.game.tweens.getAll().length == 0) {
 
                     this.players[this.currentPlayer - 1].move(Direction.Up);
-                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+                    this.currentPlayer = (this.currentPlayer % this.playerCount) + 1;
 
                     this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
 
@@ -102,7 +102,7 @@ class Anaander {
                 if (this.game.tweens.getAll().length == 0) {
 
                     this.players[this.currentPlayer - 1].move(Direction.Left);
-                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+                    this.currentPlayer = (this.currentPlayer % this.playerCount) + 1;
 
                     this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
 
@@ -117,7 +117,7 @@ class Anaander {
                 if (this.game.tweens.getAll().length == 0) {
 
                     this.players[this.currentPlayer - 1].move(Direction.Down);
-                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+                    this.currentPlayer = (this.currentPlayer % this.playerCount) + 1;
 
                     this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
 
@@ -132,7 +132,7 @@ class Anaander {
                 if (this.game.tweens.getAll().length == 0) {
 
                     this.players[this.currentPlayer - 1].move(Direction.Right);
-                    this.currentPlayer = (this.currentPlayer % 3) + 1;
+                    this.currentPlayer = (this.currentPlayer % this.playerCount) + 1;
 
                     this.players[this.currentPlayer - 1].meeples.forEach((meeple) => {
 
