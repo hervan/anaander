@@ -79,7 +79,7 @@ class Anaander {
             var baseMeeple = new Meeple(i, baseTile, this);
             baseTile.push(baseMeeple);
 
-            this.players.push(new Player(i, baseMeeple));
+            this.players.push(new Player(i, baseMeeple, this));
         }
 
         this.game.input.keyboard.addKey(Phaser.Keyboard.UP)

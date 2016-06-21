@@ -7,6 +7,8 @@ class Meeple {
     sprite: Phaser.Sprite;
     tween: Phaser.Tween;
 
+    baseGame: Anaander;
+
     strength: number;
     power: number;
 
@@ -26,8 +28,10 @@ class Meeple {
             this.strength = 256 + (Math.random() * 256);
             this.power = 100 + (Math.random() * 100);
         }
+
+        this.baseGame = anaander;
         
-        this.sprite = anaander.game.add.sprite(this.tile.sprite.x + 10, this.tile.sprite.y + 10, 'tiles');
+        this.sprite = this.baseGame.game.add.sprite(this.tile.sprite.x + 10, this.tile.sprite.y + 10, 'tiles');
         this.sprite.scale.set(0.5, 0.5);
         this.update();
     }
@@ -126,6 +130,18 @@ class Meeple {
     }
 
     update() {
+
+        if (this.strength <= 0) {
+
+            var player = this.baseGame.players[this.color - 1];
+            player.remove(this);
+
+            this.tile.remove(this);
+
+            this.sprite.destroy();
+
+            this.tween = null;
+        }
 
         if (this.color == Color.Neutral) {
             this.sprite.frame = 6;

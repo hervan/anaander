@@ -10,13 +10,16 @@ class Tile {
     
     sprite: Phaser.Sprite;
 
+    baseGame: Anaander;
+
     constructor(position: Vector, anaander: Anaander) {
 
         this.position = position;
         this.meeples = new Array();
         this.neighbours = new Array();
-        
-        this.sprite = anaander.game.add.sprite(this.position.x * anaander.tileSize.x, this.position.y * anaander.tileSize.y, 'tiles');
+
+        this.baseGame = anaander;
+        this.sprite = this.baseGame.game.add.sprite(this.position.x * anaander.tileSize.x, this.position.y * anaander.tileSize.y, 'tiles');
     }
 
     neighbour(direction: Direction): Tile {
@@ -37,6 +40,11 @@ class Tile {
         
         return departingMeeple;
     }
+
+    remove(meeple: Meeple) {
+
+        this.meeples.splice(this.meeples.indexOf(meeple), 1);
+    }
     
     repositionMeeples() {
         
@@ -52,7 +60,7 @@ class Tile {
                     position.x += distance;
                     position.y += distance;
                     
-                    meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                    meeple.tween = this.baseGame.game.add.tween(meeple.sprite)
                         .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
                 });
             }
@@ -61,7 +69,7 @@ class Tile {
                 position.x += distance;
                 position.y += distance;
                 
-                meeple.tween = meeple.sprite.game.add.tween(meeple.sprite)
+                meeple.tween = this.baseGame.game.add.tween(meeple.sprite)
                     .to({ x: position.x, y: position.y }, 50, Phaser.Easing.Default, true, Math.random() * 50);
             }
         });
