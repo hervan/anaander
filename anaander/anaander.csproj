@@ -10,7 +10,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.1</TypeScriptToolsVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -31,6 +31,9 @@
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="city.ts" />
     <TypeScriptCompile Include="meeple.ts" />
+    <TypeScriptCompile Include="scripts\p2.d.ts" />
+    <TypeScriptCompile Include="scripts\phaser.d.ts" />
+    <TypeScriptCompile Include="scripts\pixi.d.ts" />
     <TypeScriptCompile Include="tile.ts" />
     <TypeScriptCompile Include="board.ts" />
     <TypeScriptCompile Include="player.ts" />
@@ -44,9 +47,7 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="scripts\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>

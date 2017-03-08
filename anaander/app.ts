@@ -63,7 +63,7 @@ class Anaander {
         this.currentPlayer = Color.Red;
 
         this.tileSize = new Vector(40, 40);
-        this.boardSize = new Vector(Math.trunc(1200 / this.tileSize.x), Math.trunc(800 / this.tileSize.y));
+        this.boardSize = new Vector(Math.floor(1200 / this.tileSize.x), Math.floor(800 / this.tileSize.y));
 
         this.board = new Board(this);
         
@@ -72,8 +72,8 @@ class Anaander {
             var baseTile: Tile;
             do {
                 baseTile = this.board.tile(new Vector(
-                    Math.trunc(Math.random() * this.boardSize.x),
-                    Math.trunc(Math.random() * this.boardSize.y)));
+                    Math.floor(Math.random() * this.boardSize.x),
+                    Math.floor(Math.random() * this.boardSize.y)));
             } while (baseTile.meeples.length > 0);
 
             var baseMeeple = new Meeple(i, baseTile, this);
