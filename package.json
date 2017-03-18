@@ -6,7 +6,9 @@
   "scripts": {
     "test": "jest --watch",
     "start": "nodemon --watch webpack.config.js --exec \"webpack-dev-server --port 8080 --host 0.0.0.0\"",
-    "build": "webpack"
+    "build": "webpack",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
@@ -17,22 +19,19 @@
   "bugs": {
     "url": "https://github.com/hervan/anaander/issues"
   },
-  "homepage": "https://github.com/hervan/anaander#readme",
+  "homepage": "https://hervan.github.io/anaander",
   "dependencies": {
-    "@types/bootstrap": "^3.3.32",
     "@types/react": "^15.0.14",
-    "@types/react-bootstrap": "0.0.46",
     "@types/react-dom": "^0.14.23",
-    "bootstrap": "^3.3.7",
     "react": "^15.4.2",
-    "react-bootstrap": "^0.30.8",
     "react-dom": "^15.4.2"
   },
   "devDependencies": {
-    "@types/node": "^7.0.8",
+    "@types/jest": "^19.2.2",
     "awesome-typescript-loader": "^3.1.2",
     "bulma": "^0.3.2",
     "css-loader": "^0.26.4",
+    "gh-pages": "^0.12.0",
     "html-webpack-plugin": "^2.28.0",
     "jest": "^19.0.2",
     "nodemon": "^1.11.0",
@@ -45,10 +44,16 @@
     "webpack-dev-server": "^2.4.1"
   },
   "jest": {
-    "moduleFileExtensions": ["ts", "tsx", "js"],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
     "transform": {
       "^.+\\.(ts|tsx)$": "<rootDir>/preprocessor.js"
     },
-    "testMatch": ["<rootDir>/tests/*.(ts|tsx|js)"]
+    "testMatch": [
+      "<rootDir>/tests/*.(ts|tsx|js)"
+    ]
   }
 }

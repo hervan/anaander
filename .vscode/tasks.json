@@ -22,6 +22,17 @@
         {
             "taskName": "test",
             "args": ["run", "test"]
+        },
+        {
+            "taskName": "build",
+            "args": ["run", "build"],
+            "isShellCommand": true,
+            "isBuildCommand": true
+        },
+        {
+            "taskName": "deploy",
+            "args": ["run", "deploy"],
+            "isShellCommand": true
         }
     ]
 }

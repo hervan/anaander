@@ -11,7 +11,12 @@
             "url": "http://localhost:8080",
             "webRoot": "${workspaceRoot}",
             "userDataDir": "${workspaceRoot}/.vscode/chrome",
-            "runtimeExecutable": "chromium-browser",
+            "linux": {
+                "runtimeExecutable": "chromium-browser"
+            },
+            "windows": {
+                "runtimeExecutable": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+            },
             "preLaunchTask": "start"
         }
 

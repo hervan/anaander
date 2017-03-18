@@ -6,6 +6,7 @@ Thumbs.db
 
 # files used in this project
 dist
+.vscode/chrome
 
 # C/C++
 *.slo
