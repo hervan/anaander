@@ -1,9 +1,14 @@
-import * as React from 'react';
-import * as Game from '../Game';
+// tslint:disable-next-line:no-unused-variable
+import * as React from "react";
+import * as Game from "../Game";
 
-interface PlayerProps { player: Game.Player, move: (move: Game.Play) => void, active: boolean };
+interface IProps {
+  player: Game.Player;
+  move: (move: Game.Play) => void;
+  active: boolean;
+};
 
-export default (props: PlayerProps) =>
+export default (props: IProps) =>
   <div className={"player column"}>
     <article className={"message is-" + props.player.color + (props.active ? " current-player" : "")}>
       <div className="message-header">
@@ -16,10 +21,10 @@ export default (props: PlayerProps) =>
             <p>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.move({
-                  state: 'play',
+                  state: "play",
                   player: props.player.color,
-                  from: 'player',
-                  action: 'guard'
+                  from: "player",
+                  action: "guard"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-paper-o"></i>
@@ -27,10 +32,10 @@ export default (props: PlayerProps) =>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.move({
-                  state: 'play',
+                  state: "play",
                   player: props.player.color,
-                  from: 'player',
-                  action: 'up'
+                  from: "player",
+                  action: "up"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-o-up"></i>
@@ -38,10 +43,10 @@ export default (props: PlayerProps) =>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.move({
-                  state: 'play',
+                  state: "play",
                   player: props.player.color,
-                  from: 'player',
-                  action: 'attack'
+                  from: "player",
+                  action: "attack"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-rock-o"></i>
@@ -51,10 +56,10 @@ export default (props: PlayerProps) =>
             <p>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.move({
-                  state: 'play',
+                  state: "play",
                   player: props.player.color,
-                  from: 'player',
-                  action: 'left'
+                  from: "player",
+                  action: "left"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-o-left"></i>
@@ -62,10 +67,10 @@ export default (props: PlayerProps) =>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.move({
-                  state: 'play',
+                  state: "play",
                   player: props.player.color,
-                  from: 'player',
-                  action: 'down'
+                  from: "player",
+                  action: "down"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-o-down"></i>
@@ -73,10 +78,10 @@ export default (props: PlayerProps) =>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.move({
-                  state: 'play',
+                  state: "play",
                   player: props.player.color,
-                  from: 'player',
-                  action: 'right'
+                  from: "player",
+                  action: "right"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-o-right"></i>
@@ -85,7 +90,7 @@ export default (props: PlayerProps) =>
             </p>
           </div>
         </div>
-        <p>swarm: {props.player.meeples.length} meeple{props.player.meeples.length > 1 ? 's' : ''}</p>
+        <p>swarm: {props.player.meeples.length} meeple{props.player.meeples.length > 1 ? "s" : ""}</p>
         <p>no items</p>
       </div>
     </article>

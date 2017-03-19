@@ -1,16 +1,17 @@
-import * as React from 'react';
-import { Props } from './Table';
+// tslint:disable-next-line:no-unused-variable
+import * as React from "react";
+import { IProps } from "./Table";
 
-import Terrain from './Terrain';
-import Meeple from './Meeple';
+import Terrain from "./Terrain";
+import Meeple from "./Meeple";
 
-export default (props: Props) =>
+export default (props: IProps) =>
     <section id="board" className="section">
         <div className="container">
             <div key="terrains" className="board">
                 {props.game.terrains.map((terrain) =>
                     <Terrain
-                        key={'row' + terrain.position.row + 'col' + terrain.position.col}
+                        key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
                         move={props.move}
                     />

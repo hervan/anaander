@@ -1,9 +1,10 @@
-import * as React from 'react';
-import { Props } from './Table';
+// tslint:disable-next-line:no-unused-variable
+import * as React from "react";
+import { IProps } from "./Table";
 
-import Player from './Player';
+import Player from "./Player";
 
-export default (props: Props) =>
+export default (props: IProps) =>
     <section id="players" className="section">
         <div className="container">
             <div className="columns">
@@ -12,7 +13,7 @@ export default (props: Props) =>
                         key={player.color}
                         player={player}
                         move={props.move}
-                        active={player.color == props.game.currentPlayer}
+                        active={player.color === props.game.currentPlayer}
                     />
                 )}
             </div>
