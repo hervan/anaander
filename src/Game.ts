@@ -85,24 +85,25 @@ export type Player = {
     //items: Item[];
 }
 
-export type Move = {
+export type Play = {
     state: State;
     player: Color;
     from: Position | 'player';
     action: Direction | Action | null;
 }
 
-const InvalidMoves = {
+const InvalidPlays = {
     WrongColor: "move a meeple of your own color.",
     WrongTurnHeads: "move a meeple with heads up.",
     WrongTurnTails: "move a meeple with tails up.",
     EmptyTerrain: "choose a terrain with a meeple in it.",
     NoGameYet: "wait for a game to begin.",
     OutOfBoard: "keep your meeples inside the board.",
+    NotYourTurn: "wait for your turn to begin.",
     None: ""
 }
 
-type InvalidMove = {
+type InvalidPlay = {
     explanation: string;
 }
 
@@ -110,12 +111,12 @@ export type Game = {
     playerCount: number;
     boardSize: number;
     players: Player[];
-    terrains: Terrain[][];
+    terrains: Terrain[];
     meeples: Meeple[];
     turn: Turn;
     currentPlayer: Color;
     state: State;
-    lastAction: Direction | Action | InvalidMove;
+    lastAction: Direction | Action | InvalidPlay;
 }
 
 export function log_board(game: Game) {
@@ -129,9 +130,8 @@ export function log_board(game: Game) {
         'default': 'o'
     };
 
-    console.log(game.terrains.map((row) =>
-        row.map((terrain) =>
-        terrain.meeples.length == 0 ? ' ' : colors[terrain.meeples[terrain.meeples.length - 1].color])));
+    console.log(game.terrains.map((terrain) =>
+        terrain.meeples.length == 0 ? ' ' : colors[terrain.meeples[terrain.meeples.length - 1].color]));
 }
 
 function nextPlayer(game: Game): Color {
@@ -158,9 +158,22 @@ function nextTurn(game: Game): Turn {
         game.turn;
 }
 
+function position_to_index(position: Position, boardSize: number): number {
+
+    return (position.row * boardSize + position.col);
+}
+
+function index_to_position(index: number, boardSize: number): Position {
+
+    return {
+        row: Math.floor(index / boardSize),
+        col: index % boardSize
+    };
+}
+
 function moveMeeple(game: Game, from: Position, action: Direction | Action): Game {
     
-    let lastAction: Direction | Action | InvalidMove | null = null;
+    let lastAction: Direction | Action | InvalidPlay | null = null;
     let to = {
         row: from.row,
         col: from.col
@@ -169,22 +182,22 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
     let turn = game.turn;
     let currentPlayer = game.currentPlayer;
     
-    const meeple = game.terrains[from.row][from.col].meeples.slice().pop();
+    const meeple = game.terrains[position_to_index(from, game.boardSize)].meeples.slice().pop();
 
     if (meeple == null) {
         
-        lastAction = { explanation: InvalidMoves.EmptyTerrain };
+        lastAction = { explanation: InvalidPlays.EmptyTerrain };
     }
     else if ((meeple.color as Color) != game.currentPlayer) {
         
-        lastAction = { explanation: InvalidMoves.WrongColor };
+        lastAction = { explanation: InvalidPlays.WrongColor };
     }
     else if (meeple.turn != game.turn) {
         
         lastAction = { explanation:
             (game.turn == 'heads' ?
-                InvalidMoves.WrongTurnHeads :
-                InvalidMoves.WrongTurnTails) };
+                InvalidPlays.WrongTurnHeads :
+                InvalidPlays.WrongTurnTails) };
     }
     else {
         
@@ -215,7 +228,7 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
           || to.col < 0
           || to.col >= game.boardSize) {
             
-            lastAction = { explanation: InvalidMoves.OutOfBoard };
+            lastAction = { explanation: InvalidPlays.OutOfBoard };
         }
         
         if (lastAction == null) {
@@ -234,13 +247,13 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
             
             const gameTerrains = game.terrains.slice();
             
-            const terrainMeeplesFrom = gameTerrains[from.row][from.col].meeples.slice();
+            const terrainMeeplesFrom = gameTerrains[position_to_index(from, game.boardSize)].meeples.slice();
             terrainMeeplesFrom.pop();
-            gameTerrains[from.row][from.col].meeples = terrainMeeplesFrom;
+            gameTerrains[position_to_index(from, game.boardSize)].meeples = terrainMeeplesFrom;
             
-            const terrainMeeplesTo = gameTerrains[to.row][to.col].meeples.slice();
+            const terrainMeeplesTo = gameTerrains[position_to_index(to, game.boardSize)].meeples.slice();
             terrainMeeplesTo.push(meeple);
-            gameTerrains[to.row][to.col].meeples = terrainMeeplesTo;
+            gameTerrains[position_to_index(to, game.boardSize)].meeples = terrainMeeplesTo;
             
             game.terrains = gameTerrains;
             
@@ -273,9 +286,9 @@ function moveSwarm(game: Game, action: Direction | Action): Game {
     return game_step;
 }
 
-export function move(game: Game, move: Move): Game {
+export function play(game: Game, play: Play): Game {
     
-    if (move.state != 'play') {
+    if (play.state != 'play') {
         
         return {
             playerCount: game.playerCount,
@@ -286,13 +299,28 @@ export function move(game: Game, move: Move): Game {
             turn: game.turn,
             currentPlayer: game.currentPlayer,
             state: game.state,
-            lastAction: { explanation: InvalidMoves.NoGameYet }
+            lastAction: { explanation: InvalidPlays.NoGameYet }
+        };
+    }
+    else if (game.currentPlayer != play.player) {
+
+        return {
+            playerCount: game.playerCount,
+            boardSize: game.boardSize,
+            players: game.players.slice(),
+            terrains: game.terrains.slice(),
+            meeples: game.meeples.slice(),
+            turn: game.turn,
+            currentPlayer: game.currentPlayer,
+            state: game.state,
+            lastAction: { explanation: InvalidPlays.NotYourTurn }
         };
     }
     
-    switch (move.player) {
+    switch (play.player) {
         
         case 'default':
+            
             return {
                 playerCount: game.playerCount,
                 boardSize: game.boardSize,
@@ -301,8 +329,8 @@ export function move(game: Game, move: Move): Game {
                 meeples: game.meeples.slice(),
                 turn: game.turn,
                 currentPlayer: colors[0],
-                state: move.state,
-                lastAction: { explanation: InvalidMoves.None }
+                state: play.state,
+                lastAction: { explanation: InvalidPlays.None }
             };
             
         default:
@@ -311,11 +339,11 @@ export function move(game: Game, move: Move): Game {
             let next_player: Color;
             let turn: Turn;
 
-            switch (move.from) {
+            switch (play.from) {
                 
                 case 'player':
                     
-                    iGame = moveSwarm(game, move.action as Direction | Action);
+                    iGame = moveSwarm(game, play.action as Direction | Action);
                     next_player = nextPlayer(iGame);
                     turn = nextTurn(iGame);
                     
@@ -323,7 +351,7 @@ export function move(game: Game, move: Move): Game {
                 
                 default:
                     
-                    iGame = moveMeeple(game, move.from as Position, move.action as Direction | Action);
+                    iGame = moveMeeple(game, play.from as Position, play.action as Direction | Action);
                     next_player = nextPlayer(iGame);
                     turn = iGame.turn;
 
@@ -349,12 +377,10 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
     
     let meepleKey = playerCount;
     
-    const terrains = new Array<Array<Terrain>>();
+    const terrains = new Array<Terrain>();
     const gameMeeples = new Array<Meeple>();
     
     for (let i = 0; i < boardSize; i++) {
-        
-        const row = new Array<Terrain>();
         
         for (let j = 0; j < boardSize; j++) {
             
@@ -373,15 +399,13 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                 gameMeeples.push(meeple);
             }
             
-            row.push({
+            terrains.push({
                 position: { row: i, col: j },
                 geography: terrainDistribution[Math.floor(Math.random() * 14)],
                 maxMeeples: Math.ceil(Math.random() * 10),
                 meeples: terrainMeeples
             });
         }
-        
-        terrains.push(row);
     }
 
     const players = new Array<Player>();
@@ -398,7 +422,7 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                     row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                     col: Math.floor(Math.random() * (boardSize - 2)) + 1
                 };
-            } while (terrains[position.row][position.col].meeples.length > 0);
+            } while (terrains[position_to_index(position, boardSize)].meeples.length > 0);
 
             const playerMeeples = new Array<Meeple>();
             const meeple: Meeple = {
@@ -411,9 +435,9 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
             };
             
             playerMeeples.push(meeple);
-            const terrainMeeples = terrains[meeple.position.row][meeple.position.col].meeples.slice();
+            const terrainMeeples = terrains[position_to_index(position, boardSize)].meeples.slice();
             terrainMeeples.push(meeple);
-            terrains[meeple.position.row][meeple.position.col].meeples = terrainMeeples;
+            terrains[position_to_index(position, boardSize)].meeples = terrainMeeples;
             gameMeeples.push(meeple);
             
             players[colors.indexOf(color)] = {
@@ -435,7 +459,7 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
         turn: 'heads',
         currentPlayer: 'default',
         state: 'setup',
-        lastAction: { explanation: InvalidMoves.None }
+        lastAction: { explanation: InvalidPlays.None }
     };
     
     return game;

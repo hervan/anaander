@@ -8,7 +8,7 @@ import Controls from './Controls';
 
 interface GameState { game: Game.Game };
 
-export interface Props { game: Game.Game, move: (move: Game.Move) => void };
+export interface Props { game: Game.Game, move: (move: Game.Play) => void };
 
 export class Table extends React.Component<{}, GameState> {
     
@@ -20,7 +20,7 @@ export class Table extends React.Component<{}, GameState> {
         this.state = { game: Game.setup(0) };
     }
     
-    move(move: Game.Move) {
+    move(move: Game.Play) {
         
         switch (move.state) {
             
@@ -36,7 +36,7 @@ export class Table extends React.Component<{}, GameState> {
             
             case 'play':
                 
-                this.setState({ game: Game.move(this.state.game, move) });
+                this.setState({ game: Game.play(this.state.game, move) });
                 
                 break;
         }

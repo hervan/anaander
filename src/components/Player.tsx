@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as Game from '../Game';
 
-interface PlayerProps { player: Game.Player, move: (move: Game.Move) => void, active: boolean };
+interface PlayerProps { player: Game.Player, move: (move: Game.Play) => void, active: boolean };
 
 export default (props: PlayerProps) =>
   <div className={"player column"}>

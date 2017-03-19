@@ -3,7 +3,7 @@ import * as Game from '../Game';
 
 import Meeple from './Meeple';
 
-interface TerrainProps { terrain: Game.Terrain, move: (move: Game.Move) => void };
+interface TerrainProps { terrain: Game.Terrain, move: (move: Game.Play) => void };
 
 function terrainColor(geography: Game.Geography): Game.Color {
     switch (geography) {

@@ -1,4 +1,4 @@
-import { Game, setup, move, log_board } from '../src/Game';
+import { Game, setup, play, log_board } from '../src/Game';
 
 describe('game setup with 2 players on a 4x4 board', () => {
     
@@ -7,16 +7,6 @@ describe('game setup with 2 players on a 4x4 board', () => {
     beforeAll(() => {
         
         game = setup(2, 4);
-    });
-    
-    it('find 4 rows in the board', () => {
-        
-        expect(game.terrains.length).toBe(4);
-    });
-    
-    it('find 4 columns in each row', () => {
-        
-        game.terrains.map((row) => expect(row.length).toBe(4));
     });
     
     it('find 2 players at the table', () => {
@@ -46,10 +36,9 @@ describe('game setup with 2 players on a 4x4 board', () => {
     
     it('find 2 colored meeples on the board', () => {
         
-        expect(game.terrains.reduce((acc3, row) =>
-            acc3 + row.reduce((acc2, terrain) =>
+        expect(game.terrains.reduce((acc2, terrain) =>
             acc2 + terrain.meeples.reduce((acc1, meeple) =>
-            meeple.color != 'default' ? acc1 + 1 : acc1, 0), 0), 0))
+            meeple.color != 'default' ? acc1 + 1 : acc1, 0), 0))
             .toBe(2);
     });
 });
@@ -62,7 +51,7 @@ describe('first player move', () => {
         
         const setup_game = setup(2, 4);
         
-        game = move(setup_game, {
+        game = play(setup_game, {
             state: 'play',
             player: 'default',
             from: 'player',
@@ -72,16 +61,6 @@ describe('first player move', () => {
         log_board(game);
     });
 
-    it('find 4 rows in the board', () => {
-        
-        expect(game.terrains.length).toBe(4);
-    });
-    
-    it('find 4 columns in each row', () => {
-        
-        game.terrains.map((row) => expect(row.length).toBe(4));
-    });
-    
     it('find 2 players at the table', () => {
         
         expect(game.players.length).toEqual(2);
@@ -109,7 +88,7 @@ describe('first player move', () => {
     
     it('find 2 colored meeples on the board', () => {
         
-        const move_game1 = move(game, {
+        const move_game1 = play(game, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -117,7 +96,7 @@ describe('first player move', () => {
         });
         console.log(move_game1.lastAction);
         
-        const move_game2 = move(move_game1, {
+        const move_game2 = play(move_game1, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -127,7 +106,7 @@ describe('first player move', () => {
         
         log_board(move_game2);
 
-        const move_game3 = move(move_game2, {
+        const move_game3 = play(move_game2, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -135,7 +114,7 @@ describe('first player move', () => {
         });
         console.log(move_game3.lastAction);
         
-        const move_game4 = move(move_game3, {
+        const move_game4 = play(move_game3, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -145,7 +124,7 @@ describe('first player move', () => {
         
         log_board(move_game4);
         
-        const move_game5 = move(move_game4, {
+        const move_game5 = play(move_game4, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -153,7 +132,7 @@ describe('first player move', () => {
         });
         console.log(move_game5.lastAction);
         
-        const move_game6 = move(move_game5, {
+        const move_game6 = play(move_game5, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -163,7 +142,7 @@ describe('first player move', () => {
         
         log_board(move_game6);
         
-        const move_game7 = move(move_game6, {
+        const move_game7 = play(move_game6, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -171,7 +150,7 @@ describe('first player move', () => {
         });
         console.log(move_game7.lastAction);
         
-        const move_game8 = move(move_game7, {
+        const move_game8 = play(move_game7, {
             state: 'play',
             player: game.currentPlayer,
             from: 'player',
@@ -181,10 +160,9 @@ describe('first player move', () => {
         
         log_board(move_game8);
         
-        expect(move_game8.terrains.reduce((acc3, row) =>
-            acc3 + row.reduce((acc2, terrain) =>
+        expect(move_game8.terrains.reduce((acc2, terrain) =>
             acc2 + terrain.meeples.reduce((acc1, meeple) =>
-            meeple.color != 'default' ? acc1 + 1 : acc1, 0), 0), 0))
+            meeple.color != 'default' ? acc1 + 1 : acc1, 0), 0))
             .toBe(2);
     });
 });
