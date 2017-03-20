@@ -52,7 +52,7 @@ export default (props: IProps) => {
 
         case "play":
 
-            let guide_detail: string;
+            let guide_detail: JSX.Element;
 
             switch (props.game.lastAction) {
 
@@ -67,12 +67,19 @@ export default (props: IProps) => {
                 case "skip":
                 case null:
 
-                    guide_detail = "choose an action for all your pieces with side " + props.game.turn + " up.";
+                    const side: JSX.Element =
+                        <span className="icon">
+                            <i className={"fa fa-user-circle"
+                                + (props.game.turn === "heads" ? "-o" : "")
+                                + " is-" + props.game.currentPlayer}></i>
+                        </span>;
+                    guide_detail =
+                        <span>choose an action for these meeples: {side}</span>;
                     break;
 
                 default:
 
-                    guide_detail = props.game.lastAction.explanation;
+                    guide_detail = <span>{props.game.lastAction.explanation}</span>;
                     break;
             }
 

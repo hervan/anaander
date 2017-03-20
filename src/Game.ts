@@ -15,6 +15,7 @@ const colors: Color[] = [
     "default", "default", "default",
     "default", "default", "default",
     "default", "default", "default",
+    "default", "default", "default",
     "default", "default", "default"
 ];
 
@@ -112,8 +113,7 @@ const InvalidPlays: IDictionary = {
     EmptyTerrain: "choose a terrain with a meeple in it.",
     NoGameYet: "wait for a game to begin.",
     OutOfBoard: "keep your meeples inside the board.",
-    NotYourTurn: "wait for your turn to begin.",
-    None: ""
+    NotYourTurn: "wait for your turn to begin."
 };
 
 type InvalidPlay = {
@@ -327,7 +327,7 @@ export function play(game: Game, play: Play): Game {
                 turn: game.turn,
                 currentPlayer: colors[0],
                 state: play.state,
-                lastAction: { explanation: InvalidPlays.None }
+                lastAction: "skip"
             };
 
         default:
