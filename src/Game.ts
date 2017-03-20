@@ -12,11 +12,7 @@ const colors: Color[] = [
     "success",
     "danger",
     "primary",
-    "default", "default", "default",
-    "default", "default", "default",
-    "default", "default", "default",
-    "default", "default", "default",
-    "default", "default", "default"
+    "default"
 ];
 
 type Direction =
@@ -57,6 +53,8 @@ type Item =
 type Turn =
 | "heads"
 | "tails";
+
+const turns: Turn[] = [ "heads", "tails" ];
 
 type State =
 | "setup"
@@ -158,14 +156,7 @@ function nextPlayer(game: Game): Color {
 
 function flipTurn(turn: Turn): Turn {
 
-    switch (turn) {
-
-        case "heads":
-            return "tails";
-
-        case "tails":
-            return "heads";
-    }
+    return (turns[(turn.indexOf(turn) + 1) % turns.length]);
 }
 
 function nextTurn(game: Game): Turn {
@@ -204,7 +195,7 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
     } else if (gameMeeples[topMeeple].turn !== game.turn) {
 
         lastAction = { explanation:
-            (game.turn === "heads" ?
+            (game.turn === turns[0] ?
                 InvalidPlays.WrongTurnHeads :
                 InvalidPlays.WrongTurnTails) };
 
@@ -393,8 +384,8 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
 
                     key: meepleKey++,
                     position: position,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    turn: "heads",
+                    color: colors[colors.length - 1],
+                    turn: turns[0],
                     strength: (10 / Math.ceil(Math.random() * 10)),
                     resistance: (10 / Math.ceil(Math.random() * 10)),
                     faith: (10 / Math.ceil(Math.random() * 10)),
@@ -439,7 +430,7 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                 key: meepleKey++,
                 position: position,
                 color: color,
-                turn: "heads",
+                turn: turns[0],
                 strength: (30 / Math.ceil(Math.random() * 10)),
                 resistance: (30 / Math.ceil(Math.random() * 10)),
                 faith: (30 / Math.ceil(Math.random() * 10)),
@@ -464,7 +455,7 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
         players: players,
         terrains: terrains,
         meeples: meeples.slice(),
-        turn: "heads",
+        turn: turns[0],
         currentPlayer: "default",
         state: "setup",
         lastAction: { explanation: InvalidPlays.None }
