@@ -14,7 +14,7 @@ export default (props: IProps) => {
             <p>
                 how many players?
                 &nbsp;
-                <a className="is-link" onClick={() => props.move({
+                <a className="is-link" onClick={() => props.moveClick({
                     state: "setup",
                     player: "default",
                     from: "player",
@@ -25,9 +25,9 @@ export default (props: IProps) => {
                     </span>
                 </a>
                 &nbsp;
-                {props.game.playerCount}
+                {props.game.players.length}
                 &nbsp;
-                <a className="is-link" onClick={() => props.move({
+                <a className="is-link" onClick={() => props.moveClick({
                     state: "setup",
                     player: "default",
                     from: "player",
@@ -38,7 +38,7 @@ export default (props: IProps) => {
                     </span>
                 </a>
                 <br />
-                <a className="is-link" onClick={() => props.move({
+                <a className="is-link" onClick={() => props.moveClick({
                     state: "play",
                     player: "default",
                     from: "player",
@@ -67,7 +67,7 @@ export default (props: IProps) => {
                 case "skip":
                 case null:
 
-                    guide_detail = "choose an action for all your pieces with side " + props.game.turn + "up.";
+                    guide_detail = "choose an action for all your pieces with side " + props.game.turn + " up.";
                     break;
 
                 default:

@@ -6,7 +6,7 @@ export type Color =
 | "danger"
 | "default";
 
-const colors: Color[] = ["info", "warning", "success", "danger", "primary", "default"];
+const colors: Color[] = ["info", "warning", "success", "danger", "primary", "default", "default", "default"];
 
 type Direction =
 | "up"
@@ -66,19 +66,19 @@ export type Meeple = {
     turn: Turn;
     strength: number;
     faith: number;
+    topsMeeple: number;
 };
 
 export type Terrain = {
     position: Position;
     geography: Geography;
     maxMeeples: number;
-    meeples: Meeple[];
+    topMeeple: number;
     // hiddenItems: Item[];
 };
 
 export type Player = {
     color: Color;
-    meeples: Meeple[];
     individualActions: number;
     // items: Item[];
 };
@@ -110,7 +110,6 @@ type InvalidPlay = {
 };
 
 export type Game = {
-    playerCount: number;
     boardSize: number;
     players: Player[];
     terrains: Terrain[];
@@ -121,7 +120,7 @@ export type Game = {
     lastAction: Direction | Action | InvalidPlay;
 };
 
-export function log_board(game: Game): void {
+export function logBoard(game: Game): void {
 
     let colors: IDictionary = {
         "info": "1",
@@ -132,13 +131,18 @@ export function log_board(game: Game): void {
         "default": "o"
     };
 
-    console.log(game.terrains.map((terrain) =>
-        terrain.meeples.length === 0 ? " " : colors[terrain.meeples[terrain.meeples.length - 1].color]));
+    let board: string = "";
+    game.terrains.forEach((terrain, index) => {
+        board += (terrain.topMeeple === -1 ? "#" : colors[game.meeples[terrain.topMeeple].color])
+            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "");
+    });
+
+    console.log(board);
 }
 
 function nextPlayer(game: Game): Color {
 
-    return colors[(colors.indexOf(game.currentPlayer) + 1) % game.playerCount];
+    return colors[(colors.indexOf(game.currentPlayer) + 1) % game.players.length];
 }
 
 function flipTurn(turn: Turn): Turn {
@@ -160,40 +164,33 @@ function nextTurn(game: Game): Turn {
         game.turn;
 }
 
-function position_to_index(position: Position, boardSize: number): number {
+function positionToIndex(position: Position, boardSize: number): number {
 
     return (position.row * boardSize + position.col);
 }
 
-/*function index_to_position(index: number, boardSize: number): Position {
-
-    return {
-        row: Math.floor(index / boardSize),
-        col: index % boardSize
-    };
-}*/
-
 function moveMeeple(game: Game, from: Position, action: Direction | Action): Game {
 
+    const gameMeeples: Meeple[] = game.meeples.slice();
+    const gameTerrains: Terrain[] = game.terrains.slice();
+    const topMeeple: number = gameTerrains[positionToIndex(from, game.boardSize)].topMeeple;
+
     let lastAction: Direction | Action | InvalidPlay | null = null;
+
     let to: Position = {
         row: from.row,
         col: from.col
     };
 
-    let turn: Turn = game.turn;
-    let currentPlayer: Color = game.currentPlayer;
-
-    const meeple: Meeple | undefined = game.terrains[position_to_index(from, game.boardSize)].meeples.slice().pop();
-
-    if (meeple == null) {
+    if (topMeeple === -1) {
 
         lastAction = { explanation: InvalidPlays.EmptyTerrain };
 
-    } else if ((meeple.color as Color) !== game.currentPlayer) {
+    } else if ((gameMeeples[topMeeple].color as Color) !== game.currentPlayer) {
 
         lastAction = { explanation: InvalidPlays.WrongColor };
-    } else if (meeple.turn !== game.turn) {
+
+    } else if (gameMeeples[topMeeple].turn !== game.turn) {
 
         lastAction = { explanation:
             (game.turn === "heads" ?
@@ -234,57 +231,46 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
 
         if (lastAction == null) {
 
-            const player: Player = game.players.slice()[colors.indexOf(game.currentPlayer)];
+            const meeple: Meeple = gameMeeples[topMeeple];
 
             meeple.turn = flipTurn(meeple.turn);
 
-            const playerMeeples: Meeple[] = player.meeples.slice().filter((iMeeple) => meeple.key !== iMeeple.key);
-            playerMeeples.push(meeple);
-            player.meeples = playerMeeples;
+            gameTerrains[positionToIndex(from, game.boardSize)].topMeeple = meeple.topsMeeple;
+            meeple.topsMeeple = gameTerrains[positionToIndex(to, game.boardSize)].topMeeple;
+            gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.key;
 
-            const gamePlayers: Player[] = game.players.slice();
-            gamePlayers[colors.indexOf(player.color)] = player;
-            game.players = gamePlayers;
+            meeple.position = to;
 
-            const gameTerrains: Terrain[] = game.terrains.slice();
-
-            const terrainMeeplesFrom: Meeple[] = gameTerrains[position_to_index(from, game.boardSize)].meeples.slice();
-            terrainMeeplesFrom.pop();
-            gameTerrains[position_to_index(from, game.boardSize)].meeples = terrainMeeplesFrom;
-
-            const terrainMeeplesTo: Meeple[] = gameTerrains[position_to_index(to, game.boardSize)].meeples.slice();
-            terrainMeeplesTo.push(meeple);
-            gameTerrains[position_to_index(to, game.boardSize)].meeples = terrainMeeplesTo;
-
-            game.terrains = gameTerrains;
-
-            game.meeples = game.meeples.slice().filter((iMeeple) => meeple.key !== iMeeple.key);
-            game.meeples.push(meeple);
+            gameMeeples[meeple.key] = meeple;
 
             lastAction = action;
         }
     }
 
     return {
-        playerCount: game.playerCount,
+
         boardSize: game.boardSize,
-        players: game.players,
-        terrains: game.terrains,
-        meeples: game.meeples,
-        turn: turn,
-        currentPlayer: currentPlayer,
+        players: game.players.slice(),
+        terrains: gameTerrains.slice(),
+        meeples: gameMeeples.slice(),
+        turn: game.turn,
+        currentPlayer: game.currentPlayer,
         state: game.state,
         lastAction: lastAction
     };
 }
 
+function playerMeeples(game: Game, player?: Color): number[] {
+
+    return game.meeples.filter((meeple) =>
+        meeple.color === (player ? player : game.currentPlayer))
+            .map((meeple) => meeple.key);
+}
+
 function moveSwarm(game: Game, action: Direction | Action): Game {
 
-    const playerMeeples: Meeple[] = game.players[colors.indexOf(game.currentPlayer)].meeples.slice();
-
-    let game_step: Game = playerMeeples.reduce((acc, meeple) => moveMeeple(acc, meeple.position, action), game);
-
-    return game_step;
+    return playerMeeples(game).map((meepleIndex) => game.meeples[meepleIndex])
+        .reduce((acc, meeple) => moveMeeple(acc, meeple.position, action), game);
 }
 
 export function play(game: Game, play: Play): Game {
@@ -292,7 +278,7 @@ export function play(game: Game, play: Play): Game {
     if (play.state !== "play") {
 
         return {
-            playerCount: game.playerCount,
+
             boardSize: game.boardSize,
             players: game.players.slice(),
             terrains: game.terrains.slice(),
@@ -305,7 +291,7 @@ export function play(game: Game, play: Play): Game {
     } else if (game.currentPlayer !== play.player) {
 
         return {
-            playerCount: game.playerCount,
+
             boardSize: game.boardSize,
             players: game.players.slice(),
             terrains: game.terrains.slice(),
@@ -322,7 +308,7 @@ export function play(game: Game, play: Play): Game {
         case "default":
 
             return {
-                playerCount: game.playerCount,
+
                 boardSize: game.boardSize,
                 players: game.players.slice(),
                 terrains: game.terrains.slice(),
@@ -335,40 +321,39 @@ export function play(game: Game, play: Play): Game {
 
         default:
 
-            let iGame: Game;
-            let next_player: Color;
+            let gameStep: Game;
+            let player: Color;
             let turn: Turn;
 
             switch (play.from) {
 
                 case "player":
 
-                    iGame = moveSwarm(game, play.action as Direction | Action);
-                    next_player = nextPlayer(iGame);
-                    turn = nextTurn(iGame);
+                    gameStep = moveSwarm(game, play.action as Direction | Action);
+                    player = nextPlayer(gameStep);
+                    turn = nextTurn(gameStep);
 
                     break;
 
                 default:
 
-                    iGame = moveMeeple(game, play.from as Position, play.action as Direction | Action);
-                    next_player = nextPlayer(iGame);
-                    turn = iGame.turn;
+                    gameStep = moveMeeple(game, play.from as Position, play.action as Direction | Action);
+                    player = nextPlayer(gameStep);
+                    turn = gameStep.turn;
 
                     break;
             }
 
             return {
 
-                playerCount: iGame.playerCount,
-                boardSize: iGame.boardSize,
-                players: iGame.players.slice(),
-                terrains: iGame.terrains.slice(),
-                meeples: iGame.meeples.slice(),
+                boardSize: gameStep.boardSize,
+                players: gameStep.players.slice(),
+                terrains: gameStep.terrains.slice(),
+                meeples: gameStep.meeples.slice(),
                 turn: turn,
-                currentPlayer: next_player,
-                state: iGame.state,
-                lastAction: iGame.lastAction
+                currentPlayer: player,
+                state: gameStep.state,
+                lastAction: gameStep.lastAction
             };
     }
 }
@@ -378,33 +363,43 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
     let meepleKey: number = playerCount;
 
     const terrains: Terrain[] = new Array<Terrain>();
-    const gameMeeples: Meeple[] = new Array<Meeple>();
+    const meeples: Meeple[] = new Array<Meeple>();
 
     for (let i: number = 0; i < boardSize; i++) {
 
         for (let j: number = 0; j < boardSize; j++) {
 
-            const terrainMeeples: Meeple[] = Array<Meeple>();
+            const position: Position = {
+                row: i,
+                col: j
+            };
+
+            let topMeeple: number = -1;
+
             if (Math.random() < 0.1) {
 
                 const meeple: Meeple = {
-                    key: ++meepleKey,
-                    position: { row: i, col: j },
-                    color: "default",
+
+                    key: meepleKey++,
+                    position: position,
+                    color: colors[Math.floor(Math.random() * colors.length)],
                     turn: "heads",
                     strength: (10 / Math.ceil(Math.random() * 10)),
-                    faith: (10 / Math.ceil(Math.random() * 10))
+                    faith: (10 / Math.ceil(Math.random() * 10)),
+                    topsMeeple: -1
                 };
-                terrainMeeples.push(meeple);
-                gameMeeples.push(meeple);
+
+                topMeeple = meeple.key;
+                meeples[meeple.key] = meeple;
             }
 
-            terrains.push({
-                position: { row: i, col: j },
-                geography: terrainDistribution[Math.floor(Math.random() * 14)],
+            terrains[positionToIndex(position, boardSize)] = {
+
+                position: position,
+                geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
                 maxMeeples: Math.ceil(Math.random() * 10),
-                meeples: terrainMeeples
-            });
+                topMeeple: topMeeple
+            };
         }
     }
 
@@ -417,32 +412,32 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
         if (i < playerCount) {
 
             let position: Position;
+
             do {
+
                 position = {
+
                     row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                     col: Math.floor(Math.random() * (boardSize - 2)) + 1
                 };
-            } while (terrains[position_to_index(position, boardSize)].meeples.length > 0);
 
-            const playerMeeples: Meeple[] = new Array<Meeple>();
+            } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
+
             const meeple: Meeple = {
                 key: meepleKey++,
                 position: position,
                 color: color,
                 turn: "heads",
                 strength: (30 / Math.ceil(Math.random() * 30)),
-                faith: (30 / Math.ceil(Math.random() * 30))
+                faith: (30 / Math.ceil(Math.random() * 30)),
+                topsMeeple: -1
             };
 
-            playerMeeples.push(meeple);
-            const terrainMeeples: Meeple[] = terrains[position_to_index(position, boardSize)].meeples.slice();
-            terrainMeeples.push(meeple);
-            terrains[position_to_index(position, boardSize)].meeples = terrainMeeples;
-            gameMeeples.push(meeple);
+            terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
+            meeples[meeple.key] = meeple;
 
             players[colors.indexOf(color)] = {
                 color: color,
-                meeples: playerMeeples,
                 individualActions: 0
             };
 
@@ -451,11 +446,11 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
     }
 
     const game: Game = {
-        playerCount: playerCount,
+
         boardSize: boardSize,
         players: players,
         terrains: terrains,
-        meeples: gameMeeples,
+        meeples: meeples.slice(),
         turn: "heads",
         currentPlayer: "default",
         state: "setup",

@@ -4,7 +4,7 @@ import * as Game from "../Game";
 
 interface IProps {
   player: Game.Player;
-  move: (move: Game.Play) => void;
+  moveClick: (move: Game.Play) => void;
   active: boolean;
 };
 
@@ -20,7 +20,7 @@ export default (props: IProps) =>
             <p>actions</p>
             <p>
               <a className={"button is-outlined is-" + props.player.color}
-                onClick={() => props.move({
+                onClick={() => props.moveClick({
                   state: "play",
                   player: props.player.color,
                   from: "player",
@@ -31,7 +31,7 @@ export default (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
-                onClick={() => props.move({
+                onClick={() => props.moveClick({
                   state: "play",
                   player: props.player.color,
                   from: "player",
@@ -42,7 +42,7 @@ export default (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
-                onClick={() => props.move({
+                onClick={() => props.moveClick({
                   state: "play",
                   player: props.player.color,
                   from: "player",
@@ -55,7 +55,7 @@ export default (props: IProps) =>
             </p>
             <p>
               <a className={"button is-outlined is-" + props.player.color}
-                onClick={() => props.move({
+                onClick={() => props.moveClick({
                   state: "play",
                   player: props.player.color,
                   from: "player",
@@ -66,7 +66,7 @@ export default (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
-                onClick={() => props.move({
+                onClick={() => props.moveClick({
                   state: "play",
                   player: props.player.color,
                   from: "player",
@@ -77,7 +77,7 @@ export default (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.color}
-                onClick={() => props.move({
+                onClick={() => props.moveClick({
                   state: "play",
                   player: props.player.color,
                   from: "player",
@@ -90,7 +90,6 @@ export default (props: IProps) =>
             </p>
           </div>
         </div>
-        <p>swarm: {props.player.meeples.length} meeple{props.player.meeples.length > 1 ? "s" : ""}</p>
         <p>no items</p>
       </div>
     </article>

@@ -1,4 +1,4 @@
-import { Game, setup, play, log_board } from "../src/Game";
+import { Game, setup, play, logBoard } from "../src/Game";
 
 describe("game setup with 2 players on a 4x4 board", () => {
 
@@ -20,26 +20,9 @@ describe("game setup with 2 players on a 4x4 board", () => {
     });
 
     it("find 2 colored meeples on the table", () => {
-
-        expect(game.meeples.reduce((acc, meeple) =>
-            meeple.color !== "default" ? acc + 1 : acc, 0))
-            .toBe(2);
-    });
-
-    it("find 2 meeples owned by the players", () => {
-
-        expect(game.players.reduce((acc2, player) =>
-            acc2 + player.meeples.reduce((acc1, meeple) =>
-                meeple.color !== "default" ? acc1 + 1 : acc1, 0), 0))
-            .toBe(2);
-    });
-
-    it("find 2 colored meeples on the board", () => {
-
-        expect(game.terrains.reduce((acc2, terrain) =>
-            acc2 + terrain.meeples.reduce((acc1, meeple) =>
-            meeple.color !== "default" ? acc1 + 1 : acc1, 0), 0))
-            .toBe(2);
+        expect(game.meeples.filter((meeple) =>
+            meeple.color !== "default").length)
+            .toBeGreaterThanOrEqual(game.players.length);
     });
 });
 
@@ -58,7 +41,7 @@ describe("first player move", () => {
             action: null
         });
 
-        log_board(game);
+        logBoard(game);
     });
 
     it("find 2 players at the table", () => {
@@ -75,15 +58,7 @@ describe("first player move", () => {
 
         expect(game.meeples.reduce((acc, meeple) =>
             meeple.color !== "default" ? acc + 1 : acc, 0))
-            .toBe(2);
-    });
-
-    it("find 2 meeples owned by the players", () => {
-
-        expect(game.players.reduce((acc2, player) =>
-            acc2 + player.meeples.reduce((acc1, meeple) =>
-                meeple.color !== "default" ? acc1 + 1 : acc1, 0), 0))
-            .toBe(2);
+            .toBeGreaterThanOrEqual(2);
     });
 
     it("find 2 colored meeples on the board", () => {
@@ -94,75 +69,58 @@ describe("first player move", () => {
             from: "player",
             action: "up"
         });
-        console.log(move_game1.lastAction);
 
         const move_game2: Game = play(move_game1, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game1.currentPlayer,
             from: "player",
             action: "up"
         });
-        console.log(move_game2.lastAction);
-
-        log_board(move_game2);
 
         const move_game3: Game = play(move_game2, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game2.currentPlayer,
             from: "player",
             action: "right"
         });
-        console.log(move_game3.lastAction);
 
         const move_game4: Game = play(move_game3, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game3.currentPlayer,
             from: "player",
             action: "right"
         });
-        console.log(move_game4.lastAction);
-
-        log_board(move_game4);
 
         const move_game5: Game = play(move_game4, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game4.currentPlayer,
             from: "player",
             action: "down"
         });
-        console.log(move_game5.lastAction);
 
         const move_game6: Game = play(move_game5, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game5.currentPlayer,
             from: "player",
             action: "down"
         });
-        console.log(move_game6.lastAction);
-
-        log_board(move_game6);
 
         const move_game7: Game = play(move_game6, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game6.currentPlayer,
             from: "player",
             action: "left"
         });
-        console.log(move_game7.lastAction);
 
         const move_game8: Game = play(move_game7, {
             state: "play",
-            player: game.currentPlayer,
+            player: move_game7.currentPlayer,
             from: "player",
             action: "left"
         });
-        console.log(move_game8.lastAction);
 
-        log_board(move_game8);
-
-        expect(move_game8.terrains.reduce((acc2, terrain) =>
-            acc2 + terrain.meeples.reduce((acc1, meeple) =>
-            meeple.color !== "default" ? acc1 + 1 : acc1, 0), 0))
-            .toBe(2);
+        expect(move_game8.terrains.reduce((acc, terrain) =>
+            terrain.topMeeple > -1 ? acc + 1 : acc, 0))
+        .toBeGreaterThanOrEqual(2);
     });
 });

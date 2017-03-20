@@ -4,7 +4,7 @@ import * as Game from "../Game";
 
 interface IProps {
     terrain: Game.Terrain;
-    move: (move: Game.Play) => void;
+    moveClick: (move: Game.Play) => void;
 };
 
 function terrainColor(geography: Game.Geography): Game.Color {

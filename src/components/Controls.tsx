@@ -12,7 +12,7 @@ export default (props: IProps) =>
                     <Player
                         key={player.color}
                         player={player}
-                        move={props.move}
+                        moveClick={props.moveClick}
                         active={player.color === props.game.currentPlayer}
                     />
                 )}

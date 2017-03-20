@@ -8,11 +8,12 @@ import Controls from "./Controls";
 
 interface IState {
     game: Game.Game;
+    moveClick: (move: Game.Play) => void;
 };
 
 export interface IProps {
     game: Game.Game;
-    move: (move: Game.Play) => void;
+    moveClick: (move: Game.Play) => void;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -22,26 +23,27 @@ export class Table extends React.Component<{}, IState> {
     constructor() {
 
         super();
-        this.state = { game: Game.setup(0) };
+        this.state = { game: Game.setup(0), moveClick: this.moveClick.bind(this) };
     }
 
-    move(move: Game.Play): void {
+    moveClick(move: Game.Play): void {
 
         switch (move.state) {
 
             case "setup":
 
                 const change: number =
-                    (move.action === "up" && this.state.game.playerCount < 5 ? 1 : 0)
-                    + (move.action === "down" && this.state.game.playerCount > 0 ? -1 : 0);
+                    (move.action === "up" && this.state.game.players.length < 5 ? 1 : 0)
+                    + (move.action === "down" && this.state.game.players.length > 0 ? -1 : 0);
 
-                this.setState({ game: Game.setup(this.state.game.playerCount + change) });
+                this.setState({ game: Game.setup(this.state.game.players.length + change), moveClick: this.moveClick.bind(this) });
 
                 break;
 
             case "play":
 
-                this.setState({ game: Game.play(this.state.game, move) });
+                const gameStep: Game.Game = Game.play(this.state.game, move);
+                this.setState({ game: gameStep, moveClick: this.moveClick.bind(this) });
 
                 break;
         }
@@ -50,9 +52,9 @@ export class Table extends React.Component<{}, IState> {
     render(): JSX.Element {
         return (
             <div id="table">
-                <Status game={this.state.game} move={this.move.bind(this)} />
-                <Controls game={this.state.game} move={this.move.bind(this)} />
-                <Board game={this.state.game} move={this.move.bind(this)} />
+                <Status game={this.state.game} moveClick={this.state.moveClick} />
+                <Controls game={this.state.game} moveClick={this.state.moveClick} />
+                <Board game={this.state.game} moveClick={this.state.moveClick} />
             </div>
         );
     }

@@ -13,7 +13,7 @@ export default (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
-                        move={props.move}
+                        moveClick={props.moveClick}
                     />
                 )}
             </div>
