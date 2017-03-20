@@ -6,7 +6,17 @@ export type Color =
 | "danger"
 | "default";
 
-const colors: Color[] = ["info", "warning", "success", "danger", "primary", "default", "default", "default"];
+const colors: Color[] = [
+    "info",
+    "warning",
+    "success",
+    "danger",
+    "primary",
+    "default", "default", "default",
+    "default", "default", "default",
+    "default", "default", "default",
+    "default", "default", "default"
+];
 
 type Direction =
 | "up"
@@ -65,6 +75,7 @@ export type Meeple = {
     color: Color;
     turn: Turn;
     strength: number;
+    resistance: number;
     faith: number;
     topsMeeple: number;
 };
@@ -385,6 +396,7 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                     color: colors[Math.floor(Math.random() * colors.length)],
                     turn: "heads",
                     strength: (10 / Math.ceil(Math.random() * 10)),
+                    resistance: (10 / Math.ceil(Math.random() * 10)),
                     faith: (10 / Math.ceil(Math.random() * 10)),
                     topsMeeple: -1
                 };
@@ -428,8 +440,9 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                 position: position,
                 color: color,
                 turn: "heads",
-                strength: (30 / Math.ceil(Math.random() * 30)),
-                faith: (30 / Math.ceil(Math.random() * 30)),
+                strength: (30 / Math.ceil(Math.random() * 10)),
+                resistance: (30 / Math.ceil(Math.random() * 10)),
+                faith: (30 / Math.ceil(Math.random() * 10)),
                 topsMeeple: -1
             };
 

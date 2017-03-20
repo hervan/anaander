@@ -96,15 +96,13 @@ export default (props: IProps) => {
     };
 
     return (
-        <section id="status" className="hero is-dark">
-            <div className="hero-body">
-                <div className="container">
-                    <h1 className="title">anaander</h1>
-                    <h2 className="subtitle">
-                        {guide}
-                    </h2>
-                </div>
+        <div id="status" className="tile is-3 is-parent">
+            <div className="notification tile is-child">
+                <h1 className="title">anaander</h1>
+                <h2 className="subtitle">
+                    {guide}
+                </h2>
             </div>
-        </section>
+        </div>
     );
 };

@@ -6,8 +6,8 @@ import Terrain from "./Terrain";
 import Meeple from "./Meeple";
 
 export default (props: IProps) =>
-    <section id="board" className="section">
-        <div className="container">
+    <div id="board" className="container tile is-5 is-parent">
+        <div className="tile is-child">
             <div key="terrains" className="board">
                 {props.game.terrains.map((terrain) =>
                     <Terrain
@@ -21,4 +21,4 @@ export default (props: IProps) =>
                 {props.game.meeples.map((meeple) => <Meeple key={meeple.key} meeple={meeple} />)}
             </div>
         </div>
-    </section>;
+    </div>;

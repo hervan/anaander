@@ -21,6 +21,6 @@ function terrainColor(geography: Game.Geography): Game.Color {
 export default (props: IProps) =>
     <article
         className={"terrain message is-" + terrainColor(props.terrain.geography)}
-        style={{ top: props.terrain.position.row * 60, left: props.terrain.position.col * 60 }}>
+        style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>
         <div className="terrain message-body"></div>
     </article>;

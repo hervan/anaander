@@ -51,11 +51,15 @@ export class Table extends React.Component<{}, IState> {
 
     render(): JSX.Element {
         return (
-            <div id="table">
-                <Status game={this.state.game} moveClick={this.state.moveClick} />
-                <Controls game={this.state.game} moveClick={this.state.moveClick} />
-                <Board game={this.state.game} moveClick={this.state.moveClick} />
-            </div>
+            <section className="section">
+                <div className="container is-fluid">
+                    <div id="table" className="tile is-ancestor">
+                        <Status game={this.state.game} moveClick={this.state.moveClick} />
+                        <Board game={this.state.game} moveClick={this.state.moveClick} />
+                        <Controls game={this.state.game} moveClick={this.state.moveClick} />
+                    </div>
+                </div>
+            </section>
         );
     }
 }

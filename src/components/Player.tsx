@@ -9,15 +9,14 @@ interface IProps {
 };
 
 export default (props: IProps) =>
-  <div className={"player column"}>
-    <article className={"message is-" + props.player.color + (props.active ? " current-player" : "")}>
+  <div className="player tile is-parent">
+    <article className={"tile is-child message is-" + props.player.color + (props.active ? " current-player" : "")}>
       <div className="message-header">
         <p>general {props.player.color}</p>
       </div>
       <div className="message-body">
         <div className="field has-addons">
           <div className="control">
-            <p>actions</p>
             <p>
               <a className={"button is-outlined is-" + props.player.color}
                 onClick={() => props.moveClick({
@@ -90,7 +89,6 @@ export default (props: IProps) =>
             </p>
           </div>
         </div>
-        <p>no items</p>
       </div>
     </article>
   </div>;
