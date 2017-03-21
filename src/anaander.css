@@ -20,28 +20,28 @@
 
 @keyframes jello-vertical {
   0% {
-    transform: scale3d(1, 1, 1);
+    transform: scale(1, 1);
   }
   30% {
-    transform: scale3d(1.07, 1.07, 1);
+    transform: scale(1.07, 1.07);
   }
   40% {
-    transform: scale3d(0.96, 1.2, 1);
+    transform: scale(0.96, 1.2);
   }
   50% {
-    transform: scale3d(1.2, 0.96, 1);
+    transform: scale(1.2, 0.96);
   }
   65% {
-    transform: scale3d(1, 1.13, 1);
+    transform: scale(1, 1.13);
   }
   80% {
-    transform: scale3d(1.09, 1.05, 1);
+    transform: scale(1.09, 1.05);
   }
   90% {
-    transform: scale3d(1.05, 1.09, 1);
+    transform: scale(1.05, 1.09);
   }
   100% {
-    transform: scale3d(1.07, 1.07, 1);
+    transform: scale(1.07, 1.07);
   }
 }
 

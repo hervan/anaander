@@ -5,7 +5,7 @@ import { IProps } from "./Table";
 import Player from "./Player";
 
 export default (props: IProps) =>
-    <div id="players" className="tile is-vertical">
+    <div id="players" className="tile is-2 is-vertical">
         {props.game.players.map((player) =>
             <Player
                 key={player.color}

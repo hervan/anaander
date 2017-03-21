@@ -24,6 +24,56 @@ export class Table extends React.Component<{}, IState> {
 
         super();
         this.state = { game: Game.setup(0), moveClick: this.moveClick.bind(this) };
+
+        document.addEventListener("keypress", (event) => {
+
+            switch (event.key) {
+
+                case "w":
+
+                    this.state.moveClick({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "up"
+                    });
+
+                    break;
+
+                case "a":
+
+                    this.state.moveClick({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "left"
+                    });
+
+                    break;
+
+                case "s":
+
+                    this.state.moveClick({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "down"
+                    });
+
+                    break;
+
+                case "d":
+
+                    this.state.moveClick({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "right"
+                    });
+
+                    break;
+            }
+        });
     }
 
     moveClick(move: Game.Play): void {

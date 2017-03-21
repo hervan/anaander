@@ -4,55 +4,63 @@ import { IProps } from "./Table";
 
 export default (props: IProps) => {
 
-    let guide: JSX.Element = <div />;
+    let guide: JSX.Element = <br />;
+    let guide_detail: JSX.Element = <br />;
 
     switch (props.game.state) {
 
         case "setup":
 
             guide =
-            <p>
-                how many players?
-                &nbsp;
-                <a className="is-link" onClick={() => props.moveClick({
-                    state: "setup",
-                    player: "default",
-                    from: "player",
-                    action: "down"
-                })}>
-                    <span className="icon">
-                        <i className="fa fa-minus"></i>
-                    </span>
-                </a>
-                &nbsp;
-                {props.game.players.length}
-                &nbsp;
-                <a className="is-link" onClick={() => props.moveClick({
-                    state: "setup",
-                    player: "default",
-                    from: "player",
-                    action: "up"
-                })}>
-                    <span className="icon">
-                        <i className="fa fa-plus"></i>
-                    </span>
-                </a>
-                <br />
-                <a className="is-link" onClick={() => props.moveClick({
-                    state: "play",
-                    player: "default",
-                    from: "player",
-                    action: null
-                })}>
-                    click here to begin.
-                </a>
-            </p>;
+                <p>
+                    how many players?
+                    &nbsp;
+                    <a className="is-link" onClick={() => props.moveClick({
+                        state: "setup",
+                        player: "default",
+                        from: "player",
+                        action: "down"
+                    })}>
+                        <span className="icon">
+                            <i className="fa fa-minus"></i>
+                        </span>
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => props.moveClick({
+                        state: "setup",
+                        player: "default",
+                        from: "player",
+                        action: "skip"
+                    })}>
+                        {props.game.players.length}
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => props.moveClick({
+                        state: "setup",
+                        player: "default",
+                        from: "player",
+                        action: "up"
+                    })}>
+                        <span className="icon">
+                            <i className="fa fa-plus"></i>
+                        </span>
+                    </a>
+                </p>;
+            guide_detail =
+                <p>
+                    <a className="is-link" onClick={() => props.moveClick({
+                        state: "play",
+                        player: "default",
+                        from: "player",
+                        action: null
+                    })}>
+                        click here to begin.
+                    </a>
+                </p>;
 
             break;
 
         case "play":
-
-            let guide_detail: JSX.Element;
 
             switch (props.game.lastAction) {
 
@@ -73,42 +81,42 @@ export default (props: IProps) => {
                                 + (props.game.turn === "heads" ? "-o" : "")
                                 + " is-" + props.game.currentPlayer}></i>
                         </span>;
-                    guide_detail =
-                        <span>choose an action for these meeples: {side}</span>;
+                    guide_detail = <p>choose an action for these meeples: {side}</p>;
                     break;
 
                 default:
 
-                    guide_detail = <span>{props.game.lastAction.explanation}</span>;
+                    guide_detail = <p>{props.game.lastAction.explanation}</p>;
                     break;
             }
 
             guide =
-            <p>
-                it's <span className={"is-" + props.game.currentPlayer}>general {props.game.currentPlayer}</span>'s turn.
-                <br />
-                {guide_detail}
-            </p>;
+                <p>
+                    it's <span className={"is-" + props.game.currentPlayer}>general {props.game.currentPlayer}</span>'s turn.
+                </p>;
 
             break;
 
         case "end":
 
             guide =
-            <p>
-                general {props.game.currentPlayer} won the game!
-            </p>;
+                <p>
+                    general {props.game.currentPlayer} won the game!
+                </p>;
 
             break;
     };
 
     return (
-        <div id="status" className="tile is-3 is-parent">
+        <div id="status" className="tile is-2 is-parent">
             <div className="notification tile is-child">
                 <h1 className="title">anaander</h1>
                 <h2 className="subtitle">
                     {guide}
                 </h2>
+                <span>
+                    {guide_detail}
+                </span>
             </div>
         </div>
     );

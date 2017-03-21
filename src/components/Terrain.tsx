@@ -12,15 +12,15 @@ function terrainColor(geography: Game.Geography): Game.Color {
         case "city": return "primary";
         case "island": return "info";
         case "forest": return "success";
-        case "swamp": return "warning";
+        case "swamp": return "default";
         case "mountain": return "danger";
-        case "plains": return "default";
+        case "plains": return "warning";
     }
 }
 
 export default (props: IProps) =>
     <article
+        title={props.terrain.geography}
         className={"terrain message is-" + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>
-        <div className="terrain message-body"></div>
     </article>;

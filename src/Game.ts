@@ -156,7 +156,7 @@ function nextPlayer(game: Game): Color {
 
 function flipTurn(turn: Turn): Turn {
 
-    return (turns[(turn.indexOf(turn) + 1) % turns.length]);
+    return (turns[(turns.indexOf(turn) + 1) % turns.length]);
 }
 
 function nextTurn(game: Game): Turn {
@@ -246,6 +246,23 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
             gameMeeples[meeple.key] = meeple;
 
             lastAction = action;
+
+            if (meeple.topsMeeple !== -1) {
+
+                const meepleOver: Meeple = gameMeeples[meeple.key];
+                const meepleUnder: Meeple = gameMeeples[meeple.topsMeeple];
+
+                if (meepleOver.faith > meepleUnder.faith) {
+
+                    meepleUnder.color = meepleOver.color;
+                    meepleOver.faith += meepleUnder.faith;
+
+                } else {
+
+                    meepleUnder.resistance -= meepleOver.strength;
+                    meepleOver.resistance -= meepleUnder.strength;
+                }
+            }
         }
     }
 
@@ -262,16 +279,19 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
     };
 }
 
-function playerMeeples(game: Game, player?: Color): number[] {
-
-    return game.meeples.filter((meeple) =>
-        meeple.color === (player ? player : game.currentPlayer))
-            .map((meeple) => meeple.key);
-}
-
 function moveSwarm(game: Game, action: Direction | Action): Game {
 
-    return playerMeeples(game).map((meepleIndex) => game.meeples[meepleIndex])
+    const availablePlayerMeeples: number[] =
+        game.terrains.map((terrain) => terrain.topMeeple)
+            .filter((topMeeple) =>
+                topMeeple !== -1 &&
+                game.meeples[topMeeple].color === game.currentPlayer &&
+                game.meeples[topMeeple].turn === game.turn);
+
+    return (action === "right" || action === "down" ?
+        availablePlayerMeeples.reverse() :
+        availablePlayerMeeples)
+        .map((meepleIndex) => game.meeples[meepleIndex])
         .reduce((acc, meeple) => moveMeeple(acc, meeple.position, action), game);
 }
 
@@ -386,9 +406,9 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                     position: position,
                     color: colors[colors.length - 1],
                     turn: turns[0],
-                    strength: (10 / Math.ceil(Math.random() * 10)),
-                    resistance: (10 / Math.ceil(Math.random() * 10)),
-                    faith: (10 / Math.ceil(Math.random() * 10)),
+                    strength: Math.ceil(Math.random() * 10),
+                    resistance: Math.ceil(Math.random() * 10),
+                    faith: Math.ceil(Math.random() * 10),
                     topsMeeple: -1
                 };
 
@@ -431,9 +451,9 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                 position: position,
                 color: color,
                 turn: turns[0],
-                strength: (30 / Math.ceil(Math.random() * 10)),
-                resistance: (30 / Math.ceil(Math.random() * 10)),
-                faith: (30 / Math.ceil(Math.random() * 10)),
+                strength: 15 + Math.ceil(Math.random() * 15),
+                resistance: 15 + Math.ceil(Math.random() * 15),
+                faith: 15 + Math.ceil(Math.random() * 15),
                 topsMeeple: -1
             };
 

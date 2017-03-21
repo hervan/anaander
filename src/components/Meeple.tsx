@@ -8,7 +8,16 @@ interface IProps {
 };
 
 export default (props: IProps) =>
-    <span className={"meeple icon is-medium is-" + props.meeple.color}
-      style={{ top: props.meeple.position.row * 44 + 8, left: props.meeple.position.col * 44 + 8 }}>
-        <i className={"fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "")}></i>
+    <span className={"icon is-medium meeple is-" + props.meeple.color}
+        style={{
+            top: props.meeple.position.row * 44 + 8,
+            left: props.meeple.position.col * 44 + 8,
+            opacity: props.meeple.resistance / 10
+        }}>
+        <i
+            title={"strength: " + props.meeple.strength
+                + "\nresistance: " + props.meeple.resistance
+                + "\nfaith: " + props.meeple.faith}
+            className={"fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "")}>
+        </i>
     </span>;
