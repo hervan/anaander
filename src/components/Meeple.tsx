@@ -12,7 +12,7 @@ export default (props: IProps) =>
         style={{
             top: props.meeple.position.row * 44 + 8,
             left: props.meeple.position.col * 44 + 8,
-            opacity: props.meeple.resistance / 10
+            opacity: 0.5 + (props.meeple.resistance / 20)
         }}>
         <i
             title={"strength: " + props.meeple.strength

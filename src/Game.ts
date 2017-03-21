@@ -175,6 +175,7 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
 
     const gameMeeples: Meeple[] = game.meeples.slice();
     const gameTerrains: Terrain[] = game.terrains.slice();
+
     const topMeeple: number = gameTerrains[positionToIndex(from, game.boardSize)].topMeeple;
 
     let lastAction: Direction | Action | InvalidPlay | null = null;
@@ -247,7 +248,8 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
 
             lastAction = action;
 
-            if (meeple.topsMeeple !== -1) {
+            if (meeple.topsMeeple !== -1
+                && gameMeeples[meeple.key].color !== gameMeeples[meeple.topsMeeple].color) {
 
                 const meepleOver: Meeple = gameMeeples[meeple.key];
                 const meepleUnder: Meeple = gameMeeples[meeple.topsMeeple];
@@ -255,12 +257,26 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
                 if (meepleOver.faith > meepleUnder.faith) {
 
                     meepleUnder.color = meepleOver.color;
-                    meepleOver.faith += meepleUnder.faith;
+                    meepleOver.strength += meepleUnder.strength;
 
                 } else {
 
                     meepleUnder.resistance -= meepleOver.strength;
                     meepleOver.resistance -= meepleUnder.strength;
+
+                    if (meepleUnder.resistance <= 0) {
+
+                        meepleUnder.key = -1;
+                        meepleOver.topsMeeple = meepleUnder.topsMeeple;
+                        meepleOver.faith += meepleUnder.faith;
+                    }
+
+                    if (meepleOver.resistance <= 0) {
+
+                        meepleOver.key = -1;
+                        gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.topsMeeple;
+                        meepleUnder.faith += meepleOver.faith;
+                    }
                 }
             }
         }
@@ -406,9 +422,9 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                     position: position,
                     color: colors[colors.length - 1],
                     turn: turns[0],
-                    strength: Math.ceil(Math.random() * 10),
-                    resistance: Math.ceil(Math.random() * 10),
-                    faith: Math.ceil(Math.random() * 10),
+                    strength: Math.ceil(Math.random() * 5),
+                    resistance: Math.ceil(Math.random() * 15),
+                    faith: Math.ceil(Math.random() * 15),
                     topsMeeple: -1
                 };
 
@@ -420,7 +436,7 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
 
                 position: position,
                 geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
-                maxMeeples: Math.ceil(Math.random() * 10),
+                maxMeeples: Math.ceil(Math.random() * 6),
                 topMeeple: topMeeple
             };
         }
@@ -451,9 +467,9 @@ export function setup(playerCount: number, boardSize: number = 16): Game {
                 position: position,
                 color: color,
                 turn: turns[0],
-                strength: 15 + Math.ceil(Math.random() * 15),
-                resistance: 15 + Math.ceil(Math.random() * 15),
-                faith: 15 + Math.ceil(Math.random() * 15),
+                strength: 10 + Math.ceil(Math.random() * 5),
+                resistance: 20 + Math.ceil(Math.random() * 10),
+                faith: 20 + Math.ceil(Math.random() * 10),
                 topsMeeple: -1
             };
 

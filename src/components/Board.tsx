@@ -18,7 +18,9 @@ export default (props: IProps) =>
                 )}
             </div>
             <div key="meeples" className="board">
-                {props.game.meeples.map((meeple) => <Meeple key={meeple.key} meeple={meeple} />)}
+                {props.game.meeples
+                    .filter((meeple) => meeple.key !== -1)
+                    .map((meeple) => <Meeple key={meeple.key} meeple={meeple} />)}
             </div>
         </div>
     </div>;
