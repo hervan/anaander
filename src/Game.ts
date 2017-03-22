@@ -180,6 +180,21 @@ function positionToIndex(position: Position, boardSize: number): number {
     return (position.row * boardSize + position.col);
 }
 
+export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[]): Meeple[] {
+
+    const meeple: Meeple = game.meeples[meepleIndex];
+    acc.push(meeple);
+
+    if (meeple.topsMeeple !== -1) {
+
+        return meeplesBelow(game, meeple.topsMeeple, acc);
+
+    } else {
+
+        return acc;
+    }
+}
+
 function moveMeeple(game: Game, from: Position, action: Direction | Action): Game {
 
     const gameMeeples: Meeple[] = game.meeples.slice();

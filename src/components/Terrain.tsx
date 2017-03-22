@@ -1,13 +1,14 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-import * as Game from "../Game";
+
+import { Play, Terrain, Geography, Team } from "../Game";
 
 interface IProps {
-    terrain: Game.Terrain;
-    moveClick: (move: Game.Play) => void;
+    terrain: Terrain;
+    moveClick: (move: Play) => void;
 };
 
-function terrainColor(geography: Game.Geography): Game.Team {
+function terrainColor(geography: Geography): Team {
     switch (geography) {
         case "city": return "primary";
         case "island": return "info";

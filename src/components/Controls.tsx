@@ -1,5 +1,6 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
+
 import { IProps } from "./Table";
 
 import Player from "./Player";

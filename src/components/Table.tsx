@@ -1,19 +1,19 @@
 import * as React from "react";
 
-import * as Game from "../Game";
+import { Game, Play, setup, play } from "../Game";
 
 import Status from "./Status";
 import Board from "./Board";
 import Controls from "./Controls";
 
 interface IState {
-    game: Game.Game;
-    moveClick: (move: Game.Play) => void;
+    game: Game;
+    moveClick: (move: Play) => void;
 };
 
 export interface IProps {
-    game: Game.Game;
-    moveClick: (move: Game.Play) => void;
+    game: Game;
+    moveClick: (move: Play) => void;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -23,7 +23,7 @@ export class Table extends React.Component<{}, IState> {
     constructor() {
 
         super();
-        this.state = { game: Game.setup(0), moveClick: this.moveClick.bind(this) };
+        this.state = { game: setup(0), moveClick: this.moveClick.bind(this) };
 
         document.addEventListener("keypress", (event) => {
 
@@ -109,7 +109,7 @@ export class Table extends React.Component<{}, IState> {
         });
     }
 
-    moveClick(move: Game.Play): void {
+    moveClick(move: Play): void {
 
         switch (move.state) {
 
@@ -119,13 +119,13 @@ export class Table extends React.Component<{}, IState> {
                     (move.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
                     + (move.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
-                this.setState({ game: Game.setup(this.state.game.players.length + change), moveClick: this.moveClick.bind(this) });
+                this.setState({ game: setup(this.state.game.players.length + change), moveClick: this.moveClick.bind(this) });
 
                 break;
 
             case "play":
 
-                const gameStep: Game.Game = Game.play(this.state.game, move);
+                const gameStep: Game = play(this.state.game, move);
                 this.setState({ game: gameStep, moveClick: this.moveClick.bind(this) });
 
                 break;

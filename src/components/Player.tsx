@@ -1,10 +1,11 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-import * as Game from "../Game";
+
+import { Player, Play } from "../Game";
 
 interface IProps {
-  player: Game.Player;
-  moveClick: (move: Game.Play) => void;
+  player: Player;
+  moveClick: (move: Play) => void;
   active: boolean;
 };
 
