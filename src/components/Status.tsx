@@ -19,7 +19,7 @@ export default (props: IProps) => {
                         state: "setup",
                         player: "default",
                         from: "player",
-                        action: "down"
+                        action: "left"
                     })}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
@@ -39,7 +39,7 @@ export default (props: IProps) => {
                         state: "setup",
                         player: "default",
                         from: "player",
-                        action: "up"
+                        action: "right"
                     })}>
                         <span className="icon">
                             <i className="fa fa-plus"></i>
