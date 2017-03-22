@@ -8,10 +8,10 @@ export default (props: IProps) =>
     <div id="players" className="tile is-2 is-vertical">
         {props.game.players.map((player) =>
             <Player
-                key={player.color}
+                key={player.team}
                 player={player}
                 moveClick={props.moveClick}
-                active={player.color === props.game.currentPlayer}
+                active={player.team === props.game.currentPlayer}
             />
         )}
     </div>;

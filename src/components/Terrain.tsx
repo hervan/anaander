@@ -7,7 +7,7 @@ interface IProps {
     moveClick: (move: Game.Play) => void;
 };
 
-function terrainColor(geography: Game.Geography): Game.Color {
+function terrainColor(geography: Game.Geography): Game.Team {
     switch (geography) {
         case "city": return "primary";
         case "island": return "info";
@@ -20,7 +20,7 @@ function terrainColor(geography: Game.Geography): Game.Color {
 
 export default (props: IProps) =>
     <article
-        title={props.terrain.geography}
+        title={props.terrain.geography + "\nspace for " + props.terrain.spaceLeft + " meeples"}
         className={"terrain message is-" + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>
     </article>;

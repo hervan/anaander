@@ -8,7 +8,7 @@ interface IProps {
 };
 
 export default (props: IProps) =>
-    <span className={"icon is-medium meeple is-" + props.meeple.color}
+    <span className={"icon is-medium meeple is-" + props.meeple.team}
         style={{
             top: props.meeple.position.row * 44 + 8,
             left: props.meeple.position.col * 44 + 8,

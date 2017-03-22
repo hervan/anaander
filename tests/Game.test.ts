@@ -19,9 +19,9 @@ describe("game setup with 2 players on a 4x4 board", () => {
         expect(game.meeples.length).toBeGreaterThanOrEqual(2);
     });
 
-    it("find 2 colored meeples on the table", () => {
+    it("find 2 non-neutral meeples on the table", () => {
         expect(game.meeples.filter((meeple) =>
-            meeple.color !== "default").length)
+            meeple.team !== "default").length)
             .toBeGreaterThanOrEqual(game.players.length);
     });
 });
@@ -54,14 +54,14 @@ describe("first player move", () => {
         expect(game.meeples.length).toBeGreaterThanOrEqual(2);
     });
 
-    it("find 2 colored meeples on the table", () => {
+    it("find 2 non-neutral meeples on the table", () => {
 
         expect(game.meeples.reduce((acc, meeple) =>
-            meeple.color !== "default" ? acc + 1 : acc, 0))
+            meeple.team !== "default" ? acc + 1 : acc, 0))
             .toBeGreaterThanOrEqual(2);
     });
 
-    it("find 2 colored meeples on the board", () => {
+    it("find 2 non-neutral meeples on the board", () => {
 
         const move_game1: Game = play(game, {
             state: "play",

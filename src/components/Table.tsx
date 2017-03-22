@@ -29,6 +29,17 @@ export class Table extends React.Component<{}, IState> {
 
             switch (event.key) {
 
+                case "q":
+
+                    this.state.moveClick({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "guard"
+                    });
+
+                    break;
+
                 case "w":
 
                     this.state.moveClick({
@@ -36,6 +47,17 @@ export class Table extends React.Component<{}, IState> {
                         player: this.state.game.currentPlayer,
                         from: "player",
                         action: "up"
+                    });
+
+                    break;
+
+                case "e":
+
+                    this.state.moveClick({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "attack"
                     });
 
                     break;
@@ -72,6 +94,17 @@ export class Table extends React.Component<{}, IState> {
                     });
 
                     break;
+
+                case " ":
+
+                    this.state.moveClick({
+                        state: "play",
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: null
+                    });
+
+                    break;
             }
         });
     }
@@ -83,8 +116,8 @@ export class Table extends React.Component<{}, IState> {
             case "setup":
 
                 const change: number =
-                    (move.action === "up" && this.state.game.players.length < 5 ? 1 : 0)
-                    + (move.action === "down" && this.state.game.players.length > 0 ? -1 : 0);
+                    (move.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                    + (move.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
                 this.setState({ game: Game.setup(this.state.game.players.length + change), moveClick: this.moveClick.bind(this) });
 
