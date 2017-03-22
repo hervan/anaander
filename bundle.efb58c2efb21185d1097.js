@@ -9772,65 +9772,26 @@ var Table = (function (_super) {
     __extends(Table, _super);
     function Table() {
         var _this = _super.call(this) || this;
-        _this.state = { game: Game.setup(0), moveClick: _this.moveClick.bind(_this) };
-        document.addEventListener("keypress", function (event) {
-            switch (event.key) {
-                case "w":
-                    _this.state.moveClick({
-                        state: _this.state.game.state,
-                        player: _this.state.game.currentPlayer,
-                        from: "player",
-                        action: "up"
-                    });
-                    break;
-                case "a":
-                    _this.state.moveClick({
-                        state: _this.state.game.state,
-                        player: _this.state.game.currentPlayer,
-                        from: "player",
-                        action: "left"
-                    });
-                    break;
-                case "s":
-                    _this.state.moveClick({
-                        state: _this.state.game.state,
-                        player: _this.state.game.currentPlayer,
-                        from: "player",
-                        action: "down"
-                    });
-                    break;
-                case "d":
-                    _this.state.moveClick({
-                        state: _this.state.game.state,
-                        player: _this.state.game.currentPlayer,
-                        from: "player",
-                        action: "right"
-                    });
-                    break;
-            }
-        });
+        _this.state = { game: Game.setup(0) };
         return _this;
     }
-    Table.prototype.moveClick = function (move) {
+    Table.prototype.move = function (move) {
         switch (move.state) {
-            case "setup":
-                var change = (move.action === "up" && this.state.game.players.length < 5 ? 1 : 0)
-                    + (move.action === "down" && this.state.game.players.length > 0 ? -1 : 0);
-                this.setState({ game: Game.setup(this.state.game.players.length + change), moveClick: this.moveClick.bind(this) });
+            case 'setup':
+                var change = (move.action == 'up' && this.state.game.playerCount < 5 ? 1 : 0)
+                    + (move.action == 'down' && this.state.game.playerCount > 0 ? -1 : 0);
+                this.setState({ game: Game.setup(this.state.game.playerCount + change) });
                 break;
-            case "play":
-                var gameStep = Game.play(this.state.game, move);
-                this.setState({ game: gameStep, moveClick: this.moveClick.bind(this) });
+            case 'play':
+                this.setState({ game: Game.move(this.state.game, move) });
                 break;
         }
     };
     Table.prototype.render = function () {
-        return (React.createElement("section", { className: "section" },
-            React.createElement("div", { className: "container is-fluid" },
-                React.createElement("div", { id: "table", className: "tile is-ancestor" },
-                    React.createElement(Status_1.default, { game: this.state.game, moveClick: this.state.moveClick }),
-                    React.createElement(Board_1.default, { game: this.state.game, moveClick: this.state.moveClick }),
-                    React.createElement(Controls_1.default, { game: this.state.game, moveClick: this.state.moveClick })))));
+        return (React.createElement("div", { id: "table" },
+            React.createElement(Status_1.default, { game: this.state.game, move: this.move.bind(this) }),
+            React.createElement(Controls_1.default, { game: this.state.game, move: this.move.bind(this) }),
+            React.createElement(Board_1.default, { game: this.state.game, move: this.move.bind(this) })));
     };
     return Table;
 }(React.Component));
@@ -9906,96 +9867,89 @@ if(false) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var colors = [
-    "info",
-    "warning",
-    "success",
-    "danger",
-    "primary",
-    "default"
-];
+var colors = ['info', 'warning', 'success', 'danger', 'primary', 'default'];
 var terrainDistribution = [
-    "city",
-    "island", "island",
-    "forest", "forest",
-    "swamp", "swamp",
-    "mountain", "mountain",
-    "plains", "plains", "plains", "plains" // way more frequent
+    'city',
+    'island', 'island',
+    'forest', 'forest',
+    'swamp', 'swamp',
+    'mountain', 'mountain',
+    'plains', 'plains', 'plains', 'plains' // way more frequent
 ];
-var turns = ["heads", "tails"];
-;
-var InvalidPlays = {
+var turns = ['heads', 'tails'];
+var InvalidMoves = {
     WrongColor: "move a meeple of your own color.",
     WrongTurnHeads: "move a meeple with heads up.",
     WrongTurnTails: "move a meeple with tails up.",
     EmptyTerrain: "choose a terrain with a meeple in it.",
     NoGameYet: "wait for a game to begin.",
     OutOfBoard: "keep your meeples inside the board.",
-    NotYourTurn: "wait for your turn to begin."
+    None: ""
 };
-function logBoard(game) {
+function log_board(game) {
     var colors = {
-        "info": "1",
-        "warning": "2",
-        "success": "3",
-        "danger": "4",
-        "primary": "5",
-        "default": "o"
+        'info': '1',
+        'warning': '2',
+        'success': '3',
+        'danger': '4',
+        'primary': '5',
+        'default': 'o'
     };
-    var board = "";
-    game.terrains.forEach(function (terrain, index) {
-        board += (terrain.topMeeple === -1 ? "#" : colors[game.meeples[terrain.topMeeple].color])
-            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "");
-    });
-    console.log(board);
+    console.log(game.terrains.map(function (row) {
+        return row.map(function (terrain) {
+            return terrain.meeples.length == 0 ? ' ' : colors[terrain.meeples[terrain.meeples.length - 1].color];
+        });
+    }));
 }
-exports.logBoard = logBoard;
+exports.log_board = log_board;
 function nextPlayer(game) {
-    return colors[(colors.indexOf(game.currentPlayer) + 1) % game.players.length];
+    return colors[(colors.indexOf(game.currentPlayer) + 1) % game.playerCount];
 }
 function flipTurn(turn) {
-    return (turns[(turns.indexOf(turn) + 1) % turns.length]);
+    switch (turn) {
+        case 'heads':
+            return 'tails';
+        case 'tails':
+            return 'heads';
+    }
 }
 function nextTurn(game) {
-    return colors.indexOf(nextPlayer(game)) === 0 ?
+    return colors.indexOf(nextPlayer(game)) == 0 ?
         flipTurn(game.turn) :
         game.turn;
 }
-function positionToIndex(position, boardSize) {
-    return (position.row * boardSize + position.col);
-}
 function moveMeeple(game, from, action) {
-    var gameMeeples = game.meeples.slice();
-    var gameTerrains = game.terrains.slice();
-    var topMeeple = gameTerrains[positionToIndex(from, game.boardSize)].topMeeple;
     var lastAction = null;
     var to = {
         row: from.row,
         col: from.col
     };
-    if (topMeeple === -1) {
-        lastAction = { explanation: InvalidPlays.EmptyTerrain };
+    var turn = game.turn;
+    var currentPlayer = game.currentPlayer;
+    var meeple = game.terrains[from.row][from.col].meeples.slice().pop();
+    if (meeple == null) {
+        lastAction = { explanation: InvalidMoves.EmptyTerrain };
     }
-    else if (gameMeeples[topMeeple].color !== game.currentPlayer) {
-        lastAction = { explanation: InvalidPlays.WrongColor };
+    else if (meeple.color != game.currentPlayer) {
+        lastAction = { explanation: InvalidMoves.WrongColor };
     }
-    else if (gameMeeples[topMeeple].turn !== game.turn) {
-        lastAction = { explanation: (game.turn === turns[0] ?
-                InvalidPlays.WrongTurnHeads :
-                InvalidPlays.WrongTurnTails) };
+    else if (meeple.turn != game.turn) {
+        lastAction = { explanation: (game.turn == 'heads' ?
+                InvalidMoves.WrongTurnHeads :
+                InvalidMoves.WrongTurnTails) };
     }
     else {
         switch (action) {
-            case "left":
+            case 'left':
                 to.col = from.col - 1;
                 break;
-            case "right":
+            case 'right':
                 to.col = from.col + 1;
                 break;
-            case "up":
+            case 'up':
                 to.row = from.row - 1;
                 break;
-            case "down":
+            case 'down':
                 to.row = from.row + 1;
                 break;
             default:
@@ -10005,69 +9959,51 @@ function moveMeeple(game, from, action) {
             || to.row >= game.boardSize
             || to.col < 0
             || to.col >= game.boardSize) {
-            lastAction = { explanation: InvalidPlays.OutOfBoard };
+            lastAction = { explanation: InvalidMoves.OutOfBoard };
         }
         if (lastAction == null) {
-            var meeple = gameMeeples[topMeeple];
+            var player = game.players.slice()[colors.indexOf(game.currentPlayer)];
             meeple.turn = flipTurn(meeple.turn);
-            gameTerrains[positionToIndex(from, game.boardSize)].topMeeple = meeple.topsMeeple;
-            meeple.topsMeeple = gameTerrains[positionToIndex(to, game.boardSize)].topMeeple;
-            gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.key;
-            meeple.position = to;
-            gameMeeples[meeple.key] = meeple;
+            var playerMeeples = player.meeples.slice().filter(function (iMeeple) { return meeple.key != iMeeple.key; });
+            playerMeeples.push(meeple);
+            player.meeples = playerMeeples;
+            var gamePlayers = game.players.slice();
+            gamePlayers[colors.indexOf(player.color)] = player;
+            game.players = gamePlayers;
+            var gameTerrains = game.terrains.slice();
+            var terrainMeeplesFrom = gameTerrains[from.row][from.col].meeples.slice();
+            terrainMeeplesFrom.pop();
+            gameTerrains[from.row][from.col].meeples = terrainMeeplesFrom;
+            var terrainMeeplesTo = gameTerrains[to.row][to.col].meeples.slice();
+            terrainMeeplesTo.push(meeple);
+            gameTerrains[to.row][to.col].meeples = terrainMeeplesTo;
+            game.terrains = gameTerrains;
+            game.meeples = game.meeples.slice().filter(function (iMeeple) { return meeple.key != iMeeple.key; });
+            game.meeples.push(meeple);
             lastAction = action;
-            if (meeple.topsMeeple !== -1
-                && gameMeeples[meeple.key].color !== gameMeeples[meeple.topsMeeple].color) {
-                var meepleOver = gameMeeples[meeple.key];
-                var meepleUnder = gameMeeples[meeple.topsMeeple];
-                if (meepleOver.faith > meepleUnder.faith) {
-                    meepleUnder.color = meepleOver.color;
-                    meepleOver.strength += meepleUnder.strength;
-                }
-                else {
-                    meepleUnder.resistance -= meepleOver.strength;
-                    meepleOver.resistance -= meepleUnder.strength;
-                    if (meepleUnder.resistance <= 0) {
-                        meepleUnder.key = -1;
-                        meepleOver.topsMeeple = meepleUnder.topsMeeple;
-                        meepleOver.faith += meepleUnder.faith;
-                    }
-                    if (meepleOver.resistance <= 0) {
-                        meepleOver.key = -1;
-                        gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.topsMeeple;
-                        meepleUnder.faith += meepleOver.faith;
-                    }
-                }
-            }
         }
     }
     return {
+        playerCount: game.playerCount,
         boardSize: game.boardSize,
-        players: game.players.slice(),
-        terrains: gameTerrains.slice(),
-        meeples: gameMeeples.slice(),
-        turn: game.turn,
-        currentPlayer: game.currentPlayer,
+        players: game.players,
+        terrains: game.terrains,
+        meeples: game.meeples,
+        turn: turn,
+        currentPlayer: currentPlayer,
         state: game.state,
         lastAction: lastAction
     };
 }
 function moveSwarm(game, action) {
-    var availablePlayerMeeples = game.terrains.map(function (terrain) { return terrain.topMeeple; })
-        .filter(function (topMeeple) {
-        return topMeeple !== -1 &&
-            game.meeples[topMeeple].color === game.currentPlayer &&
-            game.meeples[topMeeple].turn === game.turn;
-    });
-    return (action === "right" || action === "down" ?
-        availablePlayerMeeples.reverse() :
-        availablePlayerMeeples)
-        .map(function (meepleIndex) { return game.meeples[meepleIndex]; })
-        .reduce(function (acc, meeple) { return moveMeeple(acc, meeple.position, action); }, game);
+    var playerMeeples = game.players[colors.indexOf(game.currentPlayer)].meeples.slice();
+    var game_step = playerMeeples.reduce(function (acc, meeple) { return moveMeeple(acc, meeple.position, action); }, game);
+    return game_step;
 }
-function play(game, play) {
-    if (play.state !== "play") {
+function move(game, move) {
+    if (move.state != 'play') {
         return {
+            playerCount: game.playerCount,
             boardSize: game.boardSize,
             players: game.players.slice(),
             terrains: game.terrains.slice(),
@@ -10075,95 +10011,81 @@ function play(game, play) {
             turn: game.turn,
             currentPlayer: game.currentPlayer,
             state: game.state,
-            lastAction: { explanation: InvalidPlays.NoGameYet }
+            lastAction: { explanation: InvalidMoves.NoGameYet }
         };
     }
-    else if (game.currentPlayer !== play.player) {
-        return {
-            boardSize: game.boardSize,
-            players: game.players.slice(),
-            terrains: game.terrains.slice(),
-            meeples: game.meeples.slice(),
-            turn: game.turn,
-            currentPlayer: game.currentPlayer,
-            state: game.state,
-            lastAction: { explanation: InvalidPlays.NotYourTurn }
-        };
-    }
-    switch (play.player) {
-        case "default":
+    switch (move.player) {
+        case 'default':
             return {
+                playerCount: game.playerCount,
                 boardSize: game.boardSize,
                 players: game.players.slice(),
                 terrains: game.terrains.slice(),
                 meeples: game.meeples.slice(),
                 turn: game.turn,
                 currentPlayer: colors[0],
-                state: play.state,
-                lastAction: "skip"
+                state: move.state,
+                lastAction: { explanation: InvalidMoves.None }
             };
         default:
-            var gameStep = void 0;
-            var player = void 0;
+            var iGame = void 0;
+            var next_player = void 0;
             var turn = void 0;
-            switch (play.from) {
-                case "player":
-                    gameStep = moveSwarm(game, play.action);
-                    player = nextPlayer(gameStep);
-                    turn = nextTurn(gameStep);
+            switch (move.from) {
+                case 'player':
+                    iGame = moveSwarm(game, move.action);
+                    next_player = nextPlayer(iGame);
+                    turn = nextTurn(iGame);
                     break;
                 default:
-                    gameStep = moveMeeple(game, play.from, play.action);
-                    player = nextPlayer(gameStep);
-                    turn = gameStep.turn;
+                    iGame = moveMeeple(game, move.from, move.action);
+                    next_player = nextPlayer(iGame);
+                    turn = iGame.turn;
                     break;
             }
             return {
-                boardSize: gameStep.boardSize,
-                players: gameStep.players.slice(),
-                terrains: gameStep.terrains.slice(),
-                meeples: gameStep.meeples.slice(),
+                playerCount: iGame.playerCount,
+                boardSize: iGame.boardSize,
+                players: iGame.players.slice(),
+                terrains: iGame.terrains.slice(),
+                meeples: iGame.meeples.slice(),
                 turn: turn,
-                currentPlayer: player,
-                state: gameStep.state,
-                lastAction: gameStep.lastAction
+                currentPlayer: next_player,
+                state: iGame.state,
+                lastAction: iGame.lastAction
             };
     }
 }
-exports.play = play;
+exports.move = move;
 function setup(playerCount, boardSize) {
     if (boardSize === void 0) { boardSize = 16; }
     var meepleKey = playerCount;
     var terrains = new Array();
-    var meeples = new Array();
+    var gameMeeples = new Array();
     for (var i_1 = 0; i_1 < boardSize; i_1++) {
+        var row = new Array();
         for (var j = 0; j < boardSize; j++) {
-            var position = {
-                row: i_1,
-                col: j
-            };
-            var topMeeple = -1;
+            var terrainMeeples = Array();
             if (Math.random() < 0.1) {
                 var meeple = {
-                    key: meepleKey++,
-                    position: position,
-                    color: colors[colors.length - 1],
-                    turn: turns[0],
-                    strength: Math.ceil(Math.random() * 5),
-                    resistance: Math.ceil(Math.random() * 15),
-                    faith: Math.ceil(Math.random() * 15),
-                    topsMeeple: -1
+                    key: ++meepleKey,
+                    position: { row: i_1, col: j },
+                    color: 'default',
+                    turn: 'heads',
+                    strength: (10 / Math.ceil(Math.random() * 10)),
+                    faith: (10 / Math.ceil(Math.random() * 10))
                 };
-                topMeeple = meeple.key;
-                meeples[meeple.key] = meeple;
+                terrainMeeples.push(meeple);
+                gameMeeples.push(meeple);
             }
-            terrains[positionToIndex(position, boardSize)] = {
-                position: position,
-                geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
-                maxMeeples: Math.ceil(Math.random() * 6),
-                topMeeple: topMeeple
-            };
+            row.push({
+                position: { row: i_1, col: j },
+                geography: terrainDistribution[Math.floor(Math.random() * 14)],
+                maxMeeples: Math.ceil(Math.random() * 10),
+                meeples: terrainMeeples
+            });
         }
+        terrains.push(row);
     }
     var players = new Array();
     var i = 0;
@@ -10177,35 +10099,39 @@ function setup(playerCount, boardSize) {
                     row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                     col: Math.floor(Math.random() * (boardSize - 2)) + 1
                 };
-            } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
+            } while (terrains[position.row][position.col].meeples.length > 0);
+            var playerMeeples = new Array();
             var meeple = {
                 key: meepleKey++,
                 position: position,
                 color: color,
-                turn: turns[0],
-                strength: 10 + Math.ceil(Math.random() * 5),
-                resistance: 20 + Math.ceil(Math.random() * 10),
-                faith: 20 + Math.ceil(Math.random() * 10),
-                topsMeeple: -1
+                turn: 'heads',
+                strength: (30 / Math.ceil(Math.random() * 30)),
+                faith: (30 / Math.ceil(Math.random() * 30))
             };
-            terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
-            meeples[meeple.key] = meeple;
+            playerMeeples.push(meeple);
+            var terrainMeeples = terrains[meeple.position.row][meeple.position.col].meeples.slice();
+            terrainMeeples.push(meeple);
+            terrains[meeple.position.row][meeple.position.col].meeples = terrainMeeples;
+            gameMeeples.push(meeple);
             players[colors.indexOf(color)] = {
                 color: color,
+                meeples: playerMeeples,
                 individualActions: 0
             };
             i++;
         }
     }
     var game = {
+        playerCount: playerCount,
         boardSize: boardSize,
         players: players,
         terrains: terrains,
-        meeples: meeples.slice(),
-        turn: turns[0],
-        currentPlayer: "default",
-        state: "setup",
-        lastAction: { explanation: InvalidPlays.None }
+        meeples: gameMeeples,
+        turn: 'heads',
+        currentPlayer: 'default',
+        state: 'setup',
+        lastAction: { explanation: InvalidMoves.None }
     };
     return game;
 }
@@ -10219,19 +10145,18 @@ exports.setup = setup;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 var Terrain_1 = __webpack_require__(92);
 var Meeple_1 = __webpack_require__(89);
 exports.default = function (props) {
-    return React.createElement("div", { id: "board", className: "container tile is-5 is-parent" },
-        React.createElement("div", { className: "tile is-child" },
-            React.createElement("div", { key: "terrains", className: "board" }, props.game.terrains.map(function (terrain) {
-                return React.createElement(Terrain_1.default, { key: "row" + terrain.position.row + "col" + terrain.position.col, terrain: terrain, moveClick: props.moveClick });
+    return React.createElement("section", { id: "board", className: "section" },
+        React.createElement("div", { className: "container" },
+            React.createElement("div", { key: "terrains", className: "board" }, props.game.terrains.map(function (row) {
+                return React.createElement("div", { key: row[0].position.row }, row.map(function (terrain) {
+                    return React.createElement(Terrain_1.default, { key: 'row' + terrain.position.row + 'col' + terrain.position.col, terrain: terrain, move: props.move });
+                }));
             })),
-            React.createElement("div", { key: "meeples", className: "board" }, props.game.meeples
-                .filter(function (meeple) { return meeple.key !== -1; })
-                .map(function (meeple) { return React.createElement(Meeple_1.default, { key: meeple.key, meeple: meeple }); }))));
+            React.createElement("div", { key: "meeples", className: "board" }, props.game.meeples.map(function (meeple) { return React.createElement(Meeple_1.default, { key: meeple.key, meeple: meeple }); }))));
 };
 
 
@@ -10242,13 +10167,14 @@ exports.default = function (props) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 var Player_1 = __webpack_require__(90);
 exports.default = function (props) {
-    return React.createElement("div", { id: "players", className: "tile is-2 is-vertical" }, props.game.players.map(function (player) {
-        return React.createElement(Player_1.default, { key: player.color, player: player, moveClick: props.moveClick, active: player.color === props.game.currentPlayer });
-    }));
+    return React.createElement("section", { id: "players", className: "section" },
+        React.createElement("div", { className: "container" },
+            React.createElement("div", { className: "columns" }, props.game.players.map(function (player) {
+                return React.createElement(Player_1.default, { key: player.color, player: player, move: props.move, active: player.color == props.game.currentPlayer });
+            }))));
 };
 
 
@@ -10259,18 +10185,11 @@ exports.default = function (props) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 ;
 exports.default = function (props) {
-    return React.createElement("span", { className: "icon is-medium meeple is-" + props.meeple.color, style: {
-            top: props.meeple.position.row * 44 + 8,
-            left: props.meeple.position.col * 44 + 8,
-            opacity: 0.5 + (props.meeple.resistance / 20)
-        } },
-        React.createElement("i", { title: "strength: " + props.meeple.strength
-                + "\nresistance: " + props.meeple.resistance
-                + "\nfaith: " + props.meeple.faith, className: "fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "") }));
+    return React.createElement("span", { className: "meeple icon is-large is-" + props.meeple.color, style: { top: props.meeple.position.row * 60 + 10, left: props.meeple.position.col * 60 + 10 } },
+        React.createElement("i", { className: "fa fa-user-circle" + (props.meeple.turn == 'heads' ? '-o' : '') }));
 };
 
 
@@ -10281,12 +10200,11 @@ exports.default = function (props) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 ;
 exports.default = function (props) {
-    return React.createElement("div", { className: "player tile is-parent" },
-        React.createElement("article", { className: "tile is-child message is-" + props.player.color + (props.active ? " current-player" : "") },
+    return React.createElement("div", { className: "player column" },
+        React.createElement("article", { className: "message is-" + props.player.color + (props.active ? " current-player" : "") },
             React.createElement("div", { className: "message-header" },
                 React.createElement("p", null,
                     "general ",
@@ -10294,56 +10212,63 @@ exports.default = function (props) {
             React.createElement("div", { className: "message-body" },
                 React.createElement("div", { className: "field has-addons" },
                     React.createElement("div", { className: "control" },
+                        React.createElement("p", null, "actions"),
                         React.createElement("p", null,
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
-                                    state: "play",
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.move({
+                                    state: 'play',
                                     player: props.player.color,
-                                    from: "player",
-                                    action: "guard"
+                                    from: 'player',
+                                    action: 'guard'
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-paper-o" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
-                                    state: "play",
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.move({
+                                    state: 'play',
                                     player: props.player.color,
-                                    from: "player",
-                                    action: "up"
+                                    from: 'player',
+                                    action: 'up'
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-o-up" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
-                                    state: "play",
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.move({
+                                    state: 'play',
                                     player: props.player.color,
-                                    from: "player",
-                                    action: "attack"
+                                    from: 'player',
+                                    action: 'attack'
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-rock-o" })))),
                         React.createElement("p", null,
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
-                                    state: "play",
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.move({
+                                    state: 'play',
                                     player: props.player.color,
-                                    from: "player",
-                                    action: "left"
+                                    from: 'player',
+                                    action: 'left'
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-o-left" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
-                                    state: "play",
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.move({
+                                    state: 'play',
                                     player: props.player.color,
-                                    from: "player",
-                                    action: "down"
+                                    from: 'player',
+                                    action: 'down'
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-o-down" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
-                                    state: "play",
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.move({
+                                    state: 'play',
                                     player: props.player.color,
-                                    from: "player",
-                                    action: "right"
+                                    from: 'player',
+                                    action: 'right'
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
-                                    React.createElement("i", { className: "fa fa-hand-o-right" })))))))));
+                                    React.createElement("i", { className: "fa fa-hand-o-right" })))))),
+                React.createElement("p", null,
+                    "swarm: ",
+                    props.player.meeples.length,
+                    " meeple",
+                    props.player.meeples.length > 1 ? 's' : ''),
+                React.createElement("p", null, "no items"))));
 };
 
 
@@ -10354,50 +10279,43 @@ exports.default = function (props) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 exports.default = function (props) {
-    var guide = React.createElement("br", null);
-    var guide_detail = React.createElement("br", null);
+    var guide;
     switch (props.game.state) {
-        case "setup":
+        case 'setup':
             guide =
                 React.createElement("p", null,
                     "how many players? \u00A0",
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
-                            state: "setup",
-                            player: "default",
-                            from: "player",
-                            action: "down"
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.move({
+                            state: 'setup',
+                            player: 'default',
+                            from: 'player',
+                            action: 'down'
                         }); } },
                         React.createElement("span", { className: "icon" },
                             React.createElement("i", { className: "fa fa-minus" }))),
                     "\u00A0",
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
-                            state: "setup",
-                            player: "default",
-                            from: "player",
-                            action: "skip"
-                        }); } }, props.game.players.length),
+                    props.game.playerCount,
                     "\u00A0",
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
-                            state: "setup",
-                            player: "default",
-                            from: "player",
-                            action: "up"
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.move({
+                            state: 'setup',
+                            player: 'default',
+                            from: 'player',
+                            action: 'up'
                         }); } },
                         React.createElement("span", { className: "icon" },
-                            React.createElement("i", { className: "fa fa-plus" }))));
-            guide_detail =
-                React.createElement("p", null,
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
-                            state: "play",
-                            player: "default",
-                            from: "player",
+                            React.createElement("i", { className: "fa fa-plus" }))),
+                    React.createElement("br", null),
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.move({
+                            state: 'play',
+                            player: 'default',
+                            from: 'player',
                             action: null
                         }); } }, "click here to begin."));
             break;
-        case "play":
+        case 'play':
+            var guide_detail = void 0;
             switch (props.game.lastAction) {
                 case "up":
                 case "down":
@@ -10409,16 +10327,10 @@ exports.default = function (props) {
                 case "convert":
                 case "skip":
                 case null:
-                    var side = React.createElement("span", { className: "icon" },
-                        React.createElement("i", { className: "fa fa-user-circle"
-                                + (props.game.turn === "heads" ? "-o" : "")
-                                + " is-" + props.game.currentPlayer }));
-                    guide_detail = React.createElement("p", null,
-                        "choose an action for these meeples: ",
-                        side);
+                    guide_detail = "choose an action for all your pieces with side " + props.game.turn + "up.";
                     break;
                 default:
-                    guide_detail = React.createElement("p", null, props.game.lastAction.explanation);
+                    guide_detail = props.game.lastAction.explanation;
                     break;
             }
             guide =
@@ -10427,9 +10339,11 @@ exports.default = function (props) {
                     React.createElement("span", { className: "is-" + props.game.currentPlayer },
                         "general ",
                         props.game.currentPlayer),
-                    "'s turn.");
+                    "'s turn.",
+                    React.createElement("br", null),
+                    guide_detail);
             break;
-        case "end":
+        case 'end':
             guide =
                 React.createElement("p", null,
                     "general ",
@@ -10438,11 +10352,11 @@ exports.default = function (props) {
             break;
     }
     ;
-    return (React.createElement("div", { id: "status", className: "tile is-2 is-parent" },
-        React.createElement("div", { className: "notification tile is-child" },
-            React.createElement("h1", { className: "title" }, "anaander"),
-            React.createElement("h2", { className: "subtitle" }, guide),
-            React.createElement("span", null, guide_detail))));
+    return (React.createElement("section", { id: "status", className: "hero is-dark" },
+        React.createElement("div", { className: "hero-body" },
+            React.createElement("div", { className: "container" },
+                React.createElement("h1", { className: "title" }, "anaander"),
+                React.createElement("h2", { className: "subtitle" }, guide)))));
 };
 
 
@@ -10453,21 +10367,21 @@ exports.default = function (props) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 ;
 function terrainColor(geography) {
     switch (geography) {
-        case "city": return "primary";
-        case "island": return "info";
-        case "forest": return "success";
-        case "swamp": return "default";
-        case "mountain": return "danger";
-        case "plains": return "warning";
+        case 'city': return 'primary';
+        case 'island': return 'info';
+        case 'forest': return 'success';
+        case 'swamp': return 'warning';
+        case 'mountain': return 'danger';
+        case 'plains': return 'default';
     }
 }
 exports.default = function (props) {
-    return React.createElement("article", { title: props.terrain.geography, className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } });
+    return React.createElement("article", { className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 60, left: props.terrain.position.col * 60 } },
+        React.createElement("div", { className: "terrain message-body" }));
 };
 
 
@@ -10494,7 +10408,7 @@ exports = module.exports = __webpack_require__(53)();
 
 
 // module
-exports.push([module.i, ":root {\n    --primary-color: hsl(171, 100%, 41%);\n    --info-color: hsl(217, 71%, 53%);\n    --success-color: hsl(141, 71%, 48%);\n    --warning-color: hsl(48, 100%, 67%);\n    --danger-color: hsl(348, 100%, 61%);\n    --default-color: hsl(0, 0%, 4%);\n}\n\n@keyframes flip-in-hor-bottom {\n  0% {\n    transform: rotateX(80deg);\n    opacity: 0;\n  }\n  100% {\n    transform: rotateX(0);\n    opacity: 1;\n  }\n}\n\n@keyframes jello-vertical {\n  0% {\n    transform: scale(1, 1);\n  }\n  30% {\n    transform: scale(1.07, 1.07);\n  }\n  40% {\n    transform: scale(0.96, 1.2);\n  }\n  50% {\n    transform: scale(1.2, 0.96);\n  }\n  65% {\n    transform: scale(1, 1.13);\n  }\n  80% {\n    transform: scale(1.09, 1.05);\n  }\n  90% {\n    transform: scale(1.05, 1.09);\n  }\n  100% {\n    transform: scale(1.07, 1.07);\n  }\n}\n\n.is-primary {\n    color: var(--primary-color);\n}\n\n.is-info {\n    color: var(--info-color);\n}\n\n.is-success {\n    color: var(--success-color);\n}\n\n.is-warning {\n    color: var(--warning-color);\n}\n\n.is-danger {\n    color: var(--danger-color);\n}\n\n.is-default {\n    color: var(--default-color);\n}\n\n.board {\n    position: relative;\n    box-sizing: border-box;\n}\n\n.terrain {\n    position: absolute;\n    width: 43px;\n    height: 43px;\n    transition-property: color, background-color, border-color;\n    transition-duration: 0.6s, 0.6s, 0.6s;\n    transition-timing-function: ease-out;\n}\n\n.meeple {\n    position: absolute;\n    transition-property: top, left, color, opacity;\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;\n    transition-timing-function: ease-out;\n}\n\n.player {\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\n}\n\n.current-player {\n    animation: jello-vertical 0.5s both;\n}\n", ""]);
+exports.push([module.i, ":root {\r\n    --primary-color: hsl(171, 100%, 41%);\r\n    --info-color: hsl(217, 71%, 53%);\r\n    --success-color: hsl(141, 71%, 48%);\r\n    --warning-color: hsl(48, 100%, 67%);\r\n    --danger-color: hsl(348, 100%, 61%);\r\n    --default-color: hsl(0, 0%, 4%);\r\n}\r\n\r\n@keyframes flip-in-hor-bottom {\r\n  0% {\r\n    transform: rotateX(80deg);\r\n    opacity: 0;\r\n  }\r\n  100% {\r\n    transform: rotateX(0);\r\n    opacity: 1;\r\n  }\r\n}\r\n\r\n@keyframes jello-vertical {\r\n  0% {\r\n    transform: scale3d(1, 1, 1);\r\n  }\r\n  30% {\r\n    transform: scale3d(1.07, 1.07, 1);\r\n  }\r\n  40% {\r\n    transform: scale3d(0.96, 1.2, 1);\r\n  }\r\n  50% {\r\n    transform: scale3d(1.2, 0.96, 1);\r\n  }\r\n  65% {\r\n    transform: scale3d(1, 1.13, 1);\r\n  }\r\n  80% {\r\n    transform: scale3d(1.09, 1.05, 1);\r\n  }\r\n  90% {\r\n    transform: scale3d(1.05, 1.09, 1);\r\n  }\r\n  100% {\r\n    transform: scale3d(1.07, 1.07, 1);\r\n  }\r\n}\r\n\r\n.is-primary {\r\n    color: var(--primary-color);\r\n}\r\n\r\n.is-info {\r\n    color: var(--info-color);\r\n}\r\n\r\n.is-success {\r\n    color: var(--success-color);\r\n}\r\n\r\n.is-warning {\r\n    color: var(--warning-color);\r\n}\r\n\r\n.is-danger {\r\n    color: var(--danger-color);\r\n}\r\n\r\n.is-default {\r\n    color: var(--default-color);\r\n}\r\n\r\n.board {\r\n    position: relative;\r\n    box-sizing: border-box;\r\n}\r\n\r\n.terrain {\r\n    position: absolute;\r\n    width: 60px;\r\n    height: 60px;\r\n    transition-property: color, background-color, border-color;\r\n    transition-duration: 0.6s, 0.6s, 0.6s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.meeple {\r\n    position: absolute;\r\n    transition-property: top, left, color, opacity;\r\n    transition-duration: 0.6s, 0.6s, 0.6s, 0.6s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.player {\r\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\r\n}\r\n\r\n.current-player {\r\n    animation: jello-vertical 0.5s both;\r\n}\r\n", ""]);
 
 // exports
 
@@ -22736,15 +22650,14 @@ module.exports = traverseAllChildren;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 var ReactDOM = __webpack_require__(83);
 __webpack_require__(84);
 var Table_1 = __webpack_require__(82);
 __webpack_require__(85);
-ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementById("root"));
+ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementById('root'));
 
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.70b0b1bae30f075c0126.js.map
+//# sourceMappingURL=bundle.efb58c2efb21185d1097.js.map
