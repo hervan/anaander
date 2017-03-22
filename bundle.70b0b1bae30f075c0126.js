@@ -9773,6 +9773,42 @@ var Table = (function (_super) {
     function Table() {
         var _this = _super.call(this) || this;
         _this.state = { game: Game.setup(0), moveClick: _this.moveClick.bind(_this) };
+        document.addEventListener("keypress", function (event) {
+            switch (event.key) {
+                case "w":
+                    _this.state.moveClick({
+                        state: _this.state.game.state,
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: "up"
+                    });
+                    break;
+                case "a":
+                    _this.state.moveClick({
+                        state: _this.state.game.state,
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: "left"
+                    });
+                    break;
+                case "s":
+                    _this.state.moveClick({
+                        state: _this.state.game.state,
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: "down"
+                    });
+                    break;
+                case "d":
+                    _this.state.moveClick({
+                        state: _this.state.game.state,
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: "right"
+                    });
+                    break;
+            }
+        });
         return _this;
     }
     Table.prototype.moveClick = function (move) {
@@ -9876,10 +9912,7 @@ var colors = [
     "success",
     "danger",
     "primary",
-    "default", "default", "default",
-    "default", "default", "default",
-    "default", "default", "default",
-    "default", "default", "default"
+    "default"
 ];
 var terrainDistribution = [
     "city",
@@ -9889,6 +9922,7 @@ var terrainDistribution = [
     "mountain", "mountain",
     "plains", "plains", "plains", "plains" // way more frequent
 ];
+var turns = ["heads", "tails"];
 ;
 var InvalidPlays = {
     WrongColor: "move a meeple of your own color.",
@@ -9897,8 +9931,7 @@ var InvalidPlays = {
     EmptyTerrain: "choose a terrain with a meeple in it.",
     NoGameYet: "wait for a game to begin.",
     OutOfBoard: "keep your meeples inside the board.",
-    NotYourTurn: "wait for your turn to begin.",
-    None: ""
+    NotYourTurn: "wait for your turn to begin."
 };
 function logBoard(game) {
     var colors = {
@@ -9921,12 +9954,7 @@ function nextPlayer(game) {
     return colors[(colors.indexOf(game.currentPlayer) + 1) % game.players.length];
 }
 function flipTurn(turn) {
-    switch (turn) {
-        case "heads":
-            return "tails";
-        case "tails":
-            return "heads";
-    }
+    return (turns[(turns.indexOf(turn) + 1) % turns.length]);
 }
 function nextTurn(game) {
     return colors.indexOf(nextPlayer(game)) === 0 ?
@@ -9952,7 +9980,7 @@ function moveMeeple(game, from, action) {
         lastAction = { explanation: InvalidPlays.WrongColor };
     }
     else if (gameMeeples[topMeeple].turn !== game.turn) {
-        lastAction = { explanation: (game.turn === "heads" ?
+        lastAction = { explanation: (game.turn === turns[0] ?
                 InvalidPlays.WrongTurnHeads :
                 InvalidPlays.WrongTurnTails) };
     }
@@ -9988,6 +10016,29 @@ function moveMeeple(game, from, action) {
             meeple.position = to;
             gameMeeples[meeple.key] = meeple;
             lastAction = action;
+            if (meeple.topsMeeple !== -1
+                && gameMeeples[meeple.key].color !== gameMeeples[meeple.topsMeeple].color) {
+                var meepleOver = gameMeeples[meeple.key];
+                var meepleUnder = gameMeeples[meeple.topsMeeple];
+                if (meepleOver.faith > meepleUnder.faith) {
+                    meepleUnder.color = meepleOver.color;
+                    meepleOver.strength += meepleUnder.strength;
+                }
+                else {
+                    meepleUnder.resistance -= meepleOver.strength;
+                    meepleOver.resistance -= meepleUnder.strength;
+                    if (meepleUnder.resistance <= 0) {
+                        meepleUnder.key = -1;
+                        meepleOver.topsMeeple = meepleUnder.topsMeeple;
+                        meepleOver.faith += meepleUnder.faith;
+                    }
+                    if (meepleOver.resistance <= 0) {
+                        meepleOver.key = -1;
+                        gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.topsMeeple;
+                        meepleUnder.faith += meepleOver.faith;
+                    }
+                }
+            }
         }
     }
     return {
@@ -10001,14 +10052,17 @@ function moveMeeple(game, from, action) {
         lastAction: lastAction
     };
 }
-function playerMeeples(game, player) {
-    return game.meeples.filter(function (meeple) {
-        return meeple.color === (player ? player : game.currentPlayer);
-    })
-        .map(function (meeple) { return meeple.key; });
-}
 function moveSwarm(game, action) {
-    return playerMeeples(game).map(function (meepleIndex) { return game.meeples[meepleIndex]; })
+    var availablePlayerMeeples = game.terrains.map(function (terrain) { return terrain.topMeeple; })
+        .filter(function (topMeeple) {
+        return topMeeple !== -1 &&
+            game.meeples[topMeeple].color === game.currentPlayer &&
+            game.meeples[topMeeple].turn === game.turn;
+    });
+    return (action === "right" || action === "down" ?
+        availablePlayerMeeples.reverse() :
+        availablePlayerMeeples)
+        .map(function (meepleIndex) { return game.meeples[meepleIndex]; })
         .reduce(function (acc, meeple) { return moveMeeple(acc, meeple.position, action); }, game);
 }
 function play(game, play) {
@@ -10046,7 +10100,7 @@ function play(game, play) {
                 turn: game.turn,
                 currentPlayer: colors[0],
                 state: play.state,
-                lastAction: { explanation: InvalidPlays.None }
+                lastAction: "skip"
             };
         default:
             var gameStep = void 0;
@@ -10093,11 +10147,11 @@ function setup(playerCount, boardSize) {
                 var meeple = {
                     key: meepleKey++,
                     position: position,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    turn: "heads",
-                    strength: (10 / Math.ceil(Math.random() * 10)),
-                    resistance: (10 / Math.ceil(Math.random() * 10)),
-                    faith: (10 / Math.ceil(Math.random() * 10)),
+                    color: colors[colors.length - 1],
+                    turn: turns[0],
+                    strength: Math.ceil(Math.random() * 5),
+                    resistance: Math.ceil(Math.random() * 15),
+                    faith: Math.ceil(Math.random() * 15),
                     topsMeeple: -1
                 };
                 topMeeple = meeple.key;
@@ -10106,7 +10160,7 @@ function setup(playerCount, boardSize) {
             terrains[positionToIndex(position, boardSize)] = {
                 position: position,
                 geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
-                maxMeeples: Math.ceil(Math.random() * 10),
+                maxMeeples: Math.ceil(Math.random() * 6),
                 topMeeple: topMeeple
             };
         }
@@ -10128,10 +10182,10 @@ function setup(playerCount, boardSize) {
                 key: meepleKey++,
                 position: position,
                 color: color,
-                turn: "heads",
-                strength: (30 / Math.ceil(Math.random() * 10)),
-                resistance: (30 / Math.ceil(Math.random() * 10)),
-                faith: (30 / Math.ceil(Math.random() * 10)),
+                turn: turns[0],
+                strength: 10 + Math.ceil(Math.random() * 5),
+                resistance: 20 + Math.ceil(Math.random() * 10),
+                faith: 20 + Math.ceil(Math.random() * 10),
                 topsMeeple: -1
             };
             terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
@@ -10148,7 +10202,7 @@ function setup(playerCount, boardSize) {
         players: players,
         terrains: terrains,
         meeples: meeples.slice(),
-        turn: "heads",
+        turn: turns[0],
         currentPlayer: "default",
         state: "setup",
         lastAction: { explanation: InvalidPlays.None }
@@ -10175,7 +10229,9 @@ exports.default = function (props) {
             React.createElement("div", { key: "terrains", className: "board" }, props.game.terrains.map(function (terrain) {
                 return React.createElement(Terrain_1.default, { key: "row" + terrain.position.row + "col" + terrain.position.col, terrain: terrain, moveClick: props.moveClick });
             })),
-            React.createElement("div", { key: "meeples", className: "board" }, props.game.meeples.map(function (meeple) { return React.createElement(Meeple_1.default, { key: meeple.key, meeple: meeple }); }))));
+            React.createElement("div", { key: "meeples", className: "board" }, props.game.meeples
+                .filter(function (meeple) { return meeple.key !== -1; })
+                .map(function (meeple) { return React.createElement(Meeple_1.default, { key: meeple.key, meeple: meeple }); }))));
 };
 
 
@@ -10190,7 +10246,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(13);
 var Player_1 = __webpack_require__(90);
 exports.default = function (props) {
-    return React.createElement("div", { id: "players", className: "tile is-vertical" }, props.game.players.map(function (player) {
+    return React.createElement("div", { id: "players", className: "tile is-2 is-vertical" }, props.game.players.map(function (player) {
         return React.createElement(Player_1.default, { key: player.color, player: player, moveClick: props.moveClick, active: player.color === props.game.currentPlayer });
     }));
 };
@@ -10207,8 +10263,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(13);
 ;
 exports.default = function (props) {
-    return React.createElement("span", { className: "meeple icon is-medium is-" + props.meeple.color, style: { top: props.meeple.position.row * 44 + 8, left: props.meeple.position.col * 44 + 8 } },
-        React.createElement("i", { className: "fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "") }));
+    return React.createElement("span", { className: "icon is-medium meeple is-" + props.meeple.color, style: {
+            top: props.meeple.position.row * 44 + 8,
+            left: props.meeple.position.col * 44 + 8,
+            opacity: 0.5 + (props.meeple.resistance / 20)
+        } },
+        React.createElement("i", { title: "strength: " + props.meeple.strength
+                + "\nresistance: " + props.meeple.resistance
+                + "\nfaith: " + props.meeple.faith, className: "fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "") }));
 };
 
 
@@ -10295,7 +10357,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 exports.default = function (props) {
-    var guide = React.createElement("div", null);
+    var guide = React.createElement("br", null);
+    var guide_detail = React.createElement("br", null);
     switch (props.game.state) {
         case "setup":
             guide =
@@ -10310,7 +10373,12 @@ exports.default = function (props) {
                         React.createElement("span", { className: "icon" },
                             React.createElement("i", { className: "fa fa-minus" }))),
                     "\u00A0",
-                    props.game.players.length,
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
+                            state: "setup",
+                            player: "default",
+                            from: "player",
+                            action: "skip"
+                        }); } }, props.game.players.length),
                     "\u00A0",
                     React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
                             state: "setup",
@@ -10319,8 +10387,9 @@ exports.default = function (props) {
                             action: "up"
                         }); } },
                         React.createElement("span", { className: "icon" },
-                            React.createElement("i", { className: "fa fa-plus" }))),
-                    React.createElement("br", null),
+                            React.createElement("i", { className: "fa fa-plus" }))));
+            guide_detail =
+                React.createElement("p", null,
                     React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
                             state: "play",
                             player: "default",
@@ -10329,7 +10398,6 @@ exports.default = function (props) {
                         }); } }, "click here to begin."));
             break;
         case "play":
-            var guide_detail = void 0;
             switch (props.game.lastAction) {
                 case "up":
                 case "down":
@@ -10341,10 +10409,16 @@ exports.default = function (props) {
                 case "convert":
                 case "skip":
                 case null:
-                    guide_detail = "choose an action for all your pieces with side " + props.game.turn + " up.";
+                    var side = React.createElement("span", { className: "icon" },
+                        React.createElement("i", { className: "fa fa-user-circle"
+                                + (props.game.turn === "heads" ? "-o" : "")
+                                + " is-" + props.game.currentPlayer }));
+                    guide_detail = React.createElement("p", null,
+                        "choose an action for these meeples: ",
+                        side);
                     break;
                 default:
-                    guide_detail = props.game.lastAction.explanation;
+                    guide_detail = React.createElement("p", null, props.game.lastAction.explanation);
                     break;
             }
             guide =
@@ -10353,9 +10427,7 @@ exports.default = function (props) {
                     React.createElement("span", { className: "is-" + props.game.currentPlayer },
                         "general ",
                         props.game.currentPlayer),
-                    "'s turn.",
-                    React.createElement("br", null),
-                    guide_detail);
+                    "'s turn.");
             break;
         case "end":
             guide =
@@ -10366,10 +10438,11 @@ exports.default = function (props) {
             break;
     }
     ;
-    return (React.createElement("div", { id: "status", className: "tile is-3 is-parent" },
+    return (React.createElement("div", { id: "status", className: "tile is-2 is-parent" },
         React.createElement("div", { className: "notification tile is-child" },
             React.createElement("h1", { className: "title" }, "anaander"),
-            React.createElement("h2", { className: "subtitle" }, guide))));
+            React.createElement("h2", { className: "subtitle" }, guide),
+            React.createElement("span", null, guide_detail))));
 };
 
 
@@ -10388,14 +10461,13 @@ function terrainColor(geography) {
         case "city": return "primary";
         case "island": return "info";
         case "forest": return "success";
-        case "swamp": return "warning";
+        case "swamp": return "default";
         case "mountain": return "danger";
-        case "plains": return "default";
+        case "plains": return "warning";
     }
 }
 exports.default = function (props) {
-    return React.createElement("article", { className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } },
-        React.createElement("div", { className: "terrain message-body" }));
+    return React.createElement("article", { title: props.terrain.geography, className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } });
 };
 
 
@@ -10422,7 +10494,7 @@ exports = module.exports = __webpack_require__(53)();
 
 
 // module
-exports.push([module.i, ":root {\r\n    --primary-color: hsl(171, 100%, 41%);\r\n    --info-color: hsl(217, 71%, 53%);\r\n    --success-color: hsl(141, 71%, 48%);\r\n    --warning-color: hsl(48, 100%, 67%);\r\n    --danger-color: hsl(348, 100%, 61%);\r\n    --default-color: hsl(0, 0%, 4%);\r\n}\r\n\r\n@keyframes flip-in-hor-bottom {\r\n  0% {\r\n    transform: rotateX(80deg);\r\n    opacity: 0;\r\n  }\r\n  100% {\r\n    transform: rotateX(0);\r\n    opacity: 1;\r\n  }\r\n}\r\n\r\n@keyframes jello-vertical {\r\n  0% {\r\n    transform: scale3d(1, 1, 1);\r\n  }\r\n  30% {\r\n    transform: scale3d(1.07, 1.07, 1);\r\n  }\r\n  40% {\r\n    transform: scale3d(0.96, 1.2, 1);\r\n  }\r\n  50% {\r\n    transform: scale3d(1.2, 0.96, 1);\r\n  }\r\n  65% {\r\n    transform: scale3d(1, 1.13, 1);\r\n  }\r\n  80% {\r\n    transform: scale3d(1.09, 1.05, 1);\r\n  }\r\n  90% {\r\n    transform: scale3d(1.05, 1.09, 1);\r\n  }\r\n  100% {\r\n    transform: scale3d(1.07, 1.07, 1);\r\n  }\r\n}\r\n\r\n.is-primary {\r\n    color: var(--primary-color);\r\n}\r\n\r\n.is-info {\r\n    color: var(--info-color);\r\n}\r\n\r\n.is-success {\r\n    color: var(--success-color);\r\n}\r\n\r\n.is-warning {\r\n    color: var(--warning-color);\r\n}\r\n\r\n.is-danger {\r\n    color: var(--danger-color);\r\n}\r\n\r\n.is-default {\r\n    color: var(--default-color);\r\n}\r\n\r\n.board {\r\n    position: relative;\r\n    box-sizing: border-box;\r\n}\r\n\r\n.terrain {\r\n    position: absolute;\r\n    width: 43px;\r\n    height: 43px;\r\n    transition-property: color, background-color, border-color;\r\n    transition-duration: 0.6s, 0.6s, 0.6s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.meeple {\r\n    position: absolute;\r\n    transition-property: top, left, color, opacity;\r\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.player {\r\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\r\n}\r\n\r\n.current-player {\r\n    animation: jello-vertical 0.5s both;\r\n}\r\n", ""]);
+exports.push([module.i, ":root {\n    --primary-color: hsl(171, 100%, 41%);\n    --info-color: hsl(217, 71%, 53%);\n    --success-color: hsl(141, 71%, 48%);\n    --warning-color: hsl(48, 100%, 67%);\n    --danger-color: hsl(348, 100%, 61%);\n    --default-color: hsl(0, 0%, 4%);\n}\n\n@keyframes flip-in-hor-bottom {\n  0% {\n    transform: rotateX(80deg);\n    opacity: 0;\n  }\n  100% {\n    transform: rotateX(0);\n    opacity: 1;\n  }\n}\n\n@keyframes jello-vertical {\n  0% {\n    transform: scale(1, 1);\n  }\n  30% {\n    transform: scale(1.07, 1.07);\n  }\n  40% {\n    transform: scale(0.96, 1.2);\n  }\n  50% {\n    transform: scale(1.2, 0.96);\n  }\n  65% {\n    transform: scale(1, 1.13);\n  }\n  80% {\n    transform: scale(1.09, 1.05);\n  }\n  90% {\n    transform: scale(1.05, 1.09);\n  }\n  100% {\n    transform: scale(1.07, 1.07);\n  }\n}\n\n.is-primary {\n    color: var(--primary-color);\n}\n\n.is-info {\n    color: var(--info-color);\n}\n\n.is-success {\n    color: var(--success-color);\n}\n\n.is-warning {\n    color: var(--warning-color);\n}\n\n.is-danger {\n    color: var(--danger-color);\n}\n\n.is-default {\n    color: var(--default-color);\n}\n\n.board {\n    position: relative;\n    box-sizing: border-box;\n}\n\n.terrain {\n    position: absolute;\n    width: 43px;\n    height: 43px;\n    transition-property: color, background-color, border-color;\n    transition-duration: 0.6s, 0.6s, 0.6s;\n    transition-timing-function: ease-out;\n}\n\n.meeple {\n    position: absolute;\n    transition-property: top, left, color, opacity;\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;\n    transition-timing-function: ease-out;\n}\n\n.player {\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\n}\n\n.current-player {\n    animation: jello-vertical 0.5s both;\n}\n", ""]);
 
 // exports
 
@@ -22675,4 +22747,4 @@ ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementByI
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.35c9b80f60112e745ccc.js.map
+//# sourceMappingURL=bundle.70b0b1bae30f075c0126.js.map
