@@ -85,8 +85,8 @@
 
 .meeple {
     position: absolute;
-    transition-property: top, left, color, opacity;
-    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;
+    transition-property: top, left, color, opacity, transform;
+    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
     transition-timing-function: ease-out;
 }
 
