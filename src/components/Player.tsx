@@ -1,15 +1,14 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-
-import { Player, Play } from "../Game";
+import * as Game from "../Game";
 
 interface IProps {
-  player: Player;
-  moveClick: (move: Play) => void;
+  player: Game.Player;
+  moveClick: (move: Game.Play) => void;
   active: boolean;
 };
 
-export default (props: IProps) =>
+const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
   <div className="player tile is-parent">
     <article className={"tile is-child message is-" + props.player.team + (props.active ? " current-player" : "")}
       style={{
@@ -106,3 +105,5 @@ export default (props: IProps) =>
       </div>
     </article>
   </div>;
+
+export default Player;

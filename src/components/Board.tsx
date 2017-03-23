@@ -1,23 +1,23 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
+import { meeplesBelow, Meeple as MeepleType } from "../Game";
 
-import { meeplesBelow } from "../Game";
 import { IProps } from "./Table";
 
 import Terrain from "./Terrain";
 import Meeple from "./Meeple";
 
-const translation =
+const translation: { row: number, col: number }[][] =
 [
     [{row: 0, col: 0}],
-    [{row: -11, col: -11}, {row: 11, col: 11}],
-    [{row: -15, col: -15}, {row: 0, col: 0}, {row: 15, col: 15}],
-    [{row: -11, col: -11}, {row: -11, col: 11}, {row: 11, col: -11}, {row: 11, col: 11}],
-    [{row: -15, col: -15}, {row: -15, col: 15}, {row: 0, col: 0}, {row: 15, col: -15}, {row: 15, col: 15}],
-    [{row: -15, col: -15}, {row: -15, col: 15}, {row: 0, col: -15}, {row: 0, col: 15}, {row: 15, col: -15}, {row: 15, col: 15}]
+    [{row: -9, col: -9}, {row: 9, col: 9}],
+    [{row: -13, col: -13}, {row: 0, col: 0}, {row: 13, col: 13}],
+    [{row: -10, col: -10}, {row: -10, col: 10}, {row: 10, col: -10}, {row: 10, col: 10}],
+    [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: 0}, {row: 14, col: -14}, {row: 14, col: 14}],
+    [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: -14}, {row: 0, col: 14}, {row: 14, col: -14}, {row: 14, col: 14}]
 ];
 
-export default (props: IProps) =>
+const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <div id="board" className="container tile is-5 is-parent">
         <div className="tile is-child">
             <div key="terrains" className="board">
@@ -25,7 +25,7 @@ export default (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
-                        moveClick={props.moveClick}
+                        moveClick={props.playEvent}
                     />
                 )}
             </div>
@@ -33,14 +33,19 @@ export default (props: IProps) =>
                 {props.game.terrains
                     .filter((terrain) => terrain.topMeeple !== -1)
                     .map((terrain) => meeplesBelow(props.game, terrain.topMeeple, []))
-                    .map((meeples) =>
-                        meeples.map((meeple, pos) =>
-                            <Meeple
-                                key={meeple.key}
-                                meeple={meeple}
-                                translation={translation[meeples.length - 1][pos]}
-                                scale={1/meeples.length} />
-                        ))}
+                    .reduce((acc, meeples) => acc.concat(
+                        meeples.map((meeple, index) => ({ m: meeple, p: index, l: meeples.length }))
+                    ), new Array<{ m: MeepleType, p: number, l: number }>())
+                    .sort((a, b) => a.m.key - b.m.key)
+                    .map((meeple) =>
+                        <Meeple
+                            key={meeple.m.key}
+                            meeple={meeple.m}
+                            translation={translation[meeple.l - 1][meeple.p]}
+                            scale={1.4 - (meeple.l  / 7)} />
+                    )}
             </div>
         </div>
     </div>;
+
+export default Board;

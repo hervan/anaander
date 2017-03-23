@@ -15,7 +15,7 @@ const teams: Team[] = [
     "default"
 ];
 
-type Direction =
+export type Direction =
 | "up"
 | "left"
 | "down"
@@ -158,7 +158,7 @@ function nextPlayer(game: Game): Team {
 
     do {
         player = teams[(teams.indexOf(player) + 1) % game.players.length];
-    } while (game.players[teams.indexOf(player)].swarmSize === 0 && i-- > 0);
+    } while (game.players.length > 0 && game.players[teams.indexOf(player)].swarmSize === 0 && i-- > 0);
 
     return player;
 }
@@ -170,7 +170,7 @@ function flipTurn(turn: Turn): Turn {
 
 function nextTurn(game: Game): Turn {
 
-    return teams.indexOf(nextPlayer(game)) < teams.indexOf(game.currentPlayer) ?
+    return teams.indexOf(nextPlayer(game)) <= teams.indexOf(game.currentPlayer) ?
         flipTurn(game.turn) :
         game.turn;
 }
@@ -370,7 +370,7 @@ function moveSwarm(game: Game, action: Direction | Action): Game {
 
 export function play(game: Game, play: Play): Game {
 
-    if (play.state !== "play") {
+    if (play.state === "setup") {
 
         return {
 

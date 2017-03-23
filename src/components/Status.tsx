@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { IProps } from "./Table";
 
-export default (props: IProps) => {
+const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
 
     let guide: JSX.Element = <br />;
     let guide_detail: JSX.Element = <br />;
@@ -16,7 +16,7 @@ export default (props: IProps) => {
                 <p>
                     how many players?
                     &nbsp;
-                    <a className="is-link" onClick={() => props.moveClick({
+                    <a className="is-link" onClick={() => props.playEvent({
                         state: "setup",
                         player: "default",
                         from: "player",
@@ -27,7 +27,7 @@ export default (props: IProps) => {
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => props.moveClick({
+                    <a className="is-link" onClick={() => props.playEvent({
                         state: "setup",
                         player: "default",
                         from: "player",
@@ -36,7 +36,7 @@ export default (props: IProps) => {
                         {props.game.players.length}
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => props.moveClick({
+                    <a className="is-link" onClick={() => props.playEvent({
                         state: "setup",
                         player: "default",
                         from: "player",
@@ -49,7 +49,7 @@ export default (props: IProps) => {
                 </p>;
             guide_detail =
                 <p>
-                    <a className="is-link" onClick={() => props.moveClick({
+                    <a className="is-link" onClick={() => props.playEvent({
                         state: "play",
                         player: "default",
                         from: "player",
@@ -122,3 +122,5 @@ export default (props: IProps) => {
         </div>
     );
 };
+
+export default Status;

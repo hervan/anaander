@@ -1,14 +1,13 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-
-import { Play, Terrain, Geography, Team } from "../Game";
+import * as Game from "../Game";
 
 interface IProps {
-    terrain: Terrain;
-    moveClick: (move: Play) => void;
+    terrain: Game.Terrain;
+    moveClick: (move: Game.Play) => void;
 };
 
-function terrainColor(geography: Geography): Team {
+function terrainColor(geography: Game.Geography): Game.Team {
     switch (geography) {
         case "city": return "primary";
         case "island": return "info";
@@ -19,9 +18,11 @@ function terrainColor(geography: Geography): Team {
     }
 }
 
-export default (props: IProps) =>
+const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <article
         title={props.terrain.geography + "\nspace for " + props.terrain.spaceLeft + " meeples"}
         className={"terrain message is-" + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>
     </article>;
+
+export default Terrain;

@@ -5,14 +5,16 @@ import { IProps } from "./Table";
 
 import Player from "./Player";
 
-export default (props: IProps) =>
+const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <div id="players" className="tile is-2 is-vertical">
         {props.game.players.map((player) =>
             <Player
                 key={player.team}
                 player={player}
-                moveClick={props.moveClick}
+                moveClick={props.playEvent}
                 active={player.team === props.game.currentPlayer}
             />
         )}
     </div>;
+
+export default Controls;

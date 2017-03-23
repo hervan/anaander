@@ -1,10 +1,9 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-
-import { Meeple } from "../Game";
+import * as Game from "../Game";
 
 interface IProps {
-    meeple: Meeple;
+    meeple: Game.Meeple;
     translation: {
         row: number;
         col: number;
@@ -12,11 +11,11 @@ interface IProps {
     scale: number;
 };
 
-export default (props: IProps) =>
+const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <span className={"icon is-medium meeple is-" + props.meeple.team}
         style={{
-            top: props.meeple.position.row * 44 + 8 + props.translation.row,
-            left: props.meeple.position.col * 44 + 8 + props.translation.col,
+            top: props.meeple.position.row * 44 + 7 + props.translation.row,
+            left: props.meeple.position.col * 44 + 7 + props.translation.col,
             transform: "scale(" + props.scale + ")",
             opacity: 0.5 + (props.meeple.resistance / 20)
         }}>
@@ -27,3 +26,5 @@ export default (props: IProps) =>
             className={"fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "")}>
         </i>
     </span>;
+
+export default Meeple;
