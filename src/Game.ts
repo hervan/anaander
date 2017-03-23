@@ -170,7 +170,7 @@ function flipTurn(turn: Turn): Turn {
 
 function nextTurn(game: Game): Turn {
 
-    return teams.indexOf(nextPlayer(game)) === 0 ?
+    return teams.indexOf(nextPlayer(game)) < teams.indexOf(game.currentPlayer) ?
         flipTurn(game.turn) :
         game.turn;
 }

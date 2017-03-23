@@ -102,7 +102,7 @@ export default (props: IProps) => {
 
             guide =
                 <p>
-                    general {props.game.currentPlayer} won the game!
+                    <span className={"is-" + props.game.currentPlayer}>general {props.game.currentPlayer}</span> won the game!
                 </p>;
 
             break;
