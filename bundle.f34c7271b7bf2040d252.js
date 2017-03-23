@@ -548,7 +548,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 var _prodInvariant = __webpack_require__(3);
 
 var DOMProperty = __webpack_require__(14);
-var ReactDOMComponentFlags = __webpack_require__(60);
+var ReactDOMComponentFlags = __webpack_require__(61);
 
 var invariant = __webpack_require__(1);
 
@@ -1204,9 +1204,9 @@ module.exports = emptyFunction;
 var _prodInvariant = __webpack_require__(3),
     _assign = __webpack_require__(4);
 
-var CallbackQueue = __webpack_require__(58);
+var CallbackQueue = __webpack_require__(59);
 var PooledClass = __webpack_require__(15);
-var ReactFeatureFlags = __webpack_require__(63);
+var ReactFeatureFlags = __webpack_require__(64);
 var ReactReconciler = __webpack_require__(19);
 var Transaction = __webpack_require__(29);
 
@@ -2120,7 +2120,7 @@ var warning = __webpack_require__(2);
 var canDefineProperty = __webpack_require__(51);
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-var REACT_ELEMENT_TYPE = __webpack_require__(78);
+var REACT_ELEMENT_TYPE = __webpack_require__(79);
 
 var RESERVED_PROPS = {
   key: true,
@@ -2507,7 +2507,7 @@ var DOMNamespaces = __webpack_require__(34);
 var setInnerHTML = __webpack_require__(31);
 
 var createMicrosoftUnsafeLocalFunction = __webpack_require__(41);
-var setTextContent = __webpack_require__(76);
+var setTextContent = __webpack_require__(77);
 
 var ELEMENT_NODE_TYPE = 1;
 var DOCUMENT_FRAGMENT_NODE_TYPE = 11;
@@ -2819,7 +2819,7 @@ var createFactory = ReactElement.createFactory;
 var cloneElement = ReactElement.cloneElement;
 
 if (process.env.NODE_ENV !== 'production') {
-  var ReactElementValidator = __webpack_require__(79);
+  var ReactElementValidator = __webpack_require__(80);
   createElement = ReactElementValidator.createElement;
   createFactory = ReactElementValidator.createFactory;
   cloneElement = ReactElementValidator.cloneElement;
@@ -2927,8 +2927,8 @@ var EventPluginRegistry = __webpack_require__(26);
 var EventPluginUtils = __webpack_require__(35);
 var ReactErrorUtils = __webpack_require__(39);
 
-var accumulateInto = __webpack_require__(70);
-var forEachAccumulated = __webpack_require__(71);
+var accumulateInto = __webpack_require__(71);
+var forEachAccumulated = __webpack_require__(72);
 var invariant = __webpack_require__(1);
 
 /**
@@ -3208,8 +3208,8 @@ module.exports = EventPluginHub;
 var EventPluginHub = __webpack_require__(22);
 var EventPluginUtils = __webpack_require__(35);
 
-var accumulateInto = __webpack_require__(70);
-var forEachAccumulated = __webpack_require__(71);
+var accumulateInto = __webpack_require__(71);
+var forEachAccumulated = __webpack_require__(72);
 var warning = __webpack_require__(2);
 
 var getListener = EventPluginHub.getListener;
@@ -3727,7 +3727,7 @@ var _assign = __webpack_require__(4);
 
 var EventPluginRegistry = __webpack_require__(26);
 var ReactEventEmitterMixin = __webpack_require__(141);
-var ViewportMetrics = __webpack_require__(69);
+var ViewportMetrics = __webpack_require__(70);
 
 var getVendorPrefixedEventName = __webpack_require__(177);
 var isEventSupported = __webpack_require__(45);
@@ -4057,7 +4057,7 @@ module.exports = ReactBrowserEventEmitter;
 
 
 var SyntheticUIEvent = __webpack_require__(25);
-var ViewportMetrics = __webpack_require__(69);
+var ViewportMetrics = __webpack_require__(70);
 
 var getEventModifierState = __webpack_require__(43);
 
@@ -4675,7 +4675,7 @@ var ReactInstrumentation = __webpack_require__(8);
 
 var createMicrosoftUnsafeLocalFunction = __webpack_require__(41);
 var setInnerHTML = __webpack_require__(31);
-var setTextContent = __webpack_require__(76);
+var setTextContent = __webpack_require__(77);
 
 function getNodeAfter(parentNode, node) {
   // Special case for text components, which return [open, close] comments
@@ -5223,7 +5223,7 @@ module.exports = KeyEscapeUtils;
 var _prodInvariant = __webpack_require__(3);
 
 var React = __webpack_require__(20);
-var ReactPropTypesSecret = __webpack_require__(68);
+var ReactPropTypesSecret = __webpack_require__(69);
 
 var invariant = __webpack_require__(1);
 var warning = __webpack_require__(2);
@@ -6728,6 +6728,367 @@ module.exports = getIteratorFn;
 
 /***/ }),
 /* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var teams = [
+    "info",
+    "warning",
+    "success",
+    "danger",
+    "primary",
+    "default"
+];
+var terrainDistribution = [
+    "city",
+    "island", "island",
+    "forest", "forest",
+    "swamp", "swamp",
+    "mountain", "mountain",
+    "plains", "plains", "plains", "plains" // way more frequent
+];
+var turns = ["heads", "tails"];
+;
+var InvalidPlays = {
+    WrongTeam: "move a meeple of your own team.",
+    WrongTurnHeads: "move a meeple with heads up.",
+    WrongTurnTails: "move a meeple with tails up.",
+    EmptyTerrain: "choose a terrain with a meeple in it.",
+    NoGameYet: "wait for a game to begin.",
+    OutOfBoard: "keep your meeples inside the board.",
+    NotYourTurn: "wait for your turn to begin.",
+    TerrainIsCrowded: "move to a terrain with space available."
+};
+function logBoard(game) {
+    var teams = {
+        "info": "1",
+        "warning": "2",
+        "success": "3",
+        "danger": "4",
+        "primary": "5",
+        "default": "o"
+    };
+    var board = "";
+    game.terrains.forEach(function (terrain, index) {
+        board += (terrain.topMeeple === -1 ? "#" : teams[game.meeples[terrain.topMeeple].team])
+            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "");
+    });
+    console.log(board);
+}
+exports.logBoard = logBoard;
+function nextPlayer(game) {
+    var player = game.currentPlayer;
+    var i = game.players.length;
+    do {
+        player = teams[(teams.indexOf(player) + 1) % game.players.length];
+    } while (game.players.length > 0 && game.players[teams.indexOf(player)].swarmSize === 0 && i-- > 0);
+    return player;
+}
+function flipTurn(turn) {
+    return (turns[(turns.indexOf(turn) + 1) % turns.length]);
+}
+function nextTurn(game) {
+    return teams.indexOf(nextPlayer(game)) <= teams.indexOf(game.currentPlayer) ?
+        flipTurn(game.turn) :
+        game.turn;
+}
+function positionToIndex(position, boardSize) {
+    return (position.row * boardSize + position.col);
+}
+function meeplesBelow(game, meepleIndex, acc) {
+    var meeple = game.meeples[meepleIndex];
+    acc.push(meeple);
+    if (meeple.topsMeeple !== -1) {
+        return meeplesBelow(game, meeple.topsMeeple, acc);
+    }
+    else {
+        return acc;
+    }
+}
+exports.meeplesBelow = meeplesBelow;
+function moveMeeple(game, from, action) {
+    var gameMeeples = game.meeples.slice();
+    var gameTerrains = game.terrains.slice();
+    var gamePlayers = game.players.slice();
+    var terrainFrom = gameTerrains[positionToIndex(from, game.boardSize)];
+    var topMeeple = terrainFrom.topMeeple;
+    var lastAction = null;
+    var to = {
+        row: from.row,
+        col: from.col
+    };
+    if (topMeeple === -1) {
+        lastAction = { explanation: InvalidPlays.EmptyTerrain };
+    }
+    else if (gameMeeples[topMeeple].team !== game.currentPlayer) {
+        lastAction = { explanation: InvalidPlays.WrongTeam };
+    }
+    else if (gameMeeples[topMeeple].turn !== game.turn) {
+        lastAction = { explanation: (game.turn === turns[0] ?
+                InvalidPlays.WrongTurnHeads :
+                InvalidPlays.WrongTurnTails) };
+    }
+    else {
+        switch (action) {
+            case "left":
+                to.col = from.col - 1;
+                break;
+            case "right":
+                to.col = from.col + 1;
+                break;
+            case "up":
+                to.row = from.row - 1;
+                break;
+            case "down":
+                to.row = from.row + 1;
+                break;
+            default:
+                lastAction = null;
+        }
+        if (to.row < 0
+            || to.row >= game.boardSize
+            || to.col < 0
+            || to.col >= game.boardSize) {
+            lastAction = { explanation: InvalidPlays.OutOfBoard };
+        }
+        else {
+            var terrainTo = gameTerrains[positionToIndex(to, game.boardSize)];
+            if (terrainTo.spaceLeft <= 0
+                && terrainTo.topMeeple !== terrainFrom.topMeeple) {
+                lastAction = { explanation: InvalidPlays.TerrainIsCrowded };
+            }
+            if (lastAction === null) {
+                var meeple = gameMeeples[topMeeple];
+                meeple.turn = flipTurn(meeple.turn);
+                terrainFrom.topMeeple = meeple.topsMeeple;
+                terrainFrom.spaceLeft++;
+                meeple.topsMeeple = terrainTo.topMeeple;
+                terrainTo.topMeeple = meeple.key;
+                terrainTo.spaceLeft--;
+                meeple.position = to;
+                gameMeeples[meeple.key] = meeple;
+                lastAction = action;
+                if (meeple.topsMeeple !== -1
+                    && gameMeeples[meeple.key].team !== gameMeeples[meeple.topsMeeple].team) {
+                    var meepleOver = gameMeeples[meeple.key];
+                    var meepleUnder = gameMeeples[meeple.topsMeeple];
+                    if (meepleOver.faith > meepleUnder.faith + meepleUnder.strength) {
+                        if (teams.indexOf(meepleUnder.team) < gamePlayers.length) {
+                            gamePlayers[teams.indexOf(meepleUnder.team)].swarmSize--;
+                        }
+                        meepleUnder.team = meepleOver.team;
+                        gamePlayers[teams.indexOf(meepleOver.team)].swarmSize++;
+                        meepleOver.resistance += meepleUnder.resistance;
+                    }
+                    else {
+                        meepleUnder.resistance -= meepleOver.strength;
+                        meepleOver.resistance -= meepleUnder.strength;
+                        if (meepleUnder.resistance <= 0) {
+                            meepleUnder.key = -1;
+                            meepleOver.topsMeeple = meepleUnder.topsMeeple;
+                            meepleOver.faith += meepleUnder.faith;
+                            terrainTo.spaceLeft++;
+                            if (teams.indexOf(meepleUnder.team) < gamePlayers.length) {
+                                gamePlayers[teams.indexOf(meepleUnder.team)].swarmSize--;
+                            }
+                        }
+                        if (meepleOver.resistance <= 0) {
+                            meepleOver.key = -1;
+                            terrainTo.topMeeple = meepleOver.topsMeeple;
+                            meepleUnder.faith += meepleOver.faith;
+                            terrainTo.spaceLeft++;
+                            gamePlayers[teams.indexOf(meepleOver.team)].swarmSize--;
+                        }
+                    }
+                }
+                gameTerrains[positionToIndex(from, game.boardSize)] = terrainFrom;
+                gameTerrains[positionToIndex(to, game.boardSize)] = terrainTo;
+            }
+        }
+    }
+    return {
+        boardSize: game.boardSize,
+        players: gamePlayers.slice(),
+        terrains: gameTerrains.slice(),
+        meeples: gameMeeples.slice(),
+        turn: game.turn,
+        currentPlayer: game.currentPlayer,
+        state: game.state,
+        lastAction: lastAction
+    };
+}
+function moveSwarm(game, action) {
+    var availablePlayerMeeples = game.terrains.map(function (terrain) { return terrain.topMeeple; })
+        .filter(function (topMeeple) {
+        return topMeeple !== -1 &&
+            game.meeples[topMeeple].team === game.currentPlayer &&
+            game.meeples[topMeeple].turn === game.turn;
+    });
+    return (action === "right" || action === "down" ?
+        availablePlayerMeeples.reverse() :
+        availablePlayerMeeples)
+        .map(function (meepleIndex) { return game.meeples[meepleIndex]; })
+        .reduce(function (acc, meeple) { return moveMeeple(acc, meeple.position, action); }, game);
+}
+function play(game, play) {
+    if (play.state === "setup") {
+        return {
+            boardSize: game.boardSize,
+            players: game.players.slice(),
+            terrains: game.terrains.slice(),
+            meeples: game.meeples.slice(),
+            turn: game.turn,
+            currentPlayer: game.currentPlayer,
+            state: game.state,
+            lastAction: { explanation: InvalidPlays.NoGameYet }
+        };
+    }
+    else if (game.currentPlayer !== play.player) {
+        return {
+            boardSize: game.boardSize,
+            players: game.players.slice(),
+            terrains: game.terrains.slice(),
+            meeples: game.meeples.slice(),
+            turn: game.turn,
+            currentPlayer: game.currentPlayer,
+            state: game.state,
+            lastAction: { explanation: InvalidPlays.NotYourTurn }
+        };
+    }
+    switch (play.player) {
+        case "default":
+            return {
+                boardSize: game.boardSize,
+                players: game.players.slice(),
+                terrains: game.terrains.slice(),
+                meeples: game.meeples.slice(),
+                turn: game.turn,
+                currentPlayer: teams[0],
+                state: play.state,
+                lastAction: "skip"
+            };
+        default:
+            var gameStep = void 0;
+            var player = void 0;
+            var turn = void 0;
+            switch (play.from) {
+                case "player":
+                    gameStep = moveSwarm(game, play.action);
+                    player = nextPlayer(gameStep);
+                    turn = nextTurn(gameStep);
+                    break;
+                default:
+                    gameStep = moveMeeple(game, play.from, play.action);
+                    player = nextPlayer(gameStep);
+                    turn = gameStep.turn;
+                    break;
+            }
+            var state = gameStep.state;
+            if (gameStep.players.filter(function (player) { return player.swarmSize > 0; }).length < 2) {
+                state = "end";
+            }
+            return {
+                boardSize: gameStep.boardSize,
+                players: gameStep.players.slice(),
+                terrains: gameStep.terrains.slice(),
+                meeples: gameStep.meeples.slice(),
+                turn: turn,
+                currentPlayer: player,
+                state: state,
+                lastAction: gameStep.lastAction
+            };
+    }
+}
+exports.play = play;
+function setup(playerCount, boardSize) {
+    if (boardSize === void 0) { boardSize = 16; }
+    var meepleKey = playerCount;
+    var terrains = new Array();
+    var meeples = new Array();
+    for (var i_1 = 0; i_1 < boardSize; i_1++) {
+        for (var j = 0; j < boardSize; j++) {
+            var position = {
+                row: i_1,
+                col: j
+            };
+            var topMeeple = -1;
+            var spaceLeft = Math.ceil(Math.random() * 6);
+            if (spaceLeft > 1 && Math.random() < 0.12) {
+                var meeple = {
+                    key: meepleKey++,
+                    position: position,
+                    team: teams[teams.length - 1],
+                    turn: turns[0],
+                    strength: Math.ceil(Math.random() * 5),
+                    resistance: Math.ceil(Math.random() * 15),
+                    faith: Math.ceil(Math.random() * 15),
+                    topsMeeple: -1
+                };
+                topMeeple = meeple.key;
+                spaceLeft--;
+                meeples[meeple.key] = meeple;
+            }
+            terrains[positionToIndex(position, boardSize)] = {
+                position: position,
+                geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
+                spaceLeft: spaceLeft,
+                topMeeple: topMeeple
+            };
+        }
+    }
+    var players = new Array();
+    var i = 0;
+    meepleKey = 0;
+    for (var _i = 0, teams_1 = teams; _i < teams_1.length; _i++) {
+        var team = teams_1[_i];
+        if (i < playerCount) {
+            var position = void 0;
+            do {
+                position = {
+                    row: Math.floor(Math.random() * (boardSize - 2)) + 1,
+                    col: Math.floor(Math.random() * (boardSize - 2)) + 1
+                };
+            } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
+            var meeple = {
+                key: meepleKey++,
+                position: position,
+                team: team,
+                turn: turns[0],
+                strength: 10 + Math.ceil(Math.random() * 5),
+                resistance: 20 + Math.ceil(Math.random() * 10),
+                faith: 20 + Math.ceil(Math.random() * 10),
+                topsMeeple: -1
+            };
+            terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
+            terrains[positionToIndex(position, boardSize)].spaceLeft--;
+            meeples[meeple.key] = meeple;
+            players[teams.indexOf(team)] = {
+                team: team,
+                individualActions: 0,
+                swarmSize: 1
+            };
+            i++;
+        }
+    }
+    var game = {
+        boardSize: boardSize,
+        players: players,
+        terrains: terrains,
+        meeples: meeples.slice(),
+        turn: turns[0],
+        currentPlayer: "default",
+        state: "setup",
+        lastAction: { explanation: InvalidPlays.None }
+    };
+    return game;
+}
+exports.setup = setup;
+
+
+/***/ }),
+/* 54 */
 /***/ (function(module, exports) {
 
 /*
@@ -6783,7 +7144,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6873,7 +7234,7 @@ module.exports = EventListener;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6905,7 +7266,7 @@ function focusNode(node) {
 module.exports = focusNode;
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6945,7 +7306,7 @@ function getActiveElement() /*?DOMElement*/{
 module.exports = getActiveElement;
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7098,7 +7459,7 @@ var CSSProperty = {
 module.exports = CSSProperty;
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7223,7 +7584,7 @@ module.exports = PooledClass.addPoolingTo(CallbackQueue);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7466,7 +7827,7 @@ module.exports = DOMPropertyOperations;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7489,7 +7850,7 @@ var ReactDOMComponentFlags = {
 module.exports = ReactDOMComponentFlags;
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7695,7 +8056,7 @@ module.exports = ReactDOMSelect;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7730,7 +8091,7 @@ ReactEmptyComponent.injection = ReactEmptyComponentInjection;
 module.exports = ReactEmptyComponent;
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7757,7 +8118,7 @@ var ReactFeatureFlags = {
 module.exports = ReactFeatureFlags;
 
 /***/ }),
-/* 64 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7831,7 +8192,7 @@ module.exports = ReactHostComponent;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7850,8 +8211,8 @@ module.exports = ReactHostComponent;
 var ReactDOMSelection = __webpack_require__(132);
 
 var containsNode = __webpack_require__(97);
-var focusNode = __webpack_require__(55);
-var getActiveElement = __webpack_require__(56);
+var focusNode = __webpack_require__(56);
+var getActiveElement = __webpack_require__(57);
 
 function isInDocument(node) {
   return containsNode(document.documentElement, node);
@@ -7960,7 +8321,7 @@ var ReactInputSelection = {
 module.exports = ReactInputSelection;
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7986,7 +8347,7 @@ var ReactCurrentOwner = __webpack_require__(11);
 var ReactDOMComponentTree = __webpack_require__(5);
 var ReactDOMContainerInfo = __webpack_require__(124);
 var ReactDOMFeatureFlags = __webpack_require__(126);
-var ReactFeatureFlags = __webpack_require__(63);
+var ReactFeatureFlags = __webpack_require__(64);
 var ReactInstanceMap = __webpack_require__(24);
 var ReactInstrumentation = __webpack_require__(8);
 var ReactMarkupChecksum = __webpack_require__(146);
@@ -7995,7 +8356,7 @@ var ReactUpdateQueue = __webpack_require__(40);
 var ReactUpdates = __webpack_require__(10);
 
 var emptyObject = __webpack_require__(21);
-var instantiateReactComponent = __webpack_require__(74);
+var instantiateReactComponent = __webpack_require__(75);
 var invariant = __webpack_require__(1);
 var setInnerHTML = __webpack_require__(31);
 var shouldUpdateReactComponent = __webpack_require__(46);
@@ -8504,7 +8865,7 @@ module.exports = ReactMount;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8550,7 +8911,7 @@ module.exports = ReactNodeTypes;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8572,7 +8933,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 module.exports = ReactPropTypesSecret;
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8604,7 +8965,7 @@ var ViewportMetrics = {
 module.exports = ViewportMetrics;
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8668,7 +9029,7 @@ module.exports = accumulateInto;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8704,7 +9065,7 @@ function forEachAccumulated(arr, cb, scope) {
 module.exports = forEachAccumulated;
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8720,7 +9081,7 @@ module.exports = forEachAccumulated;
 
 
 
-var ReactNodeTypes = __webpack_require__(67);
+var ReactNodeTypes = __webpack_require__(68);
 
 function getHostComponentFromComposite(inst) {
   var type;
@@ -8739,7 +9100,7 @@ function getHostComponentFromComposite(inst) {
 module.exports = getHostComponentFromComposite;
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8777,7 +9138,7 @@ function getTextContentAccessor() {
 module.exports = getTextContentAccessor;
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8797,8 +9158,8 @@ var _prodInvariant = __webpack_require__(3),
     _assign = __webpack_require__(4);
 
 var ReactCompositeComponent = __webpack_require__(121);
-var ReactEmptyComponent = __webpack_require__(62);
-var ReactHostComponent = __webpack_require__(64);
+var ReactEmptyComponent = __webpack_require__(63);
+var ReactHostComponent = __webpack_require__(65);
 
 var getNextDebugID = __webpack_require__(175);
 var invariant = __webpack_require__(1);
@@ -8911,7 +9272,7 @@ module.exports = instantiateReactComponent;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8967,7 +9328,7 @@ function isTextInputElement(elem) {
 module.exports = isTextInputElement;
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9024,7 +9385,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = setTextContent;
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9206,7 +9567,7 @@ module.exports = traverseAllChildren;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9231,7 +9592,7 @@ var REACT_ELEMENT_TYPE = typeof Symbol === 'function' && Symbol['for'] && Symbol
 module.exports = REACT_ELEMENT_TYPE;
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9471,7 +9832,7 @@ module.exports = ReactElementValidator;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9493,7 +9854,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 module.exports = ReactPropTypesSecret;
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports) {
 
 /*
@@ -9745,7 +10106,7 @@ function updateLink(linkElement, obj) {
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9762,7 +10123,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(13);
-var Game = __webpack_require__(86);
+var Game_1 = __webpack_require__(53);
 var Status_1 = __webpack_require__(91);
 var Board_1 = __webpack_require__(87);
 var Controls_1 = __webpack_require__(88);
@@ -9772,19 +10133,36 @@ var Table = (function (_super) {
     __extends(Table, _super);
     function Table() {
         var _this = _super.call(this) || this;
-        _this.state = { game: Game.setup(0), moveClick: _this.moveClick.bind(_this) };
+        _this.state = { game: Game_1.setup(0), playQueue: [], playEvent: _this.playEvent.bind(_this) };
+        _this.refresher = 0;
         document.addEventListener("keypress", function (event) {
             switch (event.key) {
+                case "q":
+                    _this.playEvent({
+                        state: _this.state.game.state,
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: "guard"
+                    });
+                    break;
                 case "w":
-                    _this.state.moveClick({
+                    _this.playEvent({
                         state: _this.state.game.state,
                         player: _this.state.game.currentPlayer,
                         from: "player",
                         action: "up"
                     });
                     break;
+                case "e":
+                    _this.playEvent({
+                        state: _this.state.game.state,
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: "attack"
+                    });
+                    break;
                 case "a":
-                    _this.state.moveClick({
+                    _this.playEvent({
                         state: _this.state.game.state,
                         player: _this.state.game.currentPlayer,
                         from: "player",
@@ -9792,7 +10170,7 @@ var Table = (function (_super) {
                     });
                     break;
                 case "s":
-                    _this.state.moveClick({
+                    _this.playEvent({
                         state: _this.state.game.state,
                         player: _this.state.game.currentPlayer,
                         from: "player",
@@ -9800,37 +10178,78 @@ var Table = (function (_super) {
                     });
                     break;
                 case "d":
-                    _this.state.moveClick({
+                    _this.playEvent({
                         state: _this.state.game.state,
                         player: _this.state.game.currentPlayer,
                         from: "player",
                         action: "right"
                     });
                     break;
+                case " ":
+                    _this.playEvent({
+                        state: "play",
+                        player: _this.state.game.currentPlayer,
+                        from: "player",
+                        action: null
+                    });
+                    break;
             }
         });
         return _this;
     }
-    Table.prototype.moveClick = function (move) {
-        switch (move.state) {
-            case "setup":
-                var change = (move.action === "up" && this.state.game.players.length < 5 ? 1 : 0)
-                    + (move.action === "down" && this.state.game.players.length > 0 ? -1 : 0);
-                this.setState({ game: Game.setup(this.state.game.players.length + change), moveClick: this.moveClick.bind(this) });
-                break;
-            case "play":
-                var gameStep = Game.play(this.state.game, move);
-                this.setState({ game: gameStep, moveClick: this.moveClick.bind(this) });
-                break;
+    Table.prototype.playEvent = function (play) {
+        var queue = this.state.playQueue;
+        queue.push(play);
+        this.setState({ playQueue: queue });
+    };
+    Table.prototype.componentDidUpdate = function () {
+        var _this = this;
+        var queue = this.state.playQueue;
+        if (queue.length > 0) {
+            var playData = queue.shift();
+            switch (playData.state) {
+                case "setup":
+                    var change = (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                        + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
+                    this.setState({ game: Game_1.setup(this.state.game.players.length + change), playQueue: [] });
+                    break;
+                case "play":
+                    var gameStep = Game_1.play(this.state.game, playData);
+                    this.setState({ game: gameStep, playQueue: queue });
+                    break;
+            }
+        }
+        if (this.refresher === 0 && this.state.game.state === "end") {
+            this.refresher = window.setInterval(function () { return _this.refresh(); }, 150);
+        }
+    };
+    Table.prototype.componentWillUnmount = function () {
+        clearInterval(this.refresher);
+        this.refresher = 0;
+    };
+    Table.prototype.refresh = function () {
+        var queue = this.state.playQueue;
+        if (this.state.game.state === "end" && queue.length === 0) {
+            var dirs = ["up", "left", "down", "right"];
+            var dir = dirs[Math.floor(Math.random() * dirs.length)];
+            for (var i = 0; i < Math.random() * this.state.game.boardSize / 2; i++) {
+                queue.push({
+                    state: "play",
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: dir
+                });
+            }
+            this.setState({ playQueue: queue });
         }
     };
     Table.prototype.render = function () {
         return (React.createElement("section", { className: "section" },
             React.createElement("div", { className: "container is-fluid" },
                 React.createElement("div", { id: "table", className: "tile is-ancestor" },
-                    React.createElement(Status_1.default, { game: this.state.game, moveClick: this.state.moveClick }),
-                    React.createElement(Board_1.default, { game: this.state.game, moveClick: this.state.moveClick }),
-                    React.createElement(Controls_1.default, { game: this.state.game, moveClick: this.state.moveClick })))));
+                    React.createElement(Status_1.default, { game: this.state.game, playEvent: this.state.playEvent }),
+                    React.createElement(Board_1.default, { game: this.state.game, playEvent: this.state.playEvent }),
+                    React.createElement(Controls_1.default, { game: this.state.game, playEvent: this.state.playEvent })))));
     };
     return Table;
 }(React.Component));
@@ -9838,7 +10257,7 @@ exports.Table = Table;
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9848,7 +10267,7 @@ module.exports = __webpack_require__(122);
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
@@ -9857,7 +10276,7 @@ module.exports = __webpack_require__(122);
 var content = __webpack_require__(93);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(81)(content, {});
+var update = __webpack_require__(82)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -9874,7 +10293,7 @@ if(false) {
 }
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
@@ -9883,7 +10302,7 @@ if(false) {
 var content = __webpack_require__(94);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(81)(content, {});
+var update = __webpack_require__(82)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -9900,319 +10319,6 @@ if(false) {
 }
 
 /***/ }),
-/* 86 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var colors = [
-    "info",
-    "warning",
-    "success",
-    "danger",
-    "primary",
-    "default"
-];
-var terrainDistribution = [
-    "city",
-    "island", "island",
-    "forest", "forest",
-    "swamp", "swamp",
-    "mountain", "mountain",
-    "plains", "plains", "plains", "plains" // way more frequent
-];
-var turns = ["heads", "tails"];
-;
-var InvalidPlays = {
-    WrongColor: "move a meeple of your own color.",
-    WrongTurnHeads: "move a meeple with heads up.",
-    WrongTurnTails: "move a meeple with tails up.",
-    EmptyTerrain: "choose a terrain with a meeple in it.",
-    NoGameYet: "wait for a game to begin.",
-    OutOfBoard: "keep your meeples inside the board.",
-    NotYourTurn: "wait for your turn to begin."
-};
-function logBoard(game) {
-    var colors = {
-        "info": "1",
-        "warning": "2",
-        "success": "3",
-        "danger": "4",
-        "primary": "5",
-        "default": "o"
-    };
-    var board = "";
-    game.terrains.forEach(function (terrain, index) {
-        board += (terrain.topMeeple === -1 ? "#" : colors[game.meeples[terrain.topMeeple].color])
-            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "");
-    });
-    console.log(board);
-}
-exports.logBoard = logBoard;
-function nextPlayer(game) {
-    return colors[(colors.indexOf(game.currentPlayer) + 1) % game.players.length];
-}
-function flipTurn(turn) {
-    return (turns[(turns.indexOf(turn) + 1) % turns.length]);
-}
-function nextTurn(game) {
-    return colors.indexOf(nextPlayer(game)) === 0 ?
-        flipTurn(game.turn) :
-        game.turn;
-}
-function positionToIndex(position, boardSize) {
-    return (position.row * boardSize + position.col);
-}
-function moveMeeple(game, from, action) {
-    var gameMeeples = game.meeples.slice();
-    var gameTerrains = game.terrains.slice();
-    var topMeeple = gameTerrains[positionToIndex(from, game.boardSize)].topMeeple;
-    var lastAction = null;
-    var to = {
-        row: from.row,
-        col: from.col
-    };
-    if (topMeeple === -1) {
-        lastAction = { explanation: InvalidPlays.EmptyTerrain };
-    }
-    else if (gameMeeples[topMeeple].color !== game.currentPlayer) {
-        lastAction = { explanation: InvalidPlays.WrongColor };
-    }
-    else if (gameMeeples[topMeeple].turn !== game.turn) {
-        lastAction = { explanation: (game.turn === turns[0] ?
-                InvalidPlays.WrongTurnHeads :
-                InvalidPlays.WrongTurnTails) };
-    }
-    else {
-        switch (action) {
-            case "left":
-                to.col = from.col - 1;
-                break;
-            case "right":
-                to.col = from.col + 1;
-                break;
-            case "up":
-                to.row = from.row - 1;
-                break;
-            case "down":
-                to.row = from.row + 1;
-                break;
-            default:
-                lastAction = null;
-        }
-        if (to.row < 0
-            || to.row >= game.boardSize
-            || to.col < 0
-            || to.col >= game.boardSize) {
-            lastAction = { explanation: InvalidPlays.OutOfBoard };
-        }
-        if (lastAction == null) {
-            var meeple = gameMeeples[topMeeple];
-            meeple.turn = flipTurn(meeple.turn);
-            gameTerrains[positionToIndex(from, game.boardSize)].topMeeple = meeple.topsMeeple;
-            meeple.topsMeeple = gameTerrains[positionToIndex(to, game.boardSize)].topMeeple;
-            gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.key;
-            meeple.position = to;
-            gameMeeples[meeple.key] = meeple;
-            lastAction = action;
-            if (meeple.topsMeeple !== -1
-                && gameMeeples[meeple.key].color !== gameMeeples[meeple.topsMeeple].color) {
-                var meepleOver = gameMeeples[meeple.key];
-                var meepleUnder = gameMeeples[meeple.topsMeeple];
-                if (meepleOver.faith > meepleUnder.faith) {
-                    meepleUnder.color = meepleOver.color;
-                    meepleOver.strength += meepleUnder.strength;
-                }
-                else {
-                    meepleUnder.resistance -= meepleOver.strength;
-                    meepleOver.resistance -= meepleUnder.strength;
-                    if (meepleUnder.resistance <= 0) {
-                        meepleUnder.key = -1;
-                        meepleOver.topsMeeple = meepleUnder.topsMeeple;
-                        meepleOver.faith += meepleUnder.faith;
-                    }
-                    if (meepleOver.resistance <= 0) {
-                        meepleOver.key = -1;
-                        gameTerrains[positionToIndex(to, game.boardSize)].topMeeple = meeple.topsMeeple;
-                        meepleUnder.faith += meepleOver.faith;
-                    }
-                }
-            }
-        }
-    }
-    return {
-        boardSize: game.boardSize,
-        players: game.players.slice(),
-        terrains: gameTerrains.slice(),
-        meeples: gameMeeples.slice(),
-        turn: game.turn,
-        currentPlayer: game.currentPlayer,
-        state: game.state,
-        lastAction: lastAction
-    };
-}
-function moveSwarm(game, action) {
-    var availablePlayerMeeples = game.terrains.map(function (terrain) { return terrain.topMeeple; })
-        .filter(function (topMeeple) {
-        return topMeeple !== -1 &&
-            game.meeples[topMeeple].color === game.currentPlayer &&
-            game.meeples[topMeeple].turn === game.turn;
-    });
-    return (action === "right" || action === "down" ?
-        availablePlayerMeeples.reverse() :
-        availablePlayerMeeples)
-        .map(function (meepleIndex) { return game.meeples[meepleIndex]; })
-        .reduce(function (acc, meeple) { return moveMeeple(acc, meeple.position, action); }, game);
-}
-function play(game, play) {
-    if (play.state !== "play") {
-        return {
-            boardSize: game.boardSize,
-            players: game.players.slice(),
-            terrains: game.terrains.slice(),
-            meeples: game.meeples.slice(),
-            turn: game.turn,
-            currentPlayer: game.currentPlayer,
-            state: game.state,
-            lastAction: { explanation: InvalidPlays.NoGameYet }
-        };
-    }
-    else if (game.currentPlayer !== play.player) {
-        return {
-            boardSize: game.boardSize,
-            players: game.players.slice(),
-            terrains: game.terrains.slice(),
-            meeples: game.meeples.slice(),
-            turn: game.turn,
-            currentPlayer: game.currentPlayer,
-            state: game.state,
-            lastAction: { explanation: InvalidPlays.NotYourTurn }
-        };
-    }
-    switch (play.player) {
-        case "default":
-            return {
-                boardSize: game.boardSize,
-                players: game.players.slice(),
-                terrains: game.terrains.slice(),
-                meeples: game.meeples.slice(),
-                turn: game.turn,
-                currentPlayer: colors[0],
-                state: play.state,
-                lastAction: "skip"
-            };
-        default:
-            var gameStep = void 0;
-            var player = void 0;
-            var turn = void 0;
-            switch (play.from) {
-                case "player":
-                    gameStep = moveSwarm(game, play.action);
-                    player = nextPlayer(gameStep);
-                    turn = nextTurn(gameStep);
-                    break;
-                default:
-                    gameStep = moveMeeple(game, play.from, play.action);
-                    player = nextPlayer(gameStep);
-                    turn = gameStep.turn;
-                    break;
-            }
-            return {
-                boardSize: gameStep.boardSize,
-                players: gameStep.players.slice(),
-                terrains: gameStep.terrains.slice(),
-                meeples: gameStep.meeples.slice(),
-                turn: turn,
-                currentPlayer: player,
-                state: gameStep.state,
-                lastAction: gameStep.lastAction
-            };
-    }
-}
-exports.play = play;
-function setup(playerCount, boardSize) {
-    if (boardSize === void 0) { boardSize = 16; }
-    var meepleKey = playerCount;
-    var terrains = new Array();
-    var meeples = new Array();
-    for (var i_1 = 0; i_1 < boardSize; i_1++) {
-        for (var j = 0; j < boardSize; j++) {
-            var position = {
-                row: i_1,
-                col: j
-            };
-            var topMeeple = -1;
-            if (Math.random() < 0.1) {
-                var meeple = {
-                    key: meepleKey++,
-                    position: position,
-                    color: colors[colors.length - 1],
-                    turn: turns[0],
-                    strength: Math.ceil(Math.random() * 5),
-                    resistance: Math.ceil(Math.random() * 15),
-                    faith: Math.ceil(Math.random() * 15),
-                    topsMeeple: -1
-                };
-                topMeeple = meeple.key;
-                meeples[meeple.key] = meeple;
-            }
-            terrains[positionToIndex(position, boardSize)] = {
-                position: position,
-                geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
-                maxMeeples: Math.ceil(Math.random() * 6),
-                topMeeple: topMeeple
-            };
-        }
-    }
-    var players = new Array();
-    var i = 0;
-    meepleKey = 0;
-    for (var _i = 0, colors_1 = colors; _i < colors_1.length; _i++) {
-        var color = colors_1[_i];
-        if (i < playerCount) {
-            var position = void 0;
-            do {
-                position = {
-                    row: Math.floor(Math.random() * (boardSize - 2)) + 1,
-                    col: Math.floor(Math.random() * (boardSize - 2)) + 1
-                };
-            } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
-            var meeple = {
-                key: meepleKey++,
-                position: position,
-                color: color,
-                turn: turns[0],
-                strength: 10 + Math.ceil(Math.random() * 5),
-                resistance: 20 + Math.ceil(Math.random() * 10),
-                faith: 20 + Math.ceil(Math.random() * 10),
-                topsMeeple: -1
-            };
-            terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
-            meeples[meeple.key] = meeple;
-            players[colors.indexOf(color)] = {
-                color: color,
-                individualActions: 0
-            };
-            i++;
-        }
-    }
-    var game = {
-        boardSize: boardSize,
-        players: players,
-        terrains: terrains,
-        meeples: meeples.slice(),
-        turn: turns[0],
-        currentPlayer: "default",
-        state: "setup",
-        lastAction: { explanation: InvalidPlays.None }
-    };
-    return game;
-}
-exports.setup = setup;
-
-
-/***/ }),
 /* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10221,18 +10327,33 @@ exports.setup = setup;
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
+var Game_1 = __webpack_require__(53);
 var Terrain_1 = __webpack_require__(92);
 var Meeple_1 = __webpack_require__(89);
-exports.default = function (props) {
+var translation = [
+    [{ row: 0, col: 0 }],
+    [{ row: -9, col: -9 }, { row: 9, col: 9 }],
+    [{ row: -13, col: -13 }, { row: 0, col: 0 }, { row: 13, col: 13 }],
+    [{ row: -10, col: -10 }, { row: -10, col: 10 }, { row: 10, col: -10 }, { row: 10, col: 10 }],
+    [{ row: -14, col: -14 }, { row: -14, col: 14 }, { row: 0, col: 0 }, { row: 14, col: -14 }, { row: 14, col: 14 }],
+    [{ row: -14, col: -14 }, { row: -14, col: 14 }, { row: 0, col: -14 }, { row: 0, col: 14 }, { row: 14, col: -14 }, { row: 14, col: 14 }]
+];
+var Board = function (props) {
     return React.createElement("div", { id: "board", className: "container tile is-5 is-parent" },
         React.createElement("div", { className: "tile is-child" },
             React.createElement("div", { key: "terrains", className: "board" }, props.game.terrains.map(function (terrain) {
-                return React.createElement(Terrain_1.default, { key: "row" + terrain.position.row + "col" + terrain.position.col, terrain: terrain, moveClick: props.moveClick });
+                return React.createElement(Terrain_1.default, { key: "row" + terrain.position.row + "col" + terrain.position.col, terrain: terrain, moveClick: props.playEvent });
             })),
-            React.createElement("div", { key: "meeples", className: "board" }, props.game.meeples
-                .filter(function (meeple) { return meeple.key !== -1; })
-                .map(function (meeple) { return React.createElement(Meeple_1.default, { key: meeple.key, meeple: meeple }); }))));
+            React.createElement("div", { key: "meeples", className: "board" }, props.game.terrains
+                .filter(function (terrain) { return terrain.topMeeple !== -1; })
+                .map(function (terrain) { return Game_1.meeplesBelow(props.game, terrain.topMeeple, []); })
+                .reduce(function (acc, meeples) { return acc.concat(meeples.map(function (meeple, index) { return ({ m: meeple, p: index, l: meeples.length }); })); }, new Array())
+                .sort(function (a, b) { return a.m.key - b.m.key; })
+                .map(function (meeple) {
+                return React.createElement(Meeple_1.default, { key: meeple.m.key, meeple: meeple.m, translation: translation[meeple.l - 1][meeple.p], scale: 1.4 - (meeple.l / 7) });
+            }))));
 };
+exports.default = Board;
 
 
 /***/ }),
@@ -10245,11 +10366,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 var Player_1 = __webpack_require__(90);
-exports.default = function (props) {
+var Controls = function (props) {
     return React.createElement("div", { id: "players", className: "tile is-2 is-vertical" }, props.game.players.map(function (player) {
-        return React.createElement(Player_1.default, { key: player.color, player: player, moveClick: props.moveClick, active: player.color === props.game.currentPlayer });
+        return React.createElement(Player_1.default, { key: player.team, player: player, moveClick: props.playEvent, active: player.team === props.game.currentPlayer });
     }));
 };
+exports.default = Controls;
 
 
 /***/ }),
@@ -10262,16 +10384,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 ;
-exports.default = function (props) {
-    return React.createElement("span", { className: "icon is-medium meeple is-" + props.meeple.color, style: {
-            top: props.meeple.position.row * 44 + 8,
-            left: props.meeple.position.col * 44 + 8,
+var Meeple = function (props) {
+    return React.createElement("span", { className: "icon is-medium meeple is-" + props.meeple.team, style: {
+            top: props.meeple.position.row * 44 + 7 + props.translation.row,
+            left: props.meeple.position.col * 44 + 7 + props.translation.col,
+            transform: "scale(" + props.scale + ")",
             opacity: 0.5 + (props.meeple.resistance / 20)
         } },
         React.createElement("i", { title: "strength: " + props.meeple.strength
                 + "\nresistance: " + props.meeple.resistance
                 + "\nfaith: " + props.meeple.faith, className: "fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "") }));
 };
+exports.default = Meeple;
 
 
 /***/ }),
@@ -10284,67 +10408,81 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
 ;
-exports.default = function (props) {
+var Player = function (props) {
     return React.createElement("div", { className: "player tile is-parent" },
-        React.createElement("article", { className: "tile is-child message is-" + props.player.color + (props.active ? " current-player" : "") },
+        React.createElement("article", { className: "tile is-child message is-" + props.player.team + (props.active ? " current-player" : ""), style: {
+                opacity: props.player.swarmSize === 0 ? 0.1 : 1,
+                transition: "opacity 1s"
+            } },
             React.createElement("div", { className: "message-header" },
                 React.createElement("p", null,
                     "general ",
-                    props.player.color)),
+                    props.player.team)),
             React.createElement("div", { className: "message-body" },
-                React.createElement("div", { className: "field has-addons" },
-                    React.createElement("div", { className: "control" },
+                React.createElement("div", { className: "field has-addons tile is-parent" },
+                    React.createElement("div", { className: "control tile is-child" },
                         React.createElement("p", null,
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.team, onClick: function () { return props.moveClick({
                                     state: "play",
-                                    player: props.player.color,
+                                    player: props.player.team,
                                     from: "player",
                                     action: "guard"
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-paper-o" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.team, onClick: function () { return props.moveClick({
                                     state: "play",
-                                    player: props.player.color,
+                                    player: props.player.team,
                                     from: "player",
                                     action: "up"
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-o-up" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.team, onClick: function () { return props.moveClick({
                                     state: "play",
-                                    player: props.player.color,
+                                    player: props.player.team,
                                     from: "player",
                                     action: "attack"
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-rock-o" })))),
                         React.createElement("p", null,
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.team, onClick: function () { return props.moveClick({
                                     state: "play",
-                                    player: props.player.color,
+                                    player: props.player.team,
                                     from: "player",
                                     action: "left"
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-o-left" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.team, onClick: function () { return props.moveClick({
                                     state: "play",
-                                    player: props.player.color,
+                                    player: props.player.team,
                                     from: "player",
                                     action: "down"
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
                                     React.createElement("i", { className: "fa fa-hand-o-down" }))),
-                            React.createElement("a", { className: "button is-outlined is-" + props.player.color, onClick: function () { return props.moveClick({
+                            React.createElement("a", { className: "button is-outlined is-" + props.player.team, onClick: function () { return props.moveClick({
                                     state: "play",
-                                    player: props.player.color,
+                                    player: props.player.team,
                                     from: "player",
                                     action: "right"
                                 }); } },
                                 React.createElement("span", { className: "icon is-small" },
-                                    React.createElement("i", { className: "fa fa-hand-o-right" })))))))));
+                                    React.createElement("i", { className: "fa fa-hand-o-right" }))))),
+                    React.createElement("div", { className: "tile is-child" },
+                        React.createElement("p", { title: "if you lose\nall your meeples\nyou're dead." },
+                            "swarm: ",
+                            props.player.swarmSize,
+                            " meeple",
+                            props.player.swarmSize > 1 ? "s" : ""),
+                        React.createElement("p", { title: "individual actions to be performed\nbefore or after your swarm action\non available meeples." },
+                            "actions: ",
+                            props.player.individualActions),
+                        React.createElement("p", null, props.player.swarmSize > 0 ? "" : "you died :("))))));
 };
+exports.default = Player;
 
 
 /***/ }),
@@ -10356,7 +10494,7 @@ exports.default = function (props) {
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
-exports.default = function (props) {
+var Status = function (props) {
     var guide = React.createElement("br", null);
     var guide_detail = React.createElement("br", null);
     switch (props.game.state) {
@@ -10364,33 +10502,33 @@ exports.default = function (props) {
             guide =
                 React.createElement("p", null,
                     "how many players? \u00A0",
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.playEvent({
                             state: "setup",
                             player: "default",
                             from: "player",
-                            action: "down"
+                            action: "left"
                         }); } },
                         React.createElement("span", { className: "icon" },
                             React.createElement("i", { className: "fa fa-minus" }))),
                     "\u00A0",
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.playEvent({
                             state: "setup",
                             player: "default",
                             from: "player",
                             action: "skip"
                         }); } }, props.game.players.length),
                     "\u00A0",
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.playEvent({
                             state: "setup",
                             player: "default",
                             from: "player",
-                            action: "up"
+                            action: "right"
                         }); } },
                         React.createElement("span", { className: "icon" },
                             React.createElement("i", { className: "fa fa-plus" }))));
             guide_detail =
                 React.createElement("p", null,
-                    React.createElement("a", { className: "is-link", onClick: function () { return props.moveClick({
+                    React.createElement("a", { className: "is-link", onClick: function () { return props.playEvent({
                             state: "play",
                             player: "default",
                             from: "player",
@@ -10432,8 +10570,9 @@ exports.default = function (props) {
         case "end":
             guide =
                 React.createElement("p", null,
-                    "general ",
-                    props.game.currentPlayer,
+                    React.createElement("span", { className: "is-" + props.game.currentPlayer },
+                        "general ",
+                        props.game.currentPlayer),
                     " won the game!");
             break;
     }
@@ -10444,6 +10583,7 @@ exports.default = function (props) {
             React.createElement("h2", { className: "subtitle" }, guide),
             React.createElement("span", null, guide_detail))));
 };
+exports.default = Status;
 
 
 /***/ }),
@@ -10466,16 +10606,17 @@ function terrainColor(geography) {
         case "plains": return "warning";
     }
 }
-exports.default = function (props) {
-    return React.createElement("article", { title: props.terrain.geography, className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } });
+var Terrain = function (props) {
+    return React.createElement("article", { title: props.terrain.geography + "\nspace for " + props.terrain.spaceLeft + " meeples", className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } });
 };
+exports.default = Terrain;
 
 
 /***/ }),
 /* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(53)();
+exports = module.exports = __webpack_require__(54)();
 // imports
 
 
@@ -10489,12 +10630,12 @@ exports.push([module.i, "/*! bulma.io v0.3.2 | MIT License | github.com/jgthms/b
 /* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(53)();
+exports = module.exports = __webpack_require__(54)();
 // imports
 
 
 // module
-exports.push([module.i, ":root {\n    --primary-color: hsl(171, 100%, 41%);\n    --info-color: hsl(217, 71%, 53%);\n    --success-color: hsl(141, 71%, 48%);\n    --warning-color: hsl(48, 100%, 67%);\n    --danger-color: hsl(348, 100%, 61%);\n    --default-color: hsl(0, 0%, 4%);\n}\n\n@keyframes flip-in-hor-bottom {\n  0% {\n    transform: rotateX(80deg);\n    opacity: 0;\n  }\n  100% {\n    transform: rotateX(0);\n    opacity: 1;\n  }\n}\n\n@keyframes jello-vertical {\n  0% {\n    transform: scale(1, 1);\n  }\n  30% {\n    transform: scale(1.07, 1.07);\n  }\n  40% {\n    transform: scale(0.96, 1.2);\n  }\n  50% {\n    transform: scale(1.2, 0.96);\n  }\n  65% {\n    transform: scale(1, 1.13);\n  }\n  80% {\n    transform: scale(1.09, 1.05);\n  }\n  90% {\n    transform: scale(1.05, 1.09);\n  }\n  100% {\n    transform: scale(1.07, 1.07);\n  }\n}\n\n.is-primary {\n    color: var(--primary-color);\n}\n\n.is-info {\n    color: var(--info-color);\n}\n\n.is-success {\n    color: var(--success-color);\n}\n\n.is-warning {\n    color: var(--warning-color);\n}\n\n.is-danger {\n    color: var(--danger-color);\n}\n\n.is-default {\n    color: var(--default-color);\n}\n\n.board {\n    position: relative;\n    box-sizing: border-box;\n}\n\n.terrain {\n    position: absolute;\n    width: 43px;\n    height: 43px;\n    transition-property: color, background-color, border-color;\n    transition-duration: 0.6s, 0.6s, 0.6s;\n    transition-timing-function: ease-out;\n}\n\n.meeple {\n    position: absolute;\n    transition-property: top, left, color, opacity;\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;\n    transition-timing-function: ease-out;\n}\n\n.player {\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\n}\n\n.current-player {\n    animation: jello-vertical 0.5s both;\n}\n", ""]);
+exports.push([module.i, ":root {\r\n    --primary-color: hsl(171, 100%, 41%);\r\n    --info-color: hsl(217, 71%, 53%);\r\n    --success-color: hsl(141, 71%, 48%);\r\n    --warning-color: hsl(48, 100%, 67%);\r\n    --danger-color: hsl(348, 100%, 61%);\r\n    --default-color: hsl(0, 0%, 4%);\r\n}\r\n\r\n@keyframes flip-in-hor-bottom {\r\n  0% {\r\n    transform: rotateX(80deg);\r\n    opacity: 0;\r\n  }\r\n  100% {\r\n    transform: rotateX(0);\r\n    opacity: 1;\r\n  }\r\n}\r\n\r\n@keyframes jello-vertical {\r\n  0% {\r\n    transform: scale(1, 1);\r\n  }\r\n  30% {\r\n    transform: scale(1.07, 1.07);\r\n  }\r\n  40% {\r\n    transform: scale(0.96, 1.2);\r\n  }\r\n  50% {\r\n    transform: scale(1.2, 0.96);\r\n  }\r\n  65% {\r\n    transform: scale(1, 1.13);\r\n  }\r\n  80% {\r\n    transform: scale(1.09, 1.05);\r\n  }\r\n  90% {\r\n    transform: scale(1.05, 1.09);\r\n  }\r\n  100% {\r\n    transform: scale(1.07, 1.07);\r\n  }\r\n}\r\n\r\n.is-primary {\r\n    color: var(--primary-color);\r\n}\r\n\r\n.is-info {\r\n    color: var(--info-color);\r\n}\r\n\r\n.is-success {\r\n    color: var(--success-color);\r\n}\r\n\r\n.is-warning {\r\n    color: var(--warning-color);\r\n}\r\n\r\n.is-danger {\r\n    color: var(--danger-color);\r\n}\r\n\r\n.is-default {\r\n    color: var(--default-color);\r\n}\r\n\r\n.board {\r\n    position: relative;\r\n    box-sizing: border-box;\r\n}\r\n\r\n.terrain {\r\n    position: absolute;\r\n    width: 43px;\r\n    height: 43px;\r\n    transition-property: color, background-color, border-color;\r\n    transition-duration: 0.6s, 0.6s, 0.6s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.meeple {\r\n    position: absolute;\r\n    transition-property: top, left, color, opacity, transform;\r\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.player {\r\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\r\n}\r\n\r\n.current-player {\r\n    animation: jello-vertical 0.5s both;\r\n}\r\n", ""]);
 
 // exports
 
@@ -11334,7 +11475,7 @@ module.exports = ARIADOMPropertyConfig;
 
 var ReactDOMComponentTree = __webpack_require__(5);
 
-var focusNode = __webpack_require__(55);
+var focusNode = __webpack_require__(56);
 
 var AutoFocusUtils = {
   focusDOMComponent: function () {
@@ -11751,7 +11892,7 @@ module.exports = BeforeInputEventPlugin;
 
 
 
-var CSSProperty = __webpack_require__(57);
+var CSSProperty = __webpack_require__(58);
 var ExecutionEnvironment = __webpack_require__(6);
 var ReactInstrumentation = __webpack_require__(8);
 
@@ -11975,7 +12116,7 @@ var SyntheticEvent = __webpack_require__(12);
 
 var getEventTarget = __webpack_require__(44);
 var isEventSupported = __webpack_require__(45);
-var isTextInputElement = __webpack_require__(75);
+var isTextInputElement = __webpack_require__(76);
 
 var eventTypes = {
   change: {
@@ -12486,7 +12627,7 @@ var _assign = __webpack_require__(4);
 
 var PooledClass = __webpack_require__(15);
 
-var getTextContentAccessor = __webpack_require__(73);
+var getTextContentAccessor = __webpack_require__(74);
 
 /**
  * This helper class stores information about text content of a target node,
@@ -12801,10 +12942,10 @@ module.exports = HTMLDOMPropertyConfig;
 
 var ReactReconciler = __webpack_require__(19);
 
-var instantiateReactComponent = __webpack_require__(74);
+var instantiateReactComponent = __webpack_require__(75);
 var KeyEscapeUtils = __webpack_require__(36);
 var shouldUpdateReactComponent = __webpack_require__(46);
-var traverseAllChildren = __webpack_require__(77);
+var traverseAllChildren = __webpack_require__(78);
 var warning = __webpack_require__(2);
 
 var ReactComponentTreeHook;
@@ -13003,7 +13144,7 @@ var ReactCurrentOwner = __webpack_require__(11);
 var ReactErrorUtils = __webpack_require__(39);
 var ReactInstanceMap = __webpack_require__(24);
 var ReactInstrumentation = __webpack_require__(8);
-var ReactNodeTypes = __webpack_require__(67);
+var ReactNodeTypes = __webpack_require__(68);
 var ReactReconciler = __webpack_require__(19);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -13906,13 +14047,13 @@ module.exports = ReactCompositeComponent;
 
 var ReactDOMComponentTree = __webpack_require__(5);
 var ReactDefaultInjection = __webpack_require__(139);
-var ReactMount = __webpack_require__(66);
+var ReactMount = __webpack_require__(67);
 var ReactReconciler = __webpack_require__(19);
 var ReactUpdates = __webpack_require__(10);
 var ReactVersion = __webpack_require__(154);
 
 var findDOMNode = __webpack_require__(171);
-var getHostComponentFromComposite = __webpack_require__(72);
+var getHostComponentFromComposite = __webpack_require__(73);
 var renderSubtreeIntoContainer = __webpack_require__(179);
 var warning = __webpack_require__(2);
 
@@ -14029,15 +14170,15 @@ var CSSPropertyOperations = __webpack_require__(112);
 var DOMLazyTree = __webpack_require__(18);
 var DOMNamespaces = __webpack_require__(34);
 var DOMProperty = __webpack_require__(14);
-var DOMPropertyOperations = __webpack_require__(59);
+var DOMPropertyOperations = __webpack_require__(60);
 var EventPluginHub = __webpack_require__(22);
 var EventPluginRegistry = __webpack_require__(26);
 var ReactBrowserEventEmitter = __webpack_require__(27);
-var ReactDOMComponentFlags = __webpack_require__(60);
+var ReactDOMComponentFlags = __webpack_require__(61);
 var ReactDOMComponentTree = __webpack_require__(5);
 var ReactDOMInput = __webpack_require__(128);
 var ReactDOMOption = __webpack_require__(131);
-var ReactDOMSelect = __webpack_require__(61);
+var ReactDOMSelect = __webpack_require__(62);
 var ReactDOMTextarea = __webpack_require__(134);
 var ReactInstrumentation = __webpack_require__(8);
 var ReactMultiChild = __webpack_require__(147);
@@ -15196,7 +15337,7 @@ module.exports = ReactDOMIDOperations;
 var _prodInvariant = __webpack_require__(3),
     _assign = __webpack_require__(4);
 
-var DOMPropertyOperations = __webpack_require__(59);
+var DOMPropertyOperations = __webpack_require__(60);
 var LinkedValueUtils = __webpack_require__(37);
 var ReactDOMComponentTree = __webpack_require__(5);
 var ReactUpdates = __webpack_require__(10);
@@ -15629,7 +15770,7 @@ var _assign = __webpack_require__(4);
 
 var React = __webpack_require__(20);
 var ReactDOMComponentTree = __webpack_require__(5);
-var ReactDOMSelect = __webpack_require__(61);
+var ReactDOMSelect = __webpack_require__(62);
 
 var warning = __webpack_require__(2);
 var didWarnInvalidOptionChildren = false;
@@ -15757,7 +15898,7 @@ module.exports = ReactDOMOption;
 var ExecutionEnvironment = __webpack_require__(6);
 
 var getNodeForCharacterOffset = __webpack_require__(176);
-var getTextContentAccessor = __webpack_require__(73);
+var getTextContentAccessor = __webpack_require__(74);
 
 /**
  * While `isCollapsed` is available on the Selection object and `collapsed`
@@ -17163,7 +17304,7 @@ module.exports = ReactEventEmitterMixin;
 
 var _assign = __webpack_require__(4);
 
-var EventListener = __webpack_require__(54);
+var EventListener = __webpack_require__(55);
 var ExecutionEnvironment = __webpack_require__(6);
 var PooledClass = __webpack_require__(15);
 var ReactDOMComponentTree = __webpack_require__(5);
@@ -17364,9 +17505,9 @@ var DOMProperty = __webpack_require__(14);
 var EventPluginHub = __webpack_require__(22);
 var EventPluginUtils = __webpack_require__(35);
 var ReactComponentEnvironment = __webpack_require__(38);
-var ReactEmptyComponent = __webpack_require__(62);
+var ReactEmptyComponent = __webpack_require__(63);
 var ReactBrowserEventEmitter = __webpack_require__(27);
-var ReactHostComponent = __webpack_require__(64);
+var ReactHostComponent = __webpack_require__(65);
 var ReactUpdates = __webpack_require__(10);
 
 var ReactInjection = {
@@ -18086,10 +18227,10 @@ module.exports = ReactPropTypeLocationNames;
 
 var _assign = __webpack_require__(4);
 
-var CallbackQueue = __webpack_require__(58);
+var CallbackQueue = __webpack_require__(59);
 var PooledClass = __webpack_require__(15);
 var ReactBrowserEventEmitter = __webpack_require__(27);
-var ReactInputSelection = __webpack_require__(65);
+var ReactInputSelection = __webpack_require__(66);
 var ReactInstrumentation = __webpack_require__(8);
 var Transaction = __webpack_require__(29);
 var ReactUpdateQueue = __webpack_require__(40);
@@ -18932,11 +19073,11 @@ module.exports = SVGDOMPropertyConfig;
 var EventPropagators = __webpack_require__(23);
 var ExecutionEnvironment = __webpack_require__(6);
 var ReactDOMComponentTree = __webpack_require__(5);
-var ReactInputSelection = __webpack_require__(65);
+var ReactInputSelection = __webpack_require__(66);
 var SyntheticEvent = __webpack_require__(12);
 
-var getActiveElement = __webpack_require__(56);
-var isTextInputElement = __webpack_require__(75);
+var getActiveElement = __webpack_require__(57);
+var isTextInputElement = __webpack_require__(76);
 var shallowEqual = __webpack_require__(32);
 
 var skipSelectionChangeEvent = ExecutionEnvironment.canUseDOM && 'documentMode' in document && document.documentMode <= 11;
@@ -19128,7 +19269,7 @@ module.exports = SelectEventPlugin;
 
 var _prodInvariant = __webpack_require__(3);
 
-var EventListener = __webpack_require__(54);
+var EventListener = __webpack_require__(55);
 var EventPropagators = __webpack_require__(23);
 var ReactDOMComponentTree = __webpack_require__(5);
 var SyntheticAnimationEvent = __webpack_require__(158);
@@ -19905,7 +20046,7 @@ module.exports = adler32;
 var _prodInvariant = __webpack_require__(3);
 
 var ReactPropTypeLocationNames = __webpack_require__(149);
-var ReactPropTypesSecret = __webpack_require__(68);
+var ReactPropTypesSecret = __webpack_require__(69);
 
 var invariant = __webpack_require__(1);
 var warning = __webpack_require__(2);
@@ -19995,7 +20136,7 @@ module.exports = checkReactTypeSpec;
 
 
 
-var CSSProperty = __webpack_require__(57);
+var CSSProperty = __webpack_require__(58);
 var warning = __webpack_require__(2);
 
 var isUnitlessNumber = CSSProperty.isUnitlessNumber;
@@ -20086,7 +20227,7 @@ var ReactCurrentOwner = __webpack_require__(11);
 var ReactDOMComponentTree = __webpack_require__(5);
 var ReactInstanceMap = __webpack_require__(24);
 
-var getHostComponentFromComposite = __webpack_require__(72);
+var getHostComponentFromComposite = __webpack_require__(73);
 var invariant = __webpack_require__(1);
 var warning = __webpack_require__(2);
 
@@ -20148,7 +20289,7 @@ module.exports = findDOMNode;
 
 
 var KeyEscapeUtils = __webpack_require__(36);
-var traverseAllChildren = __webpack_require__(77);
+var traverseAllChildren = __webpack_require__(78);
 var warning = __webpack_require__(2);
 
 var ReactComponentTreeHook;
@@ -20623,7 +20764,7 @@ module.exports = quoteAttributeValueForBrowser;
 
 
 
-var ReactMount = __webpack_require__(66);
+var ReactMount = __webpack_require__(67);
 
 module.exports = ReactMount.renderSubtreeIntoContainer;
 
@@ -21754,7 +21895,7 @@ var ReactElement = __webpack_require__(16);
  */
 var createDOMFactory = ReactElement.createFactory;
 if (process.env.NODE_ENV !== 'production') {
-  var ReactElementValidator = __webpack_require__(79);
+  var ReactElementValidator = __webpack_require__(80);
   createDOMFactory = ReactElementValidator.createFactory;
 }
 
@@ -21923,7 +22064,7 @@ module.exports = ReactDOMFactories;
 
 var ReactElement = __webpack_require__(16);
 var ReactPropTypeLocationNames = __webpack_require__(50);
-var ReactPropTypesSecret = __webpack_require__(80);
+var ReactPropTypesSecret = __webpack_require__(81);
 
 var emptyFunction = __webpack_require__(9);
 var getIteratorFn = __webpack_require__(52);
@@ -22430,7 +22571,7 @@ module.exports = '15.4.2';
 var _prodInvariant = __webpack_require__(17);
 
 var ReactPropTypeLocationNames = __webpack_require__(50);
-var ReactPropTypesSecret = __webpack_require__(80);
+var ReactPropTypesSecret = __webpack_require__(81);
 
 var invariant = __webpack_require__(1);
 var warning = __webpack_require__(2);
@@ -22567,7 +22708,7 @@ module.exports = onlyChild;
 var _prodInvariant = __webpack_require__(17);
 
 var ReactCurrentOwner = __webpack_require__(11);
-var REACT_ELEMENT_TYPE = __webpack_require__(78);
+var REACT_ELEMENT_TYPE = __webpack_require__(79);
 
 var getIteratorFn = __webpack_require__(52);
 var invariant = __webpack_require__(1);
@@ -22738,13 +22879,13 @@ module.exports = traverseAllChildren;
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(13);
-var ReactDOM = __webpack_require__(83);
-__webpack_require__(84);
-var Table_1 = __webpack_require__(82);
+var ReactDOM = __webpack_require__(84);
 __webpack_require__(85);
+var Table_1 = __webpack_require__(83);
+__webpack_require__(86);
 ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementById("root"));
 
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.70b0b1bae30f075c0126.js.map
+//# sourceMappingURL=bundle.f34c7271b7bf2040d252.js.map
