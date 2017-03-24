@@ -57,6 +57,7 @@ type Turn =
 const turns: Turn[] = [ "heads", "tails" ];
 
 type State =
+| "tutorial"
 | "setup"
 | "play"
 | "end";
@@ -460,7 +461,7 @@ export function play(game: Game, play: Play): Game {
     }
 }
 
-export function setup(playerCount: number, boardSize: number = 16): Game {
+export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
     let meepleKey: number = playerCount;
 

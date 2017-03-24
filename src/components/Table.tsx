@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Game, Play, Direction, setup, play } from "../Game";
 
+import Tutorial from "./Tutorial";
 import Status from "./Status";
 import Board from "./Board";
 import Controls from "./Controls";
@@ -189,16 +190,29 @@ export class Table extends React.Component<{}, IState> {
 
     render(): JSX.Element {
 
-        return (
-            <section className="section">
-                <div className="container is-fluid">
-                    <div id="table" className="tile is-ancestor">
-                        <Status game={this.state.game} playEvent={this.state.playEvent} />
-                        <Board game={this.state.game} playEvent={this.state.playEvent} />
-                        <Controls game={this.state.game} playEvent={this.state.playEvent} />
+        if (this.state.game.state === "tutorial") {
+            return (
+                <section className="section">
+                    <div className="container is-fluid">
+                        <div id="table" className="tile is-ancestor">
+                            <Tutorial game={this.state.game} playEvent={this.state.playEvent} />
+                            <Board game={this.state.game} playEvent={this.state.playEvent} />
+                        </div>
                     </div>
-                </div>
-            </section>
-        );
+                </section>
+            );
+        } else {
+            return (
+                <section className="section">
+                    <div className="container is-fluid">
+                        <div id="table" className="tile is-ancestor">
+                            <Status game={this.state.game} playEvent={this.state.playEvent} />
+                            <Board game={this.state.game} playEvent={this.state.playEvent} />
+                            <Controls game={this.state.game} playEvent={this.state.playEvent} />
+                        </div>
+                    </div>
+                </section>
+            );
+        }
     }
 }
