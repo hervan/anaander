@@ -18,7 +18,7 @@ const translation: { row: number, col: number }[][] =
 ];
 
 const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div id="board" className="container tile is-5 is-parent">
+    <div id="board" className="tile is-parent">
         <div className="tile is-child">
             <div key="terrains" className="board">
                 {props.game.terrains.map((terrain) =>
@@ -42,7 +42,8 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             key={meeple.m.key}
                             meeple={meeple.m}
                             translation={translation[meeple.l - 1][meeple.p]}
-                            scale={1.4 - (meeple.l  / 7)} />
+                            scale={1.4 - (meeple.l  / 7)}
+                        />
                     )}
             </div>
         </div>

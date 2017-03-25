@@ -461,7 +461,7 @@ export function play(game: Game, play: Play): Game {
     }
 }
 
-export function setup(playerCount: number = 0, boardSize: number = 16): Game {
+export function setup(playerCount: number = 0, boardSize: number = 16, tutorial: boolean = false): Game {
 
     let meepleKey: number = playerCount;
 
@@ -562,7 +562,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         meeples: meeples.slice(),
         turn: turns[0],
         currentPlayer: "default",
-        state: "setup",
+        state: tutorial ? "tutorial" : "setup",
         lastAction: { explanation: InvalidPlays.None }
     };
 

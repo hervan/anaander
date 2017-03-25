@@ -61,7 +61,7 @@ export class Table extends React.Component<{}, IState> {
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
-                        action: "attack"
+                        action: "explore"
                     });
 
                     break;
@@ -101,12 +101,23 @@ export class Table extends React.Component<{}, IState> {
 
                 case " ":
 
-                    this.playEvent({
-                        state: "play",
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: null
-                    });
+                    if (this.state.game.state === "tutorial") {
+
+                        this.playEvent({
+                            state: "tutorial",
+                            player: this.state.game.currentPlayer,
+                            from: "player",
+                            action: "skip"
+                        });
+                    } else {
+
+                        this.playEvent({
+                            state: "play",
+                            player: this.state.game.currentPlayer,
+                            from: "player",
+                            action: null
+                        });
+                    }
 
                     break;
             }
@@ -134,10 +145,13 @@ export class Table extends React.Component<{}, IState> {
                 case "setup":
 
                     const change: number =
-                        (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                        (playData.action === "skip" ? 0 : this.state.game.players.length)
+                        + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
                         + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
-                    this.setState({ game: setup(this.state.game.players.length + change), playQueue: [] });
+                    this.setState({ game: setup(change), playQueue: [] });
+
+                    this.componentWillUnmount();
 
                     break;
 
@@ -147,15 +161,41 @@ export class Table extends React.Component<{}, IState> {
                     this.setState({ game: gameStep, playQueue: queue });
 
                     break;
+
+                case "tutorial":
+
+                    if (playData.action === null) {
+
+                        this.setState({ game: setup(5, undefined, true), playQueue: [] });
+                        this.componentWillUnmount();
+                    }
+
+                    break;
             }
         }
 
-        if (this.refresher === 0 && this.state.game.state === "end") {
+        if (this.refresher === 0) {
 
-            this.refresher = window.setInterval(
-                () => this.refresh(),
-                150
-            );
+            switch (this.state.game.state) {
+
+                case "end":
+
+                    this.refresher = window.setInterval(
+                        () => this.refresh(),
+                        150
+                    );
+
+                    break;
+
+                case "tutorial":
+
+                    this.refresher = window.setInterval(
+                        () => this.refresh(),
+                        2000
+                    );
+
+                    break;
+            }
         }
     }
 
@@ -165,26 +205,69 @@ export class Table extends React.Component<{}, IState> {
         this.refresher = 0;
     }
 
-    refresh(): void {
+    autoplay(): void {
 
         const queue: Play[] = this.state.playQueue;
 
-        if (this.state.game.state === "end" && queue.length === 0) {
+        const winnerMeeples = this.state.game.meeples
+            .filter((meeple) => meeple.key !== -1 &&
+                meeple.team === this.state.game.currentPlayer);
+
+        if (winnerMeeples.length > 0) {
 
             const dirs: Direction[] = [ "up", "left", "down", "right" ];
-            const dir: Direction = dirs[Math.floor(Math.random() * dirs.length)];
+
+            const weights: number[] = winnerMeeples
+                .map((meeple) => [
+                    (meeple.position.row + 1) / (this.state.game.boardSize + 1),
+                    (meeple.position.col + 1) / (this.state.game.boardSize + 1),
+                    (this.state.game.boardSize - meeple.position.row) / (this.state.game.boardSize + 1),
+                    (this.state.game.boardSize - meeple.position.col) / (this.state.game.boardSize + 1)
+                ])
+                .reduce((acc, positions) => [
+                    acc[0] + (positions[0] / winnerMeeples.length),
+                    acc[1] + (positions[1] / winnerMeeples.length),
+                    acc[2] + (positions[2] / winnerMeeples.length),
+                    acc[3] + (positions[3] / winnerMeeples.length)
+                ], [0, 0, 0, 0]);
+
+            let rollNumber = Math.random() * 2;
+            let roll = 0;
+
+            while (rollNumber > 0) {
+
+                rollNumber -= weights[roll++];
+            }
+
+            const dir: Direction = dirs[roll - 1];
 
             for (let i: number = 0; i < Math.random() * this.state.game.boardSize / 2; i++) {
 
                 queue.push({
-                    state: "play",
+                    state: "play", //this.state.game.state,
                     player: this.state.game.currentPlayer,
                     from: "player",
                     action: dir
                 });
             }
+        } else {
 
-            this.setState({ playQueue: queue });
+            queue.push({
+                state: "play", //this.state.game.state,
+                player: this.state.game.currentPlayer,
+                from: "player",
+                action: "skip"
+            });
+        }
+        this.setState({ playQueue: queue });
+    }
+
+    refresh(): void {
+
+        if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
+            && this.state.playQueue.length === 0) {
+
+            this.autoplay();
         }
     }
 
