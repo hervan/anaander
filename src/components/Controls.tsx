@@ -11,7 +11,7 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
             <Player
                 key={player.team}
                 player={player}
-                moveClick={props.playEvent}
+                enqueuePlay={props.enqueuePlay}
                 active={player.team === props.game.currentPlayer}
             />
         )}

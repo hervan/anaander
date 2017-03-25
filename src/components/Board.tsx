@@ -25,7 +25,7 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
-                        moveClick={props.playEvent}
+                        enqueuePlay={props.enqueuePlay}
                     />
                 )}
             </div>

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Game, Play, Direction, setup, play } from "../Game";
+import { Game, Meeple, Play, Direction, setup, play } from "../Game";
 
 import Tutorial from "./Tutorial";
 import Status from "./Status";
@@ -10,12 +10,11 @@ import Controls from "./Controls";
 interface IState {
     game: Game;
     playQueue: Play[];
-    playEvent: (play: Play) => void;
 };
 
 export interface IProps {
     game: Game;
-    playEvent: (play: Play) => void;
+    enqueuePlay: (play: Play) => void;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -26,7 +25,7 @@ export class Table extends React.Component<{}, IState> {
     constructor() {
 
         super();
-        this.state = { game: setup(0), playQueue: [], playEvent: this.playEvent.bind(this) };
+        this.state = { game: setup(0), playQueue: [] };
         this.refresher = 0;
 
         document.addEventListener("keypress", (event) => {
@@ -35,7 +34,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "q":
 
-                    this.playEvent({
+                    this.enqueuePlay({
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
@@ -46,7 +45,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "w":
 
-                    this.playEvent({
+                    this.enqueuePlay({
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
@@ -57,7 +56,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "e":
 
-                    this.playEvent({
+                    this.enqueuePlay({
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
@@ -68,7 +67,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "a":
 
-                    this.playEvent({
+                    this.enqueuePlay({
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
@@ -79,7 +78,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "s":
 
-                    this.playEvent({
+                    this.enqueuePlay({
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
@@ -90,7 +89,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "d":
 
-                    this.playEvent({
+                    this.enqueuePlay({
                         state: this.state.game.state,
                         player: this.state.game.currentPlayer,
                         from: "player",
@@ -103,17 +102,40 @@ export class Table extends React.Component<{}, IState> {
 
                     if (this.state.game.state === "tutorial") {
 
-                        this.playEvent({
+                        this.enqueuePlay({
                             state: "tutorial",
                             player: this.state.game.currentPlayer,
                             from: "player",
                             action: "skip"
                         });
+
                     } else {
 
-                        this.playEvent({
+                        this.enqueuePlay({
                             state: "play",
                             player: this.state.game.currentPlayer,
+                            from: "player",
+                            action: null
+                        });
+                    }
+
+                    break;
+
+                case "/":
+                case "?":
+                    if (this.state.game.state === "tutorial") {
+
+                        this.enqueuePlay({
+                            state: "setup",
+                            player: "default",
+                            from: "player",
+                            action: "skip"
+                        });
+                    } else {
+
+                        this.enqueuePlay({
+                            state: "tutorial",
+                            player: "default",
                             from: "player",
                             action: null
                         });
@@ -124,7 +146,7 @@ export class Table extends React.Component<{}, IState> {
         });
     }
 
-    playEvent(play: Play): void {
+    enqueuePlay(play: Play): void {
 
         const queue: Play[] = this.state.playQueue;
         queue.push(play);
@@ -151,15 +173,12 @@ export class Table extends React.Component<{}, IState> {
 
                     this.setState({ game: setup(change), playQueue: [] });
 
-                    this.componentWillUnmount();
-
                     break;
 
                 case "play":
+                case "end":
 
-                    const gameStep: Game = play(this.state.game, playData);
-                    this.setState({ game: gameStep, playQueue: queue });
-
+                    this.setState({ game: play(this.state.game, playData), playQueue: queue });
                     break;
 
                 case "tutorial":
@@ -167,7 +186,19 @@ export class Table extends React.Component<{}, IState> {
                     if (playData.action === null) {
 
                         this.setState({ game: setup(5, undefined, true), playQueue: [] });
-                        this.componentWillUnmount();
+
+                    } else {
+
+                        const gameStep: Game = play(this.state.game, playData);
+
+                        if (gameStep.state === "end") {
+
+                            this.setState({ playQueue: queue });
+
+                        } else {
+
+                            this.setState({ game: gameStep, playQueue: queue });
+                        }
                     }
 
                     break;
@@ -176,26 +207,16 @@ export class Table extends React.Component<{}, IState> {
 
         if (this.refresher === 0) {
 
-            switch (this.state.game.state) {
+            this.refresher = window.setInterval(() => this.refresh(), 300);
+        }
+    }
 
-                case "end":
+    refresh(): void {
 
-                    this.refresher = window.setInterval(
-                        () => this.refresh(),
-                        150
-                    );
+        if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
+            && this.state.playQueue.length === 0) {
 
-                    break;
-
-                case "tutorial":
-
-                    this.refresher = window.setInterval(
-                        () => this.refresh(),
-                        2000
-                    );
-
-                    break;
-            }
+            this.autoplay();
         }
     }
 
@@ -209,7 +230,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[] = this.state.playQueue;
 
-        const winnerMeeples = this.state.game.meeples
+        const winnerMeeples: Meeple[] = this.state.game.meeples
             .filter((meeple) => meeple.key !== -1 &&
                 meeple.team === this.state.game.currentPlayer);
 
@@ -231,8 +252,8 @@ export class Table extends React.Component<{}, IState> {
                     acc[3] + (positions[3] / winnerMeeples.length)
                 ], [0, 0, 0, 0]);
 
-            let rollNumber = Math.random() * 2;
-            let roll = 0;
+            let rollNumber: number = Math.random() * 2;
+            let roll: number = 0;
 
             while (rollNumber > 0) {
 
@@ -241,33 +262,69 @@ export class Table extends React.Component<{}, IState> {
 
             const dir: Direction = dirs[roll - 1];
 
-            for (let i: number = 0; i < Math.random() * this.state.game.boardSize / 2; i++) {
+            const repetitions: number = Math.random() * this.state.game.boardSize / 2;
 
-                queue.push({
-                    state: "play", //this.state.game.state,
+            let rest: Play[] = queue.slice();
+            const reorder: Play[][] = [];
+
+            while (rest.length > 0) {
+
+                reorder.push(
+                    rest.filter((play) => play.player === rest[0].player)
+                );
+
+                rest = rest.filter((play) => play.player !== rest[0].player);
+            }
+
+            const nextPlay: Play[] = [];
+
+            for (let i: number = 0; i < repetitions; i++) {
+
+                nextPlay.push({
+                    state: this.state.game.state,
                     player: this.state.game.currentPlayer,
                     from: "player",
                     action: dir
                 });
             }
+
+            const index: number = reorder.map((plays) => plays[0].player).indexOf(this.state.game.currentPlayer);
+
+            if (index !== -1) {
+
+                reorder[index].concat(nextPlay);
+            } else {
+
+                reorder.push(nextPlay);
+            }
+
+            const newQueue: Play[] = [];
+
+            const maxArray: number = reorder.map((plays) => plays.length).sort().reverse()[0];
+
+            for (let i: number = 0; i < maxArray; i++) {
+
+                for (let j: number = 0; j < reorder.length; j++) {
+
+                    if (i < reorder[j].length) {
+
+                        newQueue.push(reorder[j][i]);
+                    }
+                }
+            }
+
+            this.setState({ playQueue: newQueue });
+
         } else {
 
             queue.push({
-                state: "play", //this.state.game.state,
+                state: this.state.game.state,
                 player: this.state.game.currentPlayer,
                 from: "player",
                 action: "skip"
             });
-        }
-        this.setState({ playQueue: queue });
-    }
 
-    refresh(): void {
-
-        if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
-            && this.state.playQueue.length === 0) {
-
-            this.autoplay();
+            this.setState({ playQueue: queue });
         }
     }
 
@@ -278,8 +335,8 @@ export class Table extends React.Component<{}, IState> {
                 <section className="section">
                     <div className="container is-fluid">
                         <div id="table" className="tile is-ancestor">
-                            <Tutorial game={this.state.game} playEvent={this.state.playEvent} />
-                            <Board game={this.state.game} playEvent={this.state.playEvent} />
+                            <Tutorial game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Board game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
                         </div>
                     </div>
                 </section>
@@ -289,9 +346,9 @@ export class Table extends React.Component<{}, IState> {
                 <section className="section">
                     <div className="container is-fluid">
                         <div id="table" className="tile is-ancestor">
-                            <Status game={this.state.game} playEvent={this.state.playEvent} />
-                            <Board game={this.state.game} playEvent={this.state.playEvent} />
-                            <Controls game={this.state.game} playEvent={this.state.playEvent} />
+                            <Status game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Board game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Controls game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
                         </div>
                     </div>
                 </section>

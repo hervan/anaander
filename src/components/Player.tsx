@@ -4,7 +4,7 @@ import * as Game from "../Game";
 
 interface IProps {
   player: Game.Player;
-  moveClick: (move: Game.Play) => void;
+  enqueuePlay: (move: Game.Play) => void;
   active: boolean;
 };
 
@@ -23,7 +23,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
           <div className="control tile is-child">
             <p>
               <a className={"button is-outlined is-" + props.player.team}
-                onClick={() => props.moveClick({
+                onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
                   from: "player",
@@ -34,7 +34,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.team}
-                onClick={() => props.moveClick({
+                onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
                   from: "player",
@@ -45,7 +45,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.team}
-                onClick={() => props.moveClick({
+                onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
                   from: "player",
@@ -58,7 +58,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             </p>
             <p>
               <a className={"button is-outlined is-" + props.player.team}
-                onClick={() => props.moveClick({
+                onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
                   from: "player",
@@ -69,7 +69,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.team}
-                onClick={() => props.moveClick({
+                onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
                   from: "player",
@@ -80,7 +80,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 </span>
               </a>
               <a className={"button is-outlined is-" + props.player.team}
-                onClick={() => props.moveClick({
+                onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
                   from: "player",

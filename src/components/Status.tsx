@@ -16,7 +16,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                 <p>
                     how many players?
                     &nbsp;
-                    <a className="is-link" onClick={() => props.playEvent({
+                    <a className="is-link" onClick={() => props.enqueuePlay({
                         state: "setup",
                         player: "default",
                         from: "player",
@@ -27,7 +27,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => props.playEvent({
+                    <a className="is-link" onClick={() => props.enqueuePlay({
                         state: "setup",
                         player: "default",
                         from: "player",
@@ -36,7 +36,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                         {props.game.players.length}
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => props.playEvent({
+                    <a className="is-link" onClick={() => props.enqueuePlay({
                         state: "setup",
                         player: "default",
                         from: "player",
@@ -49,14 +49,14 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                 </p>;
             guide_detail =
                 <p>
-                    click <a className="is-link" onClick={() => props.playEvent({
+                    click <a className="is-link" onClick={() => props.enqueuePlay({
                         state: "play",
                         player: "default",
                         from: "player",
                         action: null
                     })}>here</a> to begin.
                     <br />
-                    (or click <a className="is-link" onClick={() => props.playEvent({
+                    (or click <a className="is-link" onClick={() => props.enqueuePlay({
                         state: "tutorial",
                         player: "default",
                         from: "player",
