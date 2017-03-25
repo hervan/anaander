@@ -6733,7 +6733,7 @@ module.exports = getIteratorFn;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var teams = [
+exports.teams = [
     "info",
     "warning",
     "success",
@@ -6782,15 +6782,15 @@ function nextPlayer(game) {
     var player = game.currentPlayer;
     var i = game.players.length;
     do {
-        player = teams[(teams.indexOf(player) + 1) % game.players.length];
-    } while (game.players.length > 0 && game.players[teams.indexOf(player)].swarmSize === 0 && i-- > 0);
+        player = exports.teams[(exports.teams.indexOf(player) + 1) % game.players.length];
+    } while (game.players.length > 0 && game.players[exports.teams.indexOf(player)].swarmSize === 0 && i-- > 0);
     return player;
 }
 function flipTurn(turn) {
     return (turns[(turns.indexOf(turn) + 1) % turns.length]);
 }
 function nextTurn(game) {
-    return teams.indexOf(nextPlayer(game)) <= teams.indexOf(game.currentPlayer) ?
+    return exports.teams.indexOf(nextPlayer(game)) <= exports.teams.indexOf(game.currentPlayer) ?
         flipTurn(game.turn) :
         game.turn;
 }
@@ -6875,11 +6875,11 @@ function moveMeeple(game, from, action) {
                     var meepleOver = gameMeeples[meeple.key];
                     var meepleUnder = gameMeeples[meeple.topsMeeple];
                     if (meepleOver.faith > meepleUnder.faith + meepleUnder.strength) {
-                        if (teams.indexOf(meepleUnder.team) < gamePlayers.length) {
-                            gamePlayers[teams.indexOf(meepleUnder.team)].swarmSize--;
+                        if (exports.teams.indexOf(meepleUnder.team) < gamePlayers.length) {
+                            gamePlayers[exports.teams.indexOf(meepleUnder.team)].swarmSize--;
                         }
                         meepleUnder.team = meepleOver.team;
-                        gamePlayers[teams.indexOf(meepleOver.team)].swarmSize++;
+                        gamePlayers[exports.teams.indexOf(meepleOver.team)].swarmSize++;
                         meepleOver.resistance += meepleUnder.resistance;
                     }
                     else {
@@ -6890,8 +6890,8 @@ function moveMeeple(game, from, action) {
                             meepleOver.topsMeeple = meepleUnder.topsMeeple;
                             meepleOver.faith += meepleUnder.faith;
                             terrainTo.spaceLeft++;
-                            if (teams.indexOf(meepleUnder.team) < gamePlayers.length) {
-                                gamePlayers[teams.indexOf(meepleUnder.team)].swarmSize--;
+                            if (exports.teams.indexOf(meepleUnder.team) < gamePlayers.length) {
+                                gamePlayers[exports.teams.indexOf(meepleUnder.team)].swarmSize--;
                             }
                         }
                         if (meepleOver.resistance <= 0) {
@@ -6899,7 +6899,7 @@ function moveMeeple(game, from, action) {
                             terrainTo.topMeeple = meepleOver.topsMeeple;
                             meepleUnder.faith += meepleOver.faith;
                             terrainTo.spaceLeft++;
-                            gamePlayers[teams.indexOf(meepleOver.team)].swarmSize--;
+                            gamePlayers[exports.teams.indexOf(meepleOver.team)].swarmSize--;
                         }
                     }
                 }
@@ -6965,7 +6965,7 @@ function play(game, play) {
                 terrains: game.terrains.slice(),
                 meeples: game.meeples.slice(),
                 turn: game.turn,
-                currentPlayer: teams[0],
+                currentPlayer: exports.teams[0],
                 state: play.state,
                 lastAction: "skip"
             };
@@ -7021,7 +7021,7 @@ function setup(playerCount, boardSize, tutorial) {
                 var meeple = {
                     key: meepleKey++,
                     position: position,
-                    team: teams[teams.length - 1],
+                    team: exports.teams[exports.teams.length - 1],
                     turn: turns[0],
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
@@ -7043,7 +7043,7 @@ function setup(playerCount, boardSize, tutorial) {
     var players = new Array();
     var i = 0;
     meepleKey = 0;
-    for (var _i = 0, teams_1 = teams; _i < teams_1.length; _i++) {
+    for (var _i = 0, teams_1 = exports.teams; _i < teams_1.length; _i++) {
         var team = teams_1[_i];
         if (i < playerCount) {
             var position = void 0;
@@ -7066,7 +7066,7 @@ function setup(playerCount, boardSize, tutorial) {
             terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
             terrains[positionToIndex(position, boardSize)].spaceLeft--;
             meeples[meeple.key] = meeple;
-            players[teams.indexOf(team)] = {
+            players[exports.teams.indexOf(team)] = {
                 team: team,
                 individualActions: 0,
                 swarmSize: 1
@@ -10136,7 +10136,8 @@ var Table = (function (_super) {
     __extends(Table, _super);
     function Table() {
         var _this = _super.call(this) || this;
-        _this.state = { game: Game_1.setup(0), playQueue: [] };
+        var queue = [];
+        _this.state = { game: Game_1.setup(0), playQueue: queue };
         _this.refresher = 0;
         document.addEventListener("keypress", function (event) {
             switch (event.key) {
@@ -10231,20 +10232,26 @@ var Table = (function (_super) {
     }
     Table.prototype.enqueuePlay = function (play) {
         var queue = this.state.playQueue;
-        queue.push(play);
+        if (!queue[Game_1.teams.indexOf(play.player)]) {
+            queue[Game_1.teams.indexOf(play.player)] = [];
+        }
+        queue[Game_1.teams.indexOf(play.player)].push(play);
         this.setState({ playQueue: queue });
     };
     Table.prototype.componentDidUpdate = function () {
         var _this = this;
         var queue = this.state.playQueue;
-        if (queue.length > 0) {
-            var playData = queue.shift();
+        if (!queue[Game_1.teams.indexOf(this.state.game.currentPlayer)]) {
+            queue[Game_1.teams.indexOf(this.state.game.currentPlayer)] = [];
+        }
+        if (queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].length > 0) {
+            var playData = queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].shift();
             switch (playData.state) {
                 case "setup":
                     var change = (playData.action === "skip" ? 0 : this.state.game.players.length)
                         + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
                         + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
-                    this.setState({ game: Game_1.setup(change), playQueue: [] });
+                    this.setState({ game: Game_1.setup(change), playQueue: queue });
                     break;
                 case "play":
                 case "end":
@@ -10252,7 +10259,7 @@ var Table = (function (_super) {
                     break;
                 case "tutorial":
                     if (playData.action === null) {
-                        this.setState({ game: Game_1.setup(5, undefined, true), playQueue: [] });
+                        this.setState({ game: Game_1.setup(5, undefined, true), playQueue: queue });
                     }
                     else {
                         var gameStep = Game_1.play(this.state.game, playData);
@@ -10272,7 +10279,7 @@ var Table = (function (_super) {
     };
     Table.prototype.refresh = function () {
         if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
-            && this.state.playQueue.length === 0) {
+            && this.state.playQueue[Game_1.teams.indexOf(this.state.game.currentPlayer)].length === 0) {
             this.autoplay();
         }
     };
@@ -10308,12 +10315,6 @@ var Table = (function (_super) {
             }
             var dir = dirs[roll - 1];
             var repetitions = Math.random() * this.state.game.boardSize / 2;
-            var rest_1 = queue.slice();
-            var reorder = [];
-            while (rest_1.length > 0) {
-                reorder.push(rest_1.filter(function (play) { return play.player === rest_1[0].player; }));
-                rest_1 = rest_1.filter(function (play) { return play.player !== rest_1[0].player; });
-            }
             var nextPlay = [];
             for (var i = 0; i < repetitions; i++) {
                 nextPlay.push({
@@ -10323,26 +10324,12 @@ var Table = (function (_super) {
                     action: dir
                 });
             }
-            var index = reorder.map(function (plays) { return plays[0].player; }).indexOf(this.state.game.currentPlayer);
-            if (index !== -1) {
-                reorder[index].concat(nextPlay);
-            }
-            else {
-                reorder.push(nextPlay);
-            }
-            var newQueue = [];
-            var maxArray = reorder.map(function (plays) { return plays.length; }).sort().reverse()[0];
-            for (var i = 0; i < maxArray; i++) {
-                for (var j = 0; j < reorder.length; j++) {
-                    if (i < reorder[j].length) {
-                        newQueue.push(reorder[j][i]);
-                    }
-                }
-            }
-            this.setState({ playQueue: newQueue });
+            queue[Game_1.teams.indexOf(this.state.game.currentPlayer)] =
+                queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
+            this.setState({ playQueue: queue });
         }
         else {
-            queue.push({
+            queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].push({
                 state: this.state.game.state,
                 player: this.state.game.currentPlayer,
                 from: "player",
@@ -23056,4 +23043,4 @@ ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementByI
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.359261cd3c624e791469.js.map
+//# sourceMappingURL=bundle.748c109c0749a1a5f993.js.map
