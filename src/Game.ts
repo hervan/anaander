@@ -6,7 +6,7 @@ export type Team =
 | "danger"
 | "default";
 
-const teams: Team[] = [
+export const teams: Team[] = [
     "info",
     "warning",
     "success",

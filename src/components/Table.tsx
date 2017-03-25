@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Game, Meeple, Play, Direction, setup, play } from "../Game";
+import { Game, Meeple, Play, Direction, setup, play, teams } from "../Game";
 
 import Tutorial from "./Tutorial";
 import Status from "./Status";
@@ -9,7 +9,7 @@ import Controls from "./Controls";
 
 interface IState {
     game: Game;
-    playQueue: Play[];
+    playQueue: Play[][];
 };
 
 export interface IProps {
@@ -25,7 +25,10 @@ export class Table extends React.Component<{}, IState> {
     constructor() {
 
         super();
-        this.state = { game: setup(0), playQueue: [] };
+
+        const queue: Play[][] = [];
+
+        this.state = { game: setup(0), playQueue: queue };
         this.refresher = 0;
 
         document.addEventListener("keypress", (event) => {
@@ -148,19 +151,30 @@ export class Table extends React.Component<{}, IState> {
 
     enqueuePlay(play: Play): void {
 
-        const queue: Play[] = this.state.playQueue;
-        queue.push(play);
+        const queue: Play[][] = this.state.playQueue;
+
+        if (!queue[teams.indexOf(play.player)]) {
+
+            queue[teams.indexOf(play.player)] = [];
+        }
+
+        queue[teams.indexOf(play.player)].push(play);
 
         this.setState({ playQueue: queue });
     }
 
     componentDidUpdate(): void {
 
-        const queue: Play[] = this.state.playQueue;
+        const queue: Play[][] = this.state.playQueue;
 
-        if (queue.length > 0) {
+        if (!queue[teams.indexOf(this.state.game.currentPlayer)]) {
 
-            const playData: Play = queue.shift() as Play;
+            queue[teams.indexOf(this.state.game.currentPlayer)] = [];
+        }
+
+        if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
+
+            const playData: Play = queue[teams.indexOf(this.state.game.currentPlayer)].shift() as Play;
 
             switch (playData.state) {
 
@@ -171,7 +185,7 @@ export class Table extends React.Component<{}, IState> {
                         + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
                         + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
-                    this.setState({ game: setup(change), playQueue: [] });
+                    this.setState({ game: setup(change), playQueue: queue });
 
                     break;
 
@@ -185,7 +199,7 @@ export class Table extends React.Component<{}, IState> {
 
                     if (playData.action === null) {
 
-                        this.setState({ game: setup(5, undefined, true), playQueue: [] });
+                        this.setState({ game: setup(5, undefined, true), playQueue: queue });
 
                     } else {
 
@@ -214,7 +228,7 @@ export class Table extends React.Component<{}, IState> {
     refresh(): void {
 
         if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
-            && this.state.playQueue.length === 0) {
+            && this.state.playQueue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
 
             this.autoplay();
         }
@@ -228,7 +242,7 @@ export class Table extends React.Component<{}, IState> {
 
     autoplay(): void {
 
-        const queue: Play[] = this.state.playQueue;
+        const queue: Play[][] = this.state.playQueue;
 
         const winnerMeeples: Meeple[] = this.state.game.meeples
             .filter((meeple) => meeple.key !== -1 &&
@@ -264,18 +278,6 @@ export class Table extends React.Component<{}, IState> {
 
             const repetitions: number = Math.random() * this.state.game.boardSize / 2;
 
-            let rest: Play[] = queue.slice();
-            const reorder: Play[][] = [];
-
-            while (rest.length > 0) {
-
-                reorder.push(
-                    rest.filter((play) => play.player === rest[0].player)
-                );
-
-                rest = rest.filter((play) => play.player !== rest[0].player);
-            }
-
             const nextPlay: Play[] = [];
 
             for (let i: number = 0; i < repetitions; i++) {
@@ -288,36 +290,14 @@ export class Table extends React.Component<{}, IState> {
                 });
             }
 
-            const index: number = reorder.map((plays) => plays[0].player).indexOf(this.state.game.currentPlayer);
+            queue[teams.indexOf(this.state.game.currentPlayer)] =
+                queue[teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
 
-            if (index !== -1) {
-
-                reorder[index].concat(nextPlay);
-            } else {
-
-                reorder.push(nextPlay);
-            }
-
-            const newQueue: Play[] = [];
-
-            const maxArray: number = reorder.map((plays) => plays.length).sort().reverse()[0];
-
-            for (let i: number = 0; i < maxArray; i++) {
-
-                for (let j: number = 0; j < reorder.length; j++) {
-
-                    if (i < reorder[j].length) {
-
-                        newQueue.push(reorder[j][i]);
-                    }
-                }
-            }
-
-            this.setState({ playQueue: newQueue });
+            this.setState({ playQueue: queue });
 
         } else {
 
-            queue.push({
+            queue[teams.indexOf(this.state.game.currentPlayer)].push({
                 state: this.state.game.state,
                 player: this.state.game.currentPlayer,
                 from: "player",
