@@ -14,7 +14,7 @@ const tutorialSteps: Array<string> = [
     "the most important game mechanic in anaander is that you move your whole swarm at once (every meeple of your\
         color). you may move some meeples individually when spending extra actions, and some meeples are not able to\
         follow the same movement of the swarm so they will not move, but usually they go with the flow.",
-    "the rules for movement are as follow (you may hover your mouse over meeples and terrain tiles to see their\
+    "the rules for movement are as follows (you may hover your mouse over meeples and terrain tiles to see their\
         individual stats, which may help you better understand them).",
     "meeples are two-sided, and in each turn you are allowed to each meeple only if its current side up matches\
         the current turn.",
