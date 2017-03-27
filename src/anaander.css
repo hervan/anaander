@@ -7,6 +7,21 @@
     --default-color: hsl(0, 0%, 4%);
 }
 
+@keyframes highlighting {
+	0% {
+    	outline-color: black;
+        box-shadow: 0 0 0 1px white;
+    }
+	50% {
+    	outline-color: white;
+        box-shadow: 0 0 0 1px black;
+    }
+	100% {
+    	outline-color: black;
+        box-shadow: 0 0 0 1px white;
+    }
+}
+
 @keyframes flip-in-hor-bottom {
   0% {
     transform: rotateX(80deg);
@@ -81,6 +96,15 @@
     transition-property: color, background-color, border-color;
     transition-duration: 0.6s, 0.6s, 0.6s;
     transition-timing-function: ease-out;
+}
+
+.terrain:hover {
+    outline: black dashed thin;
+}
+
+.terrain.selected {
+    outline: black dashed thin;
+    animation: highlighting 1s linear infinite;
 }
 
 .meeple {

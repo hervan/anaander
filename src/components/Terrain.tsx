@@ -21,7 +21,8 @@ function terrainColor(geography: Game.Geography): Game.Team {
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <article
         title={props.terrain.geography + "\nspace for " + props.terrain.spaceLeft + " meeples"}
-        className={"terrain message is-" + terrainColor(props.terrain.geography)}
+        className={"terrain message is-"
+            + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>
     </article>;
 

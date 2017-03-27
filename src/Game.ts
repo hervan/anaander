@@ -95,11 +95,15 @@ export type Player = {
     // items: Item[];
 };
 
+export type Step = {
+    step: number;
+};
+
 export type Play = {
     state: State;
     player: Team;
     from: Position | "player";
-    action: Direction | Action | null;
+    action: Direction | Action | Step | null;
 };
 
 interface IDictionary {
@@ -567,4 +571,81 @@ export function setup(playerCount: number = 0, boardSize: number = 16, tutorial:
     };
 
     return game;
+}
+
+function pl(row: number, col: number, topMeeple?: number): Terrain {
+    return {
+        position: { row: row, col: col },
+        geography: "plains",
+        spaceLeft: 1,
+        topMeeple: topMeeple ? topMeeple : -1
+    };
+}
+
+const tutorialScenarios: Array<Game> = [
+    setup(5),
+    {
+        boardSize: 6,
+        players: [
+            {
+                team: "info",
+                individualActions: 0,
+                swarmSize: 5
+            },
+            {
+                team: "warning",
+                individualActions: 0,
+                swarmSize: 5
+            }
+        ],
+        terrains: [
+            pl(0, 0),    pl(0, 1),    pl(0, 2),    pl(0, 3),    pl(0, 4),    pl(0, 5),
+            pl(1, 0),    pl(1, 1),    pl(1, 2),    pl(1, 3),    pl(1, 4),    pl(1, 5),
+            pl(2, 0),    pl(2, 1),    pl(2, 2, 1), pl(2, 3, 0), pl(2, 4),    pl(2, 5),
+            pl(3, 0),    pl(3, 1),    pl(3, 2),    pl(3, 3, 2), pl(3, 4),    pl(3, 5),
+            pl(4, 0),    pl(4, 1),    pl(4, 2),    pl(4, 3),    pl(4, 4),    pl(4, 5),
+            pl(5, 0),    pl(5, 1),    pl(5, 2),    pl(5, 3),    pl(5, 4),    pl(5, 5)
+        ],
+        meeples: [
+            {
+                key: 0,
+                position: { row: 2, col: 3 },
+                team: "info",
+                turn: "heads",
+                strength: 10,
+                resistance: 30,
+                faith: 30,
+                topsMeeple: -1
+            },
+            {
+                key: 1,
+                position: { row: 2, col: 2 },
+                team: "warning",
+                turn: "heads",
+                strength: 10,
+                resistance: 30,
+                faith: 30,
+                topsMeeple: -1
+            },
+            {
+                key: 2,
+                position: { row: 3, col: 3 },
+                team: "default",
+                turn: "heads",
+                strength: 5,
+                resistance: 15,
+                faith: 15,
+                topsMeeple: -1
+            }
+        ],
+        turn: "heads",
+        currentPlayer: "info",
+        state: "tutorial",
+        lastAction: "skip"
+    }
+];
+
+export function tutorial(index: number): Game {
+
+    return tutorialScenarios[Math.min(1, index)];
 }

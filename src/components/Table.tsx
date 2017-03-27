@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Game, Meeple, Play, Direction, setup, play, teams } from "../Game";
+import { Game, Meeple, Play, Direction, Step, setup, play, teams, tutorial } from "../Game";
 
 import Tutorial from "./Tutorial";
 import Status from "./Status";
@@ -10,11 +10,18 @@ import Controls from "./Controls";
 interface IState {
     game: Game;
     playQueue: Play[][];
+    tutorialStep: Step;
 };
 
 export interface IProps {
     game: Game;
     enqueuePlay: (play: Play) => void;
+};
+
+export interface ITutorialProps {
+    game: Game;
+    enqueuePlay: (play: Play) => void;
+    step: Step;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -28,7 +35,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = [];
 
-        this.state = { game: setup(0), playQueue: queue };
+        this.state = { game: setup(0), playQueue: queue, tutorialStep: { step: 0 } };
         this.refresher = 0;
 
         document.addEventListener("keypress", (event) => {
@@ -172,50 +179,73 @@ export class Table extends React.Component<{}, IState> {
             queue[teams.indexOf(this.state.game.currentPlayer)] = [];
         }
 
-        if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
+        if (this.state.game.state === "tutorial") {
 
-            const playData: Play = queue[teams.indexOf(this.state.game.currentPlayer)].shift() as Play;
+            if (queue[teams.indexOf("default")].length > 0) {
 
-            switch (playData.state) {
+                const playTutorial: Play = queue[teams.indexOf("default")].shift() as Play;
 
-                case "setup":
+                if (playTutorial.state === "tutorial") {
 
-                    const change: number =
-                        (playData.action === "skip" ? 0 : this.state.game.players.length)
-                        + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
-                        + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
+                    queue[teams.indexOf("default")].push(playTutorial);
+                    this.setState({
+                        game: tutorial((playTutorial.action as Step).step),
+                        playQueue: queue,
+                        tutorialStep: playTutorial.action as Step
+                    });
+                } else {
 
-                    this.setState({ game: setup(change), playQueue: queue });
+                    this.setState({ game: play(this.state.game, playTutorial), playQueue: queue });
+                }
+            }
+        } else {
 
-                    break;
+            if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
 
-                case "play":
-                case "end":
+                const playData: Play = queue[teams.indexOf(this.state.game.currentPlayer)].shift() as Play;
 
-                    this.setState({ game: play(this.state.game, playData), playQueue: queue });
-                    break;
+                switch (playData.state) {
 
-                case "tutorial":
+                    case "setup":
 
-                    if (playData.action === null) {
+                        const change: number =
+                            (playData.action === "skip" ? 0 : this.state.game.players.length)
+                            + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                            + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
-                        this.setState({ game: setup(5, undefined, true), playQueue: queue });
+                        this.setState({ game: setup(change), playQueue: queue });
 
-                    } else {
+                        break;
 
-                        const gameStep: Game = play(this.state.game, playData);
+                    case "play":
+                    case "end":
 
-                        if (gameStep.state === "end") {
+                        this.setState({ game: play(this.state.game, playData), playQueue: queue });
 
-                            this.setState({ playQueue: queue });
+                        break;
+
+                    case "tutorial":
+
+                        if (playData.action === null) {
+
+                            this.setState({ game: setup(5, undefined, true), playQueue: queue });
 
                         } else {
 
-                            this.setState({ game: gameStep, playQueue: queue });
-                        }
-                    }
+                            const gameStep: Game = play(this.state.game, playData);
 
-                    break;
+                            if (gameStep.state === "end") {
+
+                                this.setState({ playQueue: queue });
+
+                            } else {
+
+                                this.setState({ game: gameStep, playQueue: queue });
+                            }
+                        }
+
+                        break;
+                }
             }
         }
 
@@ -227,7 +257,7 @@ export class Table extends React.Component<{}, IState> {
 
     refresh(): void {
 
-        if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
+        if ((this.state.game.state === "end")
             && this.state.playQueue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
 
             this.autoplay();
@@ -244,15 +274,15 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        const winnerMeeples: Meeple[] = this.state.game.meeples
+        const currentPlayerMeeples: Meeple[] = this.state.game.meeples
             .filter((meeple) => meeple.key !== -1 &&
                 meeple.team === this.state.game.currentPlayer);
 
-        if (winnerMeeples.length > 0) {
+        if (currentPlayerMeeples.length > 0) {
 
             const dirs: Direction[] = [ "up", "left", "down", "right" ];
 
-            const weights: number[] = winnerMeeples
+            const weights: number[] = currentPlayerMeeples
                 .map((meeple) => [
                     (meeple.position.row + 1) / (this.state.game.boardSize + 1),
                     (meeple.position.col + 1) / (this.state.game.boardSize + 1),
@@ -260,10 +290,10 @@ export class Table extends React.Component<{}, IState> {
                     (this.state.game.boardSize - meeple.position.col) / (this.state.game.boardSize + 1)
                 ])
                 .reduce((acc, positions) => [
-                    acc[0] + (positions[0] / winnerMeeples.length),
-                    acc[1] + (positions[1] / winnerMeeples.length),
-                    acc[2] + (positions[2] / winnerMeeples.length),
-                    acc[3] + (positions[3] / winnerMeeples.length)
+                    acc[0] + (positions[0] / currentPlayerMeeples.length),
+                    acc[1] + (positions[1] / currentPlayerMeeples.length),
+                    acc[2] + (positions[2] / currentPlayerMeeples.length),
+                    acc[3] + (positions[3] / currentPlayerMeeples.length)
                 ], [0, 0, 0, 0]);
 
             let rollNumber: number = Math.random() * 2;
@@ -315,8 +345,12 @@ export class Table extends React.Component<{}, IState> {
                 <section className="section">
                     <div className="container is-fluid">
                         <div id="table" className="tile is-ancestor">
-                            <Tutorial game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
-                            <Board game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Tutorial game={this.state.game}
+                                enqueuePlay={this.enqueuePlay.bind(this)}
+                                step={this.state.tutorialStep} />
+                            <Board
+                                game={this.state.game}
+                                enqueuePlay={this.enqueuePlay.bind(this)} />
                         </div>
                     </div>
                 </section>
@@ -326,9 +360,15 @@ export class Table extends React.Component<{}, IState> {
                 <section className="section">
                     <div className="container is-fluid">
                         <div id="table" className="tile is-ancestor">
-                            <Status game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
-                            <Board game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
-                            <Controls game={this.state.game} enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Status
+                                game={this.state.game}
+                                enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Board
+                                game={this.state.game}
+                                    enqueuePlay={this.enqueuePlay.bind(this)} />
+                            <Controls
+                                game={this.state.game}
+                                    enqueuePlay={this.enqueuePlay.bind(this)} />
                         </div>
                     </div>
                 </section>
