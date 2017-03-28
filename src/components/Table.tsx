@@ -36,7 +36,6 @@ export class Table extends React.Component<{}, IState> {
         const queue: Play[][] = [];
 
         this.state = { game: setup(0), playQueue: queue, tutorialStep: { step: 0 } };
-        this.refresher = 0;
 
         document.addEventListener("keypress", (event) => {
 
@@ -218,6 +217,18 @@ export class Table extends React.Component<{}, IState> {
                         break;
 
                     case "play":
+
+                        const gameStep = play(this.state.game, playData);
+                        this.setState({ game: gameStep, playQueue: queue });
+
+                        if (gameStep.state === "end") {
+                            
+                            clearInterval(this.refresher);
+                            this.refresher = window.setInterval(() => this.animateEnding(), 300);
+                        }
+
+                        break;
+
                     case "end":
 
                         this.setState({ game: play(this.state.game, playData), playQueue: queue });
@@ -248,94 +259,82 @@ export class Table extends React.Component<{}, IState> {
                 }
             }
         }
-
-        if (this.refresher === 0) {
-
-            this.refresher = window.setInterval(() => this.refresh(), 300);
-        }
     }
 
-    refresh(): void {
+    animateEnding(): void {
 
-        if ((this.state.game.state === "end")
-            && this.state.playQueue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
+        const queue: Play[][] = this.state.playQueue;
 
-            this.autoplay();
+        if (queue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
+
+            const currentPlayerMeeples: Meeple[] = this.state.game.meeples
+                .filter((meeple) => meeple.key !== -1 &&
+                    meeple.team === this.state.game.currentPlayer);
+
+            if (currentPlayerMeeples.length > 0) {
+
+                const dirs: Direction[] = [ "up", "left", "down", "right" ];
+
+                const weights: number[] = currentPlayerMeeples
+                    .map((meeple) => [
+                        (meeple.position.row + 1) / (this.state.game.boardSize + 1),
+                        (meeple.position.col + 1) / (this.state.game.boardSize + 1),
+                        (this.state.game.boardSize - meeple.position.row) / (this.state.game.boardSize + 1),
+                        (this.state.game.boardSize - meeple.position.col) / (this.state.game.boardSize + 1)
+                    ])
+                    .reduce((acc, positions) => [
+                        acc[0] + (positions[0] / currentPlayerMeeples.length),
+                        acc[1] + (positions[1] / currentPlayerMeeples.length),
+                        acc[2] + (positions[2] / currentPlayerMeeples.length),
+                        acc[3] + (positions[3] / currentPlayerMeeples.length)
+                    ], [0, 0, 0, 0]);
+
+                let rollNumber: number = Math.random() * 2;
+                let roll: number = 0;
+
+                while (rollNumber > 0) {
+
+                    rollNumber -= weights[roll++];
+                }
+
+                const dir: Direction = dirs[roll - 1];
+
+                const repetitions: number = Math.random() * this.state.game.boardSize / 2;
+
+                const nextPlay: Play[] = [];
+
+                for (let i: number = 0; i < repetitions; i++) {
+
+                    nextPlay.push({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: dir
+                    });
+                }
+
+                queue[teams.indexOf(this.state.game.currentPlayer)] =
+                    queue[teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
+
+                this.setState({ playQueue: queue });
+
+            } else {
+
+                queue[teams.indexOf(this.state.game.currentPlayer)].push({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "skip"
+                });
+
+                this.setState({ playQueue: queue });
+            }
         }
     }
 
     componentWillUnmount(): void {
 
         clearInterval(this.refresher);
-        this.refresher = 0;
-    }
-
-    autoplay(): void {
-
-        const queue: Play[][] = this.state.playQueue;
-
-        const currentPlayerMeeples: Meeple[] = this.state.game.meeples
-            .filter((meeple) => meeple.key !== -1 &&
-                meeple.team === this.state.game.currentPlayer);
-
-        if (currentPlayerMeeples.length > 0) {
-
-            const dirs: Direction[] = [ "up", "left", "down", "right" ];
-
-            const weights: number[] = currentPlayerMeeples
-                .map((meeple) => [
-                    (meeple.position.row + 1) / (this.state.game.boardSize + 1),
-                    (meeple.position.col + 1) / (this.state.game.boardSize + 1),
-                    (this.state.game.boardSize - meeple.position.row) / (this.state.game.boardSize + 1),
-                    (this.state.game.boardSize - meeple.position.col) / (this.state.game.boardSize + 1)
-                ])
-                .reduce((acc, positions) => [
-                    acc[0] + (positions[0] / currentPlayerMeeples.length),
-                    acc[1] + (positions[1] / currentPlayerMeeples.length),
-                    acc[2] + (positions[2] / currentPlayerMeeples.length),
-                    acc[3] + (positions[3] / currentPlayerMeeples.length)
-                ], [0, 0, 0, 0]);
-
-            let rollNumber: number = Math.random() * 2;
-            let roll: number = 0;
-
-            while (rollNumber > 0) {
-
-                rollNumber -= weights[roll++];
-            }
-
-            const dir: Direction = dirs[roll - 1];
-
-            const repetitions: number = Math.random() * this.state.game.boardSize / 2;
-
-            const nextPlay: Play[] = [];
-
-            for (let i: number = 0; i < repetitions; i++) {
-
-                nextPlay.push({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: dir
-                });
-            }
-
-            queue[teams.indexOf(this.state.game.currentPlayer)] =
-                queue[teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
-
-            this.setState({ playQueue: queue });
-
-        } else {
-
-            queue[teams.indexOf(this.state.game.currentPlayer)].push({
-                state: this.state.game.state,
-                player: this.state.game.currentPlayer,
-                from: "player",
-                action: "skip"
-            });
-
-            this.setState({ playQueue: queue });
-        }
     }
 
     render(): JSX.Element {
