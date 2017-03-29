@@ -107,7 +107,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
 
             guide =
                 <p>
-                    <span className={"is-" + props.game.currentPlayer}>general {props.game.currentPlayer}</span> won the game!
+                    general <span className={"is-" + props.game.currentPlayer}>{props.game.currentPlayer}</span> won the game!
                 </p>;
 
             break;
