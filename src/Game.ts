@@ -62,7 +62,7 @@ type State =
 | "play"
 | "end";
 
-type Action =
+export type Action =
 | "attack"
 | "guard"
 | "explore"
@@ -465,7 +465,7 @@ export function play(game: Game, play: Play): Game {
     }
 }
 
-export function setup(playerCount: number = 0, boardSize: number = 16, tutorial: boolean = false): Game {
+export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
     let meepleKey: number = playerCount;
 
@@ -566,24 +566,23 @@ export function setup(playerCount: number = 0, boardSize: number = 16, tutorial:
         meeples: meeples.slice(),
         turn: turns[0],
         currentPlayer: "default",
-        state: tutorial ? "tutorial" : "setup",
+        state: "setup",
         lastAction: { explanation: InvalidPlays.None }
     };
 
     return game;
 }
 
-function pl(row: number, col: number, topMeeple?: number): Terrain {
+function pl(row: number, col: number, topMeeple: number = -1): Terrain {
     return {
         position: { row: row, col: col },
         geography: "plains",
         spaceLeft: 1,
-        topMeeple: topMeeple ? topMeeple : -1
+        topMeeple: topMeeple
     };
 }
 
 const tutorialScenarios: Array<Game> = [
-    setup(5),
     {
         boardSize: 6,
         players: [
@@ -641,11 +640,11 @@ const tutorialScenarios: Array<Game> = [
         turn: "heads",
         currentPlayer: "info",
         state: "tutorial",
-        lastAction: "skip"
+        lastAction: "down"
     }
 ];
 
 export function tutorial(index: number): Game {
 
-    return tutorialScenarios[Math.min(1, index)];
+    return tutorialScenarios[Math.min(tutorialScenarios.length - 1, index)];
 }

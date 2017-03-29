@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Game, Meeple, Play, Direction, Step, setup, play, teams, tutorial } from "../Game";
+import { Game, Meeple, Play, Direction, Action, Step, setup, play, teams, tutorial } from "../Game";
 
 import Tutorial from "./Tutorial";
 import Status from "./Status";
@@ -146,7 +146,7 @@ export class Table extends React.Component<{}, IState> {
                             state: "tutorial",
                             player: "default",
                             from: "player",
-                            action: null
+                            action: { step: 0 }
                         });
                     }
 
@@ -173,91 +173,117 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
+        if (!queue[teams.indexOf("default")]) {
+
+            queue[teams.indexOf("default")] = [];
+        }
+
         if (!queue[teams.indexOf(this.state.game.currentPlayer)]) {
 
             queue[teams.indexOf(this.state.game.currentPlayer)] = [];
         }
 
-        if (this.state.game.state === "tutorial") {
+        if (queue[teams.indexOf("default")].length > 0) {
 
-            if (queue[teams.indexOf("default")].length > 0) {
+            const playDefault: Play = queue[teams.indexOf("default")].shift() as Play;
+            queue[teams.indexOf("default")] = [];
 
-                const playTutorial: Play = queue[teams.indexOf("default")].shift() as Play;
+            switch (playDefault.state) {
 
-                if (playTutorial.state === "tutorial") {
+                case "setup":
 
-                    queue[teams.indexOf("default")].push(playTutorial);
-                    this.setState({
-                        game: tutorial((playTutorial.action as Step).step),
-                        playQueue: queue,
-                        tutorialStep: playTutorial.action as Step
-                    });
-                } else {
+                    if (this.state.game.state === "tutorial") {
 
-                    this.setState({ game: play(this.state.game, playTutorial), playQueue: queue });
-                }
-            }
-        } else {
+                        clearInterval(this.refresher);
+                        this.setState({ game: setup(5), playQueue: queue });
 
-            if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
-
-                const playData: Play = queue[teams.indexOf(this.state.game.currentPlayer)].shift() as Play;
-
-                switch (playData.state) {
-
-                    case "setup":
+                    } else {
 
                         const change: number =
-                            (playData.action === "skip" ? 0 : this.state.game.players.length)
-                            + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
-                            + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
+                            (playDefault.action === "skip" ? 0 : this.state.game.players.length)
+                            + (playDefault.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                            + (playDefault.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
                         this.setState({ game: setup(change), playQueue: queue });
+                    }
 
-                        break;
+                    break;
 
-                    case "play":
+                case "play":
 
-                        const gameStep = play(this.state.game, playData);
-                        this.setState({ game: gameStep, playQueue: queue });
+                    const gameStep: Game = play(this.state.game, playDefault);
+                    this.setState({ game: gameStep, playQueue: queue });
 
-                        if (gameStep.state === "end") {
-                            
-                            clearInterval(this.refresher);
-                            this.refresher = window.setInterval(() => this.animateEnding(), 300);
-                        }
+                    if (gameStep.state === "end") {
 
-                        break;
+                        clearInterval(this.refresher);
+                        this.refresher = window.setInterval(() => this.animateEnding(), 300);
+                    }
 
-                    case "end":
+                    break;
 
-                        this.setState({ game: play(this.state.game, playData), playQueue: queue });
+                case "tutorial":
 
-                        break;
+                    this.setState({
+                        game: tutorial((playDefault.action as Step).step),
+                        playQueue: queue,
+                        tutorialStep: playDefault.action as Step
+                    });
 
-                    case "tutorial":
+                    clearInterval(this.refresher);
+                    this.refresher = window.setInterval(() => this.animateTutorial(), 2000);
 
-                        if (playData.action === null) {
-
-                            this.setState({ game: setup(5, undefined, true), playQueue: queue });
-
-                        } else {
-
-                            const gameStep: Game = play(this.state.game, playData);
-
-                            if (gameStep.state === "end") {
-
-                                this.setState({ playQueue: queue });
-
-                            } else {
-
-                                this.setState({ game: gameStep, playQueue: queue });
-                            }
-                        }
-
-                        break;
-                }
+                    break;
             }
+
+        } else if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
+
+            const playData: Play = queue[teams.indexOf(this.state.game.currentPlayer)].shift() as Play;
+
+            switch (playData.state) {
+
+                case "play":
+
+                    const gameStep: Game = play(this.state.game, playData);
+                    this.setState({ game: gameStep, playQueue: queue });
+
+                    if (gameStep.state === "end") {
+
+                        clearInterval(this.refresher);
+                        this.refresher = window.setInterval(() => this.animateEnding(), 300);
+                    }
+
+                    break;
+
+                case "end":
+
+                    this.setState({ game: play(this.state.game, playData), playQueue: queue });
+
+                    break;
+
+                case "tutorial":
+
+                    this.setState({ game: play(this.state.game, playData), playQueue: queue });
+
+                    break;
+            }
+        }
+    }
+
+    animateTutorial(): void {
+
+        const queue: Play[][] = this.state.playQueue;
+
+        if (queue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
+
+            queue[teams.indexOf(this.state.game.currentPlayer)].push({
+                state: "tutorial",
+                player: this.state.game.currentPlayer,
+                from: "player",
+                action: this.state.game.lastAction as (Direction | Action)
+            });
+
+            this.setState({ playQueue: queue });
         }
     }
 

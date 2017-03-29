@@ -60,7 +60,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                         state: "tutorial",
                         player: "default",
                         from: "player",
-                        action: null
+                        action: { step: 0 }
                     })}>here</a> for a short tutorial.)
                 </p>;
 
