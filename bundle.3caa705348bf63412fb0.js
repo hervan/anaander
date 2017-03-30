@@ -6741,6 +6741,14 @@ exports.teams = [
     "primary",
     "default"
 ];
+var terrainList = [
+    "city",
+    "island",
+    "forest",
+    "swamp",
+    "mountain",
+    "plains"
+];
 var terrainDistribution = [
     "city",
     "island", "island",
@@ -7090,7 +7098,7 @@ function t(row, col, topMeeple) {
     if (topMeeple === void 0) { topMeeple = -1; }
     return {
         position: { row: row, col: col },
-        geography: "plains",
+        geography: terrainList[(6 + col - row) % 2],
         spaceLeft: 1,
         topMeeple: topMeeple
     };
@@ -7098,22 +7106,22 @@ function t(row, col, topMeeple) {
 function tutorial(index) {
     switch (index) {
         case 0:
-        // let gameStep = this.play(setup(5), {
-        //     state: "tutorial",
-        //     player: "default",
-        //     from: "player",
-        //     action: null
-        // });
-        // return ({
-        //     game: gameStep,
-        //     plays: [
-        //         "up", "up", "up", "up", "up",
-        //         "left", "left", "left", "left", "left",
-        //         "down", "down", "down", "down", "down",
-        //         "right", "right", "right", "right", "right"
-        //     ]
-        // });
-        default:
+            var gameStep = this.play(setup(5), {
+                state: "tutorial",
+                player: "default",
+                from: "player",
+                action: null
+            });
+            return ({
+                game: gameStep,
+                plays: [
+                    "up", "up", "up", "up", "up",
+                    "left", "left", "left", "left", "left",
+                    "down", "down", "down", "down", "down",
+                    "right", "right", "right", "right", "right"
+                ]
+            });
+        case 1:
             return ({
                 game: {
                     boardSize: 6,
@@ -7121,12 +7129,17 @@ function tutorial(index) {
                         {
                             team: "info",
                             individualActions: 0,
-                            swarmSize: 5
+                            swarmSize: 2
                         },
                         {
                             team: "warning",
                             individualActions: 0,
-                            swarmSize: 5
+                            swarmSize: 1
+                        },
+                        {
+                            team: "success",
+                            individualActions: 0,
+                            swarmSize: 2
                         }
                     ],
                     terrains: [
@@ -7134,7 +7147,7 @@ function tutorial(index) {
                         t(1, 0), t(1, 1), t(1, 2), t(1, 3), t(1, 4), t(1, 5),
                         t(2, 0), t(2, 1), t(2, 2, 1), t(2, 3, 0), t(2, 4), t(2, 5),
                         t(3, 0), t(3, 1), t(3, 2), t(3, 3, 2), t(3, 4), t(3, 5),
-                        t(4, 0), t(4, 1), t(4, 2), t(4, 3), t(4, 4), t(4, 5),
+                        t(4, 0), t(4, 1, 3), t(4, 2), t(4, 3), t(4, 4), t(4, 5),
                         t(5, 0), t(5, 1), t(5, 2), t(5, 3), t(5, 4), t(5, 5)
                     ],
                     meeples: [
@@ -7153,14 +7166,24 @@ function tutorial(index) {
                             position: { row: 2, col: 2 },
                             team: "warning",
                             turn: "heads",
-                            strength: 10,
-                            resistance: 30,
+                            strength: 5,
+                            resistance: 10,
                             faith: 30,
                             topsMeeple: -1
                         },
                         {
                             key: 2,
                             position: { row: 3, col: 3 },
+                            team: "success",
+                            turn: "heads",
+                            strength: 5,
+                            resistance: 15,
+                            faith: 15,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 3,
+                            position: { row: 4, col: 1 },
                             team: "default",
                             turn: "heads",
                             strength: 5,
@@ -7174,7 +7197,122 @@ function tutorial(index) {
                     state: "tutorial",
                     lastAction: "skip"
                 },
-                plays: ["down"]
+                plays: [
+                    "left", "skip",
+                    "down", "skip",
+                    "right",
+                    "skip", "skip", "skip",
+                    "skip", "skip", "skip"
+                ]
+            });
+        case 2:
+        default:
+            return ({
+                game: {
+                    boardSize: 6,
+                    players: [
+                        {
+                            team: "info",
+                            individualActions: 0,
+                            swarmSize: 5
+                        },
+                        {
+                            team: "warning",
+                            individualActions: 0,
+                            swarmSize: 1
+                        }
+                    ],
+                    terrains: [
+                        t(0, 0), t(0, 1), t(0, 2), t(0, 3), t(0, 4, 5), t(0, 5),
+                        t(1, 0), t(1, 1, 6), t(1, 2, 0), t(1, 3), t(1, 4), t(1, 5),
+                        t(2, 0), t(2, 1), t(2, 2), t(2, 3, 1), t(2, 4), t(2, 5),
+                        t(3, 0), t(3, 1, 4), t(3, 2, 3), t(3, 3, 2), t(3, 4), t(3, 5),
+                        t(4, 0), t(4, 1), t(4, 2), t(4, 3), t(4, 4), t(4, 5),
+                        t(5, 0), t(5, 1), t(5, 2), t(5, 3), t(5, 4), t(5, 5)
+                    ],
+                    meeples: [
+                        {
+                            key: 0,
+                            position: { row: 1, col: 2 },
+                            team: "info",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 1,
+                            position: { row: 2, col: 3 },
+                            team: "info",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 2,
+                            position: { row: 3, col: 3 },
+                            team: "info",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 3,
+                            position: { row: 3, col: 2 },
+                            team: "info",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 4,
+                            position: { row: 3, col: 1 },
+                            team: "info",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 5,
+                            position: { row: 0, col: 4 },
+                            team: "default",
+                            turn: "heads",
+                            strength: 5,
+                            resistance: 15,
+                            faith: 15,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 6,
+                            position: { row: 1, col: 1 },
+                            team: "default",
+                            turn: "heads",
+                            strength: 5,
+                            resistance: 15,
+                            faith: 15,
+                            topsMeeple: -1
+                        }
+                    ],
+                    turn: "heads",
+                    currentPlayer: "info",
+                    state: "tutorial",
+                    lastAction: "skip"
+                },
+                plays: [
+                    "right", "skip",
+                    "down", "skip",
+                    "left", "skip",
+                    "up", "skip"
+                ]
             });
     }
 }
@@ -10333,7 +10471,16 @@ var Table = (function (_super) {
             queue[Game_1.teams.indexOf(play.player)] = [];
         }
         queue[Game_1.teams.indexOf(play.player)].push(play);
-        this.setState({ playQueue: queue });
+        if (play.state === "tutorial") {
+            this.setState({
+                playQueue: queue,
+                tutorialStep: play.action,
+                tutorialPlays: []
+            });
+        }
+        else {
+            this.setState({ playQueue: queue });
+        }
     };
     Table.prototype.componentDidUpdate = function () {
         var _this = this;
@@ -10371,7 +10518,7 @@ var Table = (function (_super) {
                 case "tutorial":
                     this.animateTutorial();
                     clearInterval(this.refresher);
-                    this.refresher = window.setInterval(function () { return _this.animateTutorial(); }, 1000);
+                    this.refresher = window.setInterval(function () { return _this.animateTutorial(); }, 500);
                     break;
             }
         }
@@ -10830,8 +10977,8 @@ var Status = function (props) {
     ;
     return (React.createElement("div", { id: "status", className: "tile is-3 is-parent" },
         React.createElement("div", { className: "notification tile is-child" },
-            React.createElement("h1", { className: "title" }, "anaander"),
-            React.createElement("h2", { className: "subtitle" }, guide),
+            React.createElement("h1", { className: "title is-2" }, "anaander"),
+            React.createElement("h2", { className: "subtitle is-4" }, guide),
             React.createElement("span", null, guide_detail))));
 };
 exports.default = Status;
@@ -10878,9 +11025,9 @@ var tutorialSteps = [
         Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and soldiers form a\
         shared consciousness for single entities, like spaceships, or like the Lord of the Radch herself). click one\
         of these paragraphs and the board shows you a scenario where you can easier understand the rules.",
-    "you move around the map converting meeples of little faith to your swarm, and battling meeples of your\
-        opponents, trying to reduce their swarms to zero (removing the player from the game). the last player standing\
-        is the winner.",
+    "you move around the map converting meeples of little faith to your swarm, and battling  the others, specially\
+        the ones of your opponents, trying to reduce their swarms to zero (removing the player from the game). the\
+        last player standing is the winner.",
     "the most important game mechanic in anaander is that you move your whole swarm at once (every meeple of your\
         color). you may move some meeples individually when spending extra actions, and some meeples are not able to\
         follow the same movement of the swarm so they will not move, but usually they go with the flow.",
@@ -10896,23 +11043,61 @@ var tutorialSteps = [
         move but the meeple stands still - also, not flipping its side, so it will miss the next turn.",
     "the space available to meeples in the terrains ranges from 1 to 6."
 ];
+var tutorialRemarks = [
+    [
+        "on the board shown, notice how the colored pawns, called meeples, move one at a time:\
+            first blue, then yellow, green, red, and teal.",
+        "black and grey meeples are neutral, while each of the other colors represent a team playing the game.",
+        "you are the general who controls the team of your color. generals have silly names, like\
+            general info, general warning, general success, general danger and general primary\
+            (the last general's name doesn't even make sense)."
+    ],
+    [
+        "this small sample board starts with four meeples, the blue one (general info's team) moves around trying to\
+            eliminate her opponents: general warning's yellow team and general success's green team.",
+        "first, blue moves left, and eliminates yellow because its faith was strong, but its resistance couldn't\
+            take a physical hit from blue.",
+        "then blue moves down (let's suppose general success skipped her turn), and finally moves right,\
+            onto the green meeple, to convert it - its faith was weak, so it was spared a battle.",
+        "notice how blue was able to ignore the fourth meeple, the neutral one (black), because it doesn't belong to\
+            any of her opponents - the ones that belonged are now gone, or got converted to general info's cause."
+    ],
+    [
+        "all of the five blue meeples are executing the same instruction in this case: they all move right,\
+            at the same time; then down, then left, then up.",
+        "since there were no events preventing each of them to move, notice how the same formation was conserved at\
+            all times."
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+];
 var Tutorial = function (props) {
     var tutorial = React.createElement("br", null);
     tutorial =
         React.createElement("div", { className: "content" }, tutorialSteps.map(function (tutorialStep, index) {
-            return React.createElement("p", { key: index, onClick: function () { return props.enqueuePlay({
+            return React.createElement("div", { className: "title is-6", onClick: function () { return props.enqueuePlay({
                     state: "tutorial",
                     player: "default",
                     from: "player",
                     action: { step: index }
-                }); } }, index === props.step.step ?
-                React.createElement("strong", null, tutorialStep) :
-                tutorialStep);
+                }); } },
+                index === props.step.step ?
+                    React.createElement("strong", null, tutorialStep) :
+                    tutorialStep,
+                index === props.step.step ?
+                    React.createElement("ul", null, tutorialRemarks[index].map(function (remark) {
+                        return React.createElement("li", null, remark);
+                    }))
+                    : null);
         }));
     return (React.createElement("div", { id: "status", className: "tile is-4 is-parent" },
         React.createElement("div", { className: "notification tile is-child" },
-            React.createElement("h1", { className: "title" }, "anaander tutorial"),
-            React.createElement("h2", { className: "subtitle" },
+            React.createElement("h1", { className: "title is-2" }, "anaander tutorial"),
+            React.createElement("h2", { className: "subtitle is-4" },
                 "(click ",
                 React.createElement("a", { className: "is-link", onClick: function () { return props.enqueuePlay({
                         state: "setup",
@@ -10949,7 +11134,7 @@ exports = module.exports = __webpack_require__(54)();
 
 
 // module
-exports.push([module.i, ":root {\n    --primary-color: hsl(171, 100%, 41%);\n    --info-color: hsl(217, 71%, 53%);\n    --success-color: hsl(141, 71%, 48%);\n    --warning-color: hsl(48, 100%, 67%);\n    --danger-color: hsl(348, 100%, 61%);\n    --default-color: hsl(0, 0%, 4%);\n}\n\n@keyframes highlighting {\n\t0% {\n    \toutline-color: black;\n        box-shadow: 0 0 0 1px white;\n    }\n\t50% {\n    \toutline-color: white;\n        box-shadow: 0 0 0 1px black;\n    }\n\t100% {\n    \toutline-color: black;\n        box-shadow: 0 0 0 1px white;\n    }\n}\n\n@keyframes flip-in-hor-bottom {\n  0% {\n    transform: rotateX(80deg);\n    opacity: 0;\n  }\n  100% {\n    transform: rotateX(0);\n    opacity: 1;\n  }\n}\n\n@keyframes jello-vertical {\n  0% {\n    transform: scale(1, 1);\n  }\n  30% {\n    transform: scale(1.07, 1.07);\n  }\n  40% {\n    transform: scale(0.96, 1.2);\n  }\n  50% {\n    transform: scale(1.2, 0.96);\n  }\n  65% {\n    transform: scale(1, 1.13);\n  }\n  80% {\n    transform: scale(1.09, 1.05);\n  }\n  90% {\n    transform: scale(1.05, 1.09);\n  }\n  100% {\n    transform: scale(1.07, 1.07);\n  }\n}\n\n.is-primary {\n    color: var(--primary-color);\n}\n\n.is-info {\n    color: var(--info-color);\n}\n\n.is-success {\n    color: var(--success-color);\n}\n\n.is-warning {\n    color: var(--warning-color);\n}\n\n.is-danger {\n    color: var(--danger-color);\n}\n\n.is-default {\n    color: var(--default-color);\n}\n\n.board {\n    position: relative;\n    box-sizing: border-box;\n}\n\n.terrain {\n    position: absolute;\n    width: 43px;\n    height: 43px;\n    transition-property: color, background-color, border-color;\n    transition-duration: 0.6s, 0.6s, 0.6s;\n    transition-timing-function: ease-out;\n}\n\n.terrain:hover {\n    outline: black dashed thin;\n}\n\n.terrain.selected {\n    outline: black dashed thin;\n    animation: highlighting 1s linear infinite;\n}\n\n.meeple {\n    position: absolute;\n    transition-property: top, left, color, opacity, transform;\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;\n    transition-timing-function: ease-out;\n}\n\n.player {\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\n}\n\n.current-player {\n    animation: jello-vertical 0.5s both;\n}\n", ""]);
+exports.push([module.i, ":root {\r\n    --primary-color: hsl(171, 100%, 41%);\r\n    --info-color: hsl(217, 71%, 53%);\r\n    --success-color: hsl(141, 71%, 48%);\r\n    --warning-color: hsl(48, 100%, 67%);\r\n    --danger-color: hsl(348, 100%, 61%);\r\n    --default-color: hsl(0, 0%, 4%);\r\n}\r\n\r\n@keyframes highlighting {\r\n\t0% {\r\n    \toutline-color: black;\r\n        box-shadow: 0 0 0 1px white;\r\n    }\r\n\t50% {\r\n    \toutline-color: white;\r\n        box-shadow: 0 0 0 1px black;\r\n    }\r\n\t100% {\r\n    \toutline-color: black;\r\n        box-shadow: 0 0 0 1px white;\r\n    }\r\n}\r\n\r\n@keyframes flip-in-hor-bottom {\r\n  0% {\r\n    transform: rotateX(80deg);\r\n    opacity: 0;\r\n  }\r\n  100% {\r\n    transform: rotateX(0);\r\n    opacity: 1;\r\n  }\r\n}\r\n\r\n@keyframes jello-vertical {\r\n  0% {\r\n    transform: scale(1, 1);\r\n  }\r\n  30% {\r\n    transform: scale(1.07, 1.07);\r\n  }\r\n  40% {\r\n    transform: scale(0.96, 1.2);\r\n  }\r\n  50% {\r\n    transform: scale(1.2, 0.96);\r\n  }\r\n  65% {\r\n    transform: scale(1, 1.13);\r\n  }\r\n  80% {\r\n    transform: scale(1.09, 1.05);\r\n  }\r\n  90% {\r\n    transform: scale(1.05, 1.09);\r\n  }\r\n  100% {\r\n    transform: scale(1.07, 1.07);\r\n  }\r\n}\r\n\r\n.is-primary {\r\n    color: var(--primary-color);\r\n}\r\n\r\n.is-info {\r\n    color: var(--info-color);\r\n}\r\n\r\n.is-success {\r\n    color: var(--success-color);\r\n}\r\n\r\n.is-warning {\r\n    color: var(--warning-color);\r\n}\r\n\r\n.is-danger {\r\n    color: var(--danger-color);\r\n}\r\n\r\n.is-default {\r\n    color: var(--default-color);\r\n}\r\n\r\n.board {\r\n    position: relative;\r\n    box-sizing: border-box;\r\n}\r\n\r\n.terrain {\r\n    position: absolute;\r\n    width: 43px;\r\n    height: 43px;\r\n    transition-property: color, background-color, border-color;\r\n    transition-duration: 0.6s, 0.6s, 0.6s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.terrain:hover {\r\n    outline: black dashed thin;\r\n}\r\n\r\n.terrain.selected {\r\n    outline: black dashed thin;\r\n    animation: highlighting 1s linear infinite;\r\n}\r\n\r\n.meeple {\r\n    position: absolute;\r\n    transition-property: top, left, color, opacity, transform;\r\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.player {\r\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\r\n}\r\n\r\n.current-player {\r\n    animation: jello-vertical 0.5s both;\r\n}\r\n", ""]);
 
 // exports
 
@@ -23202,4 +23387,4 @@ ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementByI
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.8847a246b797d818d242.js.map
+//# sourceMappingURL=bundle.3caa705348bf63412fb0.js.map
