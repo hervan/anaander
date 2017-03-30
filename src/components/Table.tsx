@@ -11,6 +11,7 @@ interface IState {
     game: Game;
     playQueue: Play[][];
     tutorialStep: Step;
+    tutorialPlays: Array<Action | Direction>;
 };
 
 export interface IProps {
@@ -35,7 +36,12 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = [];
 
-        this.state = { game: setup(0), playQueue: queue, tutorialStep: { step: 0 } };
+        this.state = {
+            game: setup(0),
+            playQueue: queue,
+            tutorialStep: { step: 0 },
+            tutorialPlays: []
+        };
 
         document.addEventListener("keypress", (event) => {
 
@@ -43,114 +49,115 @@ export class Table extends React.Component<{}, IState> {
 
                 case "q":
 
-                    this.enqueuePlay({
-                        state: this.state.game.state,
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "guard"
-                    });
+                this.enqueuePlay({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "guard"
+                });
 
-                    break;
+                break;
 
                 case "w":
 
-                    this.enqueuePlay({
-                        state: this.state.game.state,
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "up"
-                    });
+                this.enqueuePlay({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "up"
+                });
 
-                    break;
+                break;
 
                 case "e":
 
-                    this.enqueuePlay({
-                        state: this.state.game.state,
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "explore"
-                    });
+                this.enqueuePlay({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "explore"
+                });
 
-                    break;
+                break;
 
                 case "a":
 
-                    this.enqueuePlay({
-                        state: this.state.game.state,
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "left"
-                    });
+                this.enqueuePlay({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "left"
+                });
 
-                    break;
+                break;
 
                 case "s":
 
-                    this.enqueuePlay({
-                        state: this.state.game.state,
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "down"
-                    });
+                this.enqueuePlay({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "down"
+                });
 
-                    break;
+                break;
 
                 case "d":
 
-                    this.enqueuePlay({
-                        state: this.state.game.state,
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "right"
-                    });
+                this.enqueuePlay({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "right"
+                });
 
-                    break;
+                break;
 
                 case " ":
 
-                    if (this.state.game.state === "tutorial") {
+                if (this.state.game.state === "tutorial") {
 
-                        this.enqueuePlay({
-                            state: "tutorial",
-                            player: this.state.game.currentPlayer,
-                            from: "player",
-                            action: "skip"
-                        });
+                    this.enqueuePlay({
+                        state: "tutorial",
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: "skip"
+                    });
 
-                    } else {
+                } else {
 
-                        this.enqueuePlay({
-                            state: "play",
-                            player: this.state.game.currentPlayer,
-                            from: "player",
-                            action: null
-                        });
-                    }
+                    this.enqueuePlay({
+                        state: "play",
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: null
+                    });
+                }
 
-                    break;
+                break;
 
                 case "/":
                 case "?":
-                    if (this.state.game.state === "tutorial") {
 
-                        this.enqueuePlay({
-                            state: "setup",
-                            player: "default",
-                            from: "player",
-                            action: "skip"
-                        });
-                    } else {
+                if (this.state.game.state === "tutorial") {
 
-                        this.enqueuePlay({
-                            state: "tutorial",
-                            player: "default",
-                            from: "player",
-                            action: { step: 0 }
-                        });
-                    }
+                    this.enqueuePlay({
+                        state: "setup",
+                        player: "default",
+                        from: "player",
+                        action: "skip"
+                    });
+                } else {
 
-                    break;
+                    this.enqueuePlay({
+                        state: "tutorial",
+                        player: "default",
+                        from: "player",
+                        action: { step: 0 }
+                    });
+                }
+
+                break;
             }
         });
     }
@@ -192,48 +199,44 @@ export class Table extends React.Component<{}, IState> {
 
                 case "setup":
 
-                    if (this.state.game.state === "tutorial") {
+                if (this.state.game.state === "tutorial") {
 
-                        clearInterval(this.refresher);
-                        this.setState({ game: setup(5), playQueue: queue });
+                    clearInterval(this.refresher);
+                    this.setState({ game: setup(0), playQueue: queue });
 
-                    } else {
+                } else {
 
-                        const change: number =
-                            (playDefault.action === "skip" ? 0 : this.state.game.players.length)
-                            + (playDefault.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
-                            + (playDefault.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
+                    const change: number =
+                        (playDefault.action === "skip" ? 0 : this.state.game.players.length)
+                        + (playDefault.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                        + (playDefault.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
 
-                        this.setState({ game: setup(change), playQueue: queue });
-                    }
+                    this.setState({ game: setup(change), playQueue: queue });
+                }
 
-                    break;
+                break;
 
                 case "play":
 
-                    const gameStep: Game = play(this.state.game, playDefault);
-                    this.setState({ game: gameStep, playQueue: queue });
+                const gameStep: Game = play(this.state.game, playDefault);
+                this.setState({ game: gameStep, playQueue: queue });
 
-                    if (gameStep.state === "end") {
+                if (gameStep.state === "end") {
 
-                        clearInterval(this.refresher);
-                        this.refresher = window.setInterval(() => this.animateEnding(), 300);
-                    }
+                    clearInterval(this.refresher);
+                    this.refresher = window.setInterval(() => this.animateEnding(), 300);
+                }
 
-                    break;
+                break;
 
                 case "tutorial":
 
-                    this.setState({
-                        game: tutorial((playDefault.action as Step).step),
-                        playQueue: queue,
-                        tutorialStep: playDefault.action as Step
-                    });
+                this.animateTutorial();
 
-                    clearInterval(this.refresher);
-                    this.refresher = window.setInterval(() => this.animateTutorial(), 2000);
+                clearInterval(this.refresher);
+                this.refresher = window.setInterval(() => this.animateTutorial(), 1000);
 
-                    break;
+                break;
             }
 
         } else if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
@@ -244,28 +247,28 @@ export class Table extends React.Component<{}, IState> {
 
                 case "play":
 
-                    const gameStep: Game = play(this.state.game, playData);
-                    this.setState({ game: gameStep, playQueue: queue });
+                const gameStep: Game = play(this.state.game, playData);
+                this.setState({ game: gameStep, playQueue: queue });
 
-                    if (gameStep.state === "end") {
+                if (gameStep.state === "end") {
 
-                        clearInterval(this.refresher);
-                        this.refresher = window.setInterval(() => this.animateEnding(), 300);
-                    }
+                    clearInterval(this.refresher);
+                    this.refresher = window.setInterval(() => this.animateEnding(), 300);
+                }
 
-                    break;
+                break;
 
                 case "end":
 
-                    this.setState({ game: play(this.state.game, playData), playQueue: queue });
+                this.setState({ game: play(this.state.game, playData), playQueue: queue });
 
-                    break;
+                break;
 
                 case "tutorial":
 
-                    this.setState({ game: play(this.state.game, playData), playQueue: queue });
+                this.setState({ game: play(this.state.game, playData), playQueue: queue });
 
-                    break;
+                break;
             }
         }
     }
@@ -273,17 +276,30 @@ export class Table extends React.Component<{}, IState> {
     animateTutorial(): void {
 
         const queue: Play[][] = this.state.playQueue;
+        const plays: Array<Action | Direction> = this.state.tutorialPlays;
+        const action = plays.shift();
 
-        if (queue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
+        if (!action) {
+
+            let { game: tutorialGame, plays: tutorialPlays } = tutorial(this.state.tutorialStep.step);
+
+            this.setState({
+                game: tutorialGame,
+                tutorialPlays: tutorialPlays
+            });
+        } else {
 
             queue[teams.indexOf(this.state.game.currentPlayer)].push({
                 state: "tutorial",
                 player: this.state.game.currentPlayer,
                 from: "player",
-                action: this.state.game.lastAction as (Direction | Action)
+                action: action
             });
 
-            this.setState({ playQueue: queue });
+            this.setState({
+                playQueue: queue,
+                tutorialPlays: plays
+            });
         }
     }
 

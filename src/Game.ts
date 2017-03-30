@@ -237,23 +237,23 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
         switch (action) {
 
             case "left":
-                to.col = from.col - 1;
-                break;
+            to.col = from.col - 1;
+            break;
 
             case "right":
-                to.col = from.col + 1;
-                break;
+            to.col = from.col + 1;
+            break;
 
             case "up":
-                to.row = from.row - 1;
-                break;
+            to.row = from.row - 1;
+            break;
 
             case "down":
-                to.row = from.row + 1;
-                break;
+            to.row = from.row + 1;
+            break;
 
             default:
-                lastAction = null;
+            lastAction = null;
         }
 
         if (to.row < 0
@@ -407,61 +407,61 @@ export function play(game: Game, play: Play): Game {
 
         case "default":
 
-            return {
+        return {
 
-                boardSize: game.boardSize,
-                players: game.players.slice(),
-                terrains: game.terrains.slice(),
-                meeples: game.meeples.slice(),
-                turn: game.turn,
-                currentPlayer: teams[0],
-                state: play.state,
-                lastAction: "skip"
-            };
+            boardSize: game.boardSize,
+            players: game.players.slice(),
+            terrains: game.terrains.slice(),
+            meeples: game.meeples.slice(),
+            turn: game.turn,
+            currentPlayer: teams[0],
+            state: play.state,
+            lastAction: "skip"
+        };
 
         default:
 
-            let gameStep: Game;
-            let player: Team;
-            let turn: Turn;
+        let gameStep: Game;
+        let player: Team;
+        let turn: Turn;
 
-            switch (play.from) {
+        switch (play.from) {
 
-                case "player":
+            case "player":
 
-                    gameStep = moveSwarm(game, play.action as Direction | Action);
-                    player = nextPlayer(gameStep);
-                    turn = nextTurn(gameStep);
+            gameStep = moveSwarm(game, play.action as Direction | Action);
+            player = nextPlayer(gameStep);
+            turn = nextTurn(gameStep);
 
-                    break;
+            break;
 
-                default:
+            default:
 
-                    gameStep = moveMeeple(game, play.from as Position, play.action as Direction | Action);
-                    player = nextPlayer(gameStep);
-                    turn = gameStep.turn;
+            gameStep = moveMeeple(game, play.from as Position, play.action as Direction | Action);
+            player = nextPlayer(gameStep);
+            turn = gameStep.turn;
 
-                    break;
-            }
+            break;
+        }
 
-            let state: State = gameStep.state;
+        let state: State = gameStep.state;
 
-            if (gameStep.players.filter((player) => player.swarmSize > 0).length < 2) {
+        if (gameStep.players.filter((player) => player.swarmSize > 0).length < 2) {
 
-                state = "end";
-            }
+            state = "end";
+        }
 
-            return {
+        return {
 
-                boardSize: gameStep.boardSize,
-                players: gameStep.players.slice(),
-                terrains: gameStep.terrains.slice(),
-                meeples: gameStep.meeples.slice(),
-                turn: turn,
-                currentPlayer: player,
-                state: state,
-                lastAction: gameStep.lastAction
-            };
+            boardSize: gameStep.boardSize,
+            players: gameStep.players.slice(),
+            terrains: gameStep.terrains.slice(),
+            meeples: gameStep.meeples.slice(),
+            turn: turn,
+            currentPlayer: player,
+            state: state,
+            lastAction: gameStep.lastAction
+        };
     }
 }
 
@@ -573,7 +573,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
     return game;
 }
 
-function pl(row: number, col: number, topMeeple: number = -1): Terrain {
+function t(row: number, col: number, topMeeple: number = -1): Terrain {
     return {
         position: { row: row, col: col },
         geography: "plains",
@@ -582,69 +582,92 @@ function pl(row: number, col: number, topMeeple: number = -1): Terrain {
     };
 }
 
-const tutorialScenarios: Array<Game> = [
-    {
-        boardSize: 6,
-        players: [
-            {
-                team: "info",
-                individualActions: 0,
-                swarmSize: 5
-            },
-            {
-                team: "warning",
-                individualActions: 0,
-                swarmSize: 5
-            }
-        ],
-        terrains: [
-            pl(0, 0),    pl(0, 1),    pl(0, 2),    pl(0, 3),    pl(0, 4),    pl(0, 5),
-            pl(1, 0),    pl(1, 1),    pl(1, 2),    pl(1, 3),    pl(1, 4),    pl(1, 5),
-            pl(2, 0),    pl(2, 1),    pl(2, 2, 1), pl(2, 3, 0), pl(2, 4),    pl(2, 5),
-            pl(3, 0),    pl(3, 1),    pl(3, 2),    pl(3, 3, 2), pl(3, 4),    pl(3, 5),
-            pl(4, 0),    pl(4, 1),    pl(4, 2),    pl(4, 3),    pl(4, 4),    pl(4, 5),
-            pl(5, 0),    pl(5, 1),    pl(5, 2),    pl(5, 3),    pl(5, 4),    pl(5, 5)
-        ],
-        meeples: [
-            {
-                key: 0,
-                position: { row: 2, col: 3 },
-                team: "info",
+export function tutorial(index: number): { game: Game, plays: Array<Direction | Action> } {
+
+    switch (index) {
+
+        case 0:
+
+        // let gameStep = this.play(setup(5), {
+        //     state: "tutorial",
+        //     player: "default",
+        //     from: "player",
+        //     action: null
+        // });
+
+        // return ({
+        //     game: gameStep,
+        //     plays: [
+        //         "up", "up", "up", "up", "up",
+        //         "left", "left", "left", "left", "left",
+        //         "down", "down", "down", "down", "down",
+        //         "right", "right", "right", "right", "right"
+        //     ]
+        // });
+
+        default:
+
+        return ({
+            game: {
+                boardSize: 6,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 5
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 5
+                    }
+                ],
+                terrains: [
+                    t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4),    t(0, 5),
+                    t(1, 0),    t(1, 1),    t(1, 2),    t(1, 3),    t(1, 4),    t(1, 5),
+                    t(2, 0),    t(2, 1),    t(2, 2, 1), t(2, 3, 0), t(2, 4),    t(2, 5),
+                    t(3, 0),    t(3, 1),    t(3, 2),    t(3, 3, 2), t(3, 4),    t(3, 5),
+                    t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
+                    t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
+                ],
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 2, col: 3 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 2, col: 2 },
+                        team: "warning",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 3, col: 3 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    }
+                ],
                 turn: "heads",
-                strength: 10,
-                resistance: 30,
-                faith: 30,
-                topsMeeple: -1
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
             },
-            {
-                key: 1,
-                position: { row: 2, col: 2 },
-                team: "warning",
-                turn: "heads",
-                strength: 10,
-                resistance: 30,
-                faith: 30,
-                topsMeeple: -1
-            },
-            {
-                key: 2,
-                position: { row: 3, col: 3 },
-                team: "default",
-                turn: "heads",
-                strength: 5,
-                resistance: 15,
-                faith: 15,
-                topsMeeple: -1
-            }
-        ],
-        turn: "heads",
-        currentPlayer: "info",
-        state: "tutorial",
-        lastAction: "down"
+            plays: ["down"]
+        });
     }
-];
-
-export function tutorial(index: number): Game {
-
-    return tutorialScenarios[Math.min(tutorialScenarios.length - 1, index)];
 }
