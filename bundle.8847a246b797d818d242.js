@@ -7002,10 +7002,9 @@ function play(game, play) {
     }
 }
 exports.play = play;
-function setup(playerCount, boardSize, tutorial) {
+function setup(playerCount, boardSize) {
     if (playerCount === void 0) { playerCount = 0; }
     if (boardSize === void 0) { boardSize = 16; }
-    if (tutorial === void 0) { tutorial = false; }
     var meepleKey = playerCount;
     var terrains = new Array();
     var meeples = new Array();
@@ -7081,12 +7080,105 @@ function setup(playerCount, boardSize, tutorial) {
         meeples: meeples.slice(),
         turn: turns[0],
         currentPlayer: "default",
-        state: tutorial ? "tutorial" : "setup",
+        state: "setup",
         lastAction: { explanation: InvalidPlays.None }
     };
     return game;
 }
 exports.setup = setup;
+function t(row, col, topMeeple) {
+    if (topMeeple === void 0) { topMeeple = -1; }
+    return {
+        position: { row: row, col: col },
+        geography: "plains",
+        spaceLeft: 1,
+        topMeeple: topMeeple
+    };
+}
+function tutorial(index) {
+    switch (index) {
+        case 0:
+        // let gameStep = this.play(setup(5), {
+        //     state: "tutorial",
+        //     player: "default",
+        //     from: "player",
+        //     action: null
+        // });
+        // return ({
+        //     game: gameStep,
+        //     plays: [
+        //         "up", "up", "up", "up", "up",
+        //         "left", "left", "left", "left", "left",
+        //         "down", "down", "down", "down", "down",
+        //         "right", "right", "right", "right", "right"
+        //     ]
+        // });
+        default:
+            return ({
+                game: {
+                    boardSize: 6,
+                    players: [
+                        {
+                            team: "info",
+                            individualActions: 0,
+                            swarmSize: 5
+                        },
+                        {
+                            team: "warning",
+                            individualActions: 0,
+                            swarmSize: 5
+                        }
+                    ],
+                    terrains: [
+                        t(0, 0), t(0, 1), t(0, 2), t(0, 3), t(0, 4), t(0, 5),
+                        t(1, 0), t(1, 1), t(1, 2), t(1, 3), t(1, 4), t(1, 5),
+                        t(2, 0), t(2, 1), t(2, 2, 1), t(2, 3, 0), t(2, 4), t(2, 5),
+                        t(3, 0), t(3, 1), t(3, 2), t(3, 3, 2), t(3, 4), t(3, 5),
+                        t(4, 0), t(4, 1), t(4, 2), t(4, 3), t(4, 4), t(4, 5),
+                        t(5, 0), t(5, 1), t(5, 2), t(5, 3), t(5, 4), t(5, 5)
+                    ],
+                    meeples: [
+                        {
+                            key: 0,
+                            position: { row: 2, col: 3 },
+                            team: "info",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 1,
+                            position: { row: 2, col: 2 },
+                            team: "warning",
+                            turn: "heads",
+                            strength: 10,
+                            resistance: 30,
+                            faith: 30,
+                            topsMeeple: -1
+                        },
+                        {
+                            key: 2,
+                            position: { row: 3, col: 3 },
+                            team: "default",
+                            turn: "heads",
+                            strength: 5,
+                            resistance: 15,
+                            faith: 15,
+                            topsMeeple: -1
+                        }
+                    ],
+                    turn: "heads",
+                    currentPlayer: "info",
+                    state: "tutorial",
+                    lastAction: "skip"
+                },
+                plays: ["down"]
+            });
+    }
+}
+exports.tutorial = tutorial;
 
 
 /***/ }),
@@ -10132,13 +10224,18 @@ var Board_1 = __webpack_require__(87);
 var Controls_1 = __webpack_require__(88);
 ;
 ;
+;
 var Table = (function (_super) {
     __extends(Table, _super);
     function Table() {
         var _this = _super.call(this) || this;
         var queue = [];
-        _this.state = { game: Game_1.setup(0), playQueue: queue };
-        _this.refresher = 0;
+        _this.state = {
+            game: Game_1.setup(0),
+            playQueue: queue,
+            tutorialStep: { step: 0 },
+            tutorialPlays: []
+        };
         document.addEventListener("keypress", function (event) {
             switch (event.key) {
                 case "q":
@@ -10222,7 +10319,7 @@ var Table = (function (_super) {
                             state: "tutorial",
                             player: "default",
                             from: "player",
-                            action: null
+                            action: { step: 0 }
                         });
                     }
                     break;
@@ -10241,109 +10338,149 @@ var Table = (function (_super) {
     Table.prototype.componentDidUpdate = function () {
         var _this = this;
         var queue = this.state.playQueue;
+        if (!queue[Game_1.teams.indexOf("default")]) {
+            queue[Game_1.teams.indexOf("default")] = [];
+        }
         if (!queue[Game_1.teams.indexOf(this.state.game.currentPlayer)]) {
             queue[Game_1.teams.indexOf(this.state.game.currentPlayer)] = [];
         }
-        if (queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].length > 0) {
-            var playData = queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].shift();
-            switch (playData.state) {
+        if (queue[Game_1.teams.indexOf("default")].length > 0) {
+            var playDefault = queue[Game_1.teams.indexOf("default")].shift();
+            queue[Game_1.teams.indexOf("default")] = [];
+            switch (playDefault.state) {
                 case "setup":
-                    var change = (playData.action === "skip" ? 0 : this.state.game.players.length)
-                        + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
-                        + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
-                    this.setState({ game: Game_1.setup(change), playQueue: queue });
+                    if (this.state.game.state === "tutorial") {
+                        clearInterval(this.refresher);
+                        this.setState({ game: Game_1.setup(0), playQueue: queue });
+                    }
+                    else {
+                        var change = (playDefault.action === "skip" ? 0 : this.state.game.players.length)
+                            + (playDefault.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
+                            + (playDefault.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
+                        this.setState({ game: Game_1.setup(change), playQueue: queue });
+                    }
                     break;
                 case "play":
+                    var gameStep = Game_1.play(this.state.game, playDefault);
+                    this.setState({ game: gameStep, playQueue: queue });
+                    if (gameStep.state === "end") {
+                        clearInterval(this.refresher);
+                        this.refresher = window.setInterval(function () { return _this.animateEnding(); }, 300);
+                    }
+                    break;
+                case "tutorial":
+                    this.animateTutorial();
+                    clearInterval(this.refresher);
+                    this.refresher = window.setInterval(function () { return _this.animateTutorial(); }, 1000);
+                    break;
+            }
+        }
+        else if (queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].length > 0) {
+            var playData = queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].shift();
+            switch (playData.state) {
+                case "play":
+                    var gameStep = Game_1.play(this.state.game, playData);
+                    this.setState({ game: gameStep, playQueue: queue });
+                    if (gameStep.state === "end") {
+                        clearInterval(this.refresher);
+                        this.refresher = window.setInterval(function () { return _this.animateEnding(); }, 300);
+                    }
+                    break;
                 case "end":
                     this.setState({ game: Game_1.play(this.state.game, playData), playQueue: queue });
                     break;
                 case "tutorial":
-                    if (playData.action === null) {
-                        this.setState({ game: Game_1.setup(5, undefined, true), playQueue: queue });
-                    }
-                    else {
-                        var gameStep = Game_1.play(this.state.game, playData);
-                        if (gameStep.state === "end") {
-                            this.setState({ playQueue: queue });
-                        }
-                        else {
-                            this.setState({ game: gameStep, playQueue: queue });
-                        }
-                    }
+                    this.setState({ game: Game_1.play(this.state.game, playData), playQueue: queue });
                     break;
             }
         }
-        if (this.refresher === 0) {
-            this.refresher = window.setInterval(function () { return _this.refresh(); }, 300);
+    };
+    Table.prototype.animateTutorial = function () {
+        var queue = this.state.playQueue;
+        var plays = this.state.tutorialPlays;
+        var action = plays.shift();
+        if (!action) {
+            var _a = Game_1.tutorial(this.state.tutorialStep.step), tutorialGame = _a.game, tutorialPlays = _a.plays;
+            this.setState({
+                game: tutorialGame,
+                tutorialPlays: tutorialPlays
+            });
+        }
+        else {
+            queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].push({
+                state: "tutorial",
+                player: this.state.game.currentPlayer,
+                from: "player",
+                action: action
+            });
+            this.setState({
+                playQueue: queue,
+                tutorialPlays: plays
+            });
         }
     };
-    Table.prototype.refresh = function () {
-        if ((this.state.game.state === "end" || this.state.game.state === "tutorial")
-            && this.state.playQueue[Game_1.teams.indexOf(this.state.game.currentPlayer)].length === 0) {
-            this.autoplay();
+    Table.prototype.animateEnding = function () {
+        var _this = this;
+        var queue = this.state.playQueue;
+        if (queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].length === 0) {
+            var currentPlayerMeeples_1 = this.state.game.meeples
+                .filter(function (meeple) { return meeple.key !== -1 &&
+                meeple.team === _this.state.game.currentPlayer; });
+            if (currentPlayerMeeples_1.length > 0) {
+                var dirs = ["up", "left", "down", "right"];
+                var weights = currentPlayerMeeples_1
+                    .map(function (meeple) { return [
+                    (meeple.position.row + 1) / (_this.state.game.boardSize + 1),
+                    (meeple.position.col + 1) / (_this.state.game.boardSize + 1),
+                    (_this.state.game.boardSize - meeple.position.row) / (_this.state.game.boardSize + 1),
+                    (_this.state.game.boardSize - meeple.position.col) / (_this.state.game.boardSize + 1)
+                ]; })
+                    .reduce(function (acc, positions) { return [
+                    acc[0] + (positions[0] / currentPlayerMeeples_1.length),
+                    acc[1] + (positions[1] / currentPlayerMeeples_1.length),
+                    acc[2] + (positions[2] / currentPlayerMeeples_1.length),
+                    acc[3] + (positions[3] / currentPlayerMeeples_1.length)
+                ]; }, [0, 0, 0, 0]);
+                var rollNumber = Math.random() * 2;
+                var roll = 0;
+                while (rollNumber > 0) {
+                    rollNumber -= weights[roll++];
+                }
+                var dir = dirs[roll - 1];
+                var repetitions = Math.random() * this.state.game.boardSize / 2;
+                var nextPlay = [];
+                for (var i = 0; i < repetitions; i++) {
+                    nextPlay.push({
+                        state: this.state.game.state,
+                        player: this.state.game.currentPlayer,
+                        from: "player",
+                        action: dir
+                    });
+                }
+                queue[Game_1.teams.indexOf(this.state.game.currentPlayer)] =
+                    queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
+                this.setState({ playQueue: queue });
+            }
+            else {
+                queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].push({
+                    state: this.state.game.state,
+                    player: this.state.game.currentPlayer,
+                    from: "player",
+                    action: "skip"
+                });
+                this.setState({ playQueue: queue });
+            }
         }
     };
     Table.prototype.componentWillUnmount = function () {
         clearInterval(this.refresher);
-        this.refresher = 0;
-    };
-    Table.prototype.autoplay = function () {
-        var _this = this;
-        var queue = this.state.playQueue;
-        var winnerMeeples = this.state.game.meeples
-            .filter(function (meeple) { return meeple.key !== -1 &&
-            meeple.team === _this.state.game.currentPlayer; });
-        if (winnerMeeples.length > 0) {
-            var dirs = ["up", "left", "down", "right"];
-            var weights = winnerMeeples
-                .map(function (meeple) { return [
-                (meeple.position.row + 1) / (_this.state.game.boardSize + 1),
-                (meeple.position.col + 1) / (_this.state.game.boardSize + 1),
-                (_this.state.game.boardSize - meeple.position.row) / (_this.state.game.boardSize + 1),
-                (_this.state.game.boardSize - meeple.position.col) / (_this.state.game.boardSize + 1)
-            ]; })
-                .reduce(function (acc, positions) { return [
-                acc[0] + (positions[0] / winnerMeeples.length),
-                acc[1] + (positions[1] / winnerMeeples.length),
-                acc[2] + (positions[2] / winnerMeeples.length),
-                acc[3] + (positions[3] / winnerMeeples.length)
-            ]; }, [0, 0, 0, 0]);
-            var rollNumber = Math.random() * 2;
-            var roll = 0;
-            while (rollNumber > 0) {
-                rollNumber -= weights[roll++];
-            }
-            var dir = dirs[roll - 1];
-            var repetitions = Math.random() * this.state.game.boardSize / 2;
-            var nextPlay = [];
-            for (var i = 0; i < repetitions; i++) {
-                nextPlay.push({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: dir
-                });
-            }
-            queue[Game_1.teams.indexOf(this.state.game.currentPlayer)] =
-                queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
-            this.setState({ playQueue: queue });
-        }
-        else {
-            queue[Game_1.teams.indexOf(this.state.game.currentPlayer)].push({
-                state: this.state.game.state,
-                player: this.state.game.currentPlayer,
-                from: "player",
-                action: "skip"
-            });
-            this.setState({ playQueue: queue });
-        }
     };
     Table.prototype.render = function () {
         if (this.state.game.state === "tutorial") {
             return (React.createElement("section", { className: "section" },
                 React.createElement("div", { className: "container is-fluid" },
                     React.createElement("div", { id: "table", className: "tile is-ancestor" },
-                        React.createElement(Tutorial_1.default, { game: this.state.game, enqueuePlay: this.enqueuePlay.bind(this) }),
+                        React.createElement(Tutorial_1.default, { game: this.state.game, enqueuePlay: this.enqueuePlay.bind(this), step: this.state.tutorialStep }),
                         React.createElement(Board_1.default, { game: this.state.game, enqueuePlay: this.enqueuePlay.bind(this) })))));
         }
         else {
@@ -10646,7 +10783,7 @@ var Status = function (props) {
                             state: "tutorial",
                             player: "default",
                             from: "player",
-                            action: null
+                            action: { step: 0 }
                         }); } }, "here"),
                     " for a short tutorial.)");
             break;
@@ -10685,9 +10822,8 @@ var Status = function (props) {
         case "end":
             guide =
                 React.createElement("p", null,
-                    React.createElement("span", { className: "is-" + props.game.currentPlayer },
-                        "general ",
-                        props.game.currentPlayer),
+                    "general ",
+                    React.createElement("span", { className: "is-" + props.game.currentPlayer }, props.game.currentPlayer),
                     " won the game!");
             break;
     }
@@ -10722,7 +10858,8 @@ function terrainColor(geography) {
     }
 }
 var Terrain = function (props) {
-    return React.createElement("article", { title: props.terrain.geography + "\nspace for " + props.terrain.spaceLeft + " meeples", className: "terrain message is-" + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } });
+    return React.createElement("article", { title: props.terrain.geography + "\nspace for " + props.terrain.spaceLeft + " meeples", className: "terrain message is-"
+            + terrainColor(props.terrain.geography), style: { top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 } });
 };
 exports.default = Terrain;
 
@@ -10736,20 +10873,42 @@ exports.default = Terrain;
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:no-unused-variable
 var React = __webpack_require__(12);
+var tutorialSteps = [
+    "welcome to anaander, a game about post-human armies with a shared mind (veeeeeeery loosely based on Ancillary\
+        Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and soldiers form a\
+        shared consciousness for single entities, like spaceships, or like the Lord of the Radch herself). click one\
+        of these paragraphs and the board shows you a scenario where you can easier understand the rules.",
+    "you move around the map converting meeples of little faith to your swarm, and battling meeples of your\
+        opponents, trying to reduce their swarms to zero (removing the player from the game). the last player standing\
+        is the winner.",
+    "the most important game mechanic in anaander is that you move your whole swarm at once (every meeple of your\
+        color). you may move some meeples individually when spending extra actions, and some meeples are not able to\
+        follow the same movement of the swarm so they will not move, but usually they go with the flow.",
+    "the rules for movement are as follows (you may hover your mouse over meeples and terrain tiles to see their\
+        individual stats, which may help you better understand them).",
+    "meeples are two-sided, and in each turn you are allowed to each meeple only if its current side up matches\
+        the current turn.",
+    "after all players make their moves, the current turn is flipped.",
+    "after a meeple is moved, its side is flipped too; so usually a meeple that is moved in a turn, also gets to\
+        play in the next turn.",
+    "meeples can enter a terrain tile only if there is space available in it for the meeple to enter. if a swarm\
+        moves in a direction which would cause a meeple to enter a terrain with no space left, the swarm makes its\
+        move but the meeple stands still - also, not flipping its side, so it will miss the next turn.",
+    "the space available to meeples in the terrains ranges from 1 to 6."
+];
 var Tutorial = function (props) {
     var tutorial = React.createElement("br", null);
     tutorial =
-        React.createElement("div", { className: "content" },
-            React.createElement("p", null, "welcome to anaander, a game about post-human armies with a shared mind (veeeeeeery loosely based on Ancillary Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and soldiers form a shared consciousness for single entities, like spaceships, or like the Lord of the Radch herself)."),
-            React.createElement("p", null, "you move around the map converting meeples of little faith to your swarm, and battling meeples of your opponents, trying to reduce their swarms to zero (removing the player from the game). the last player standing is the winner."),
-            React.createElement("p", null, "the most important game mechanic in anaander is that you move your whole swarm at once (every meeple of your color). you may move some meeples individually when spending extra actions, and some meeples are not able to follow the same movement of the swarm so they will not move, but usually they go with the flow."),
-            React.createElement("p", null, "the rules for movement are as follow (you may hover your mouse over meeples and terrain tiles to see their individual stats, which may help you better understand them)."),
-            React.createElement("ul", null,
-                React.createElement("li", null, "meeples are two-sided, and in each turn you are allowed to each meeple only if its current side up matches the current turn."),
-                React.createElement("li", null, "after all players make their moves, the current turn is flipped."),
-                React.createElement("li", null, "after a meeple is moved, its side is flipped too; so usually a meeple that is moved in a turn, also gets to play in the next turn."),
-                React.createElement("li", null, "meeples can enter a terrain tile only if there is space available in it for the meeple to enter. if a swarm moves in a direction which would cause a meeple to enter a terrain with no space left, the swarm makes its move but the meeple stands still - also, not flipping its side, so it will miss the next turn."),
-                React.createElement("li", null, "the space available to meeples in the terrains ranges from 1 to 6.")));
+        React.createElement("div", { className: "content" }, tutorialSteps.map(function (tutorialStep, index) {
+            return React.createElement("p", { key: index, onClick: function () { return props.enqueuePlay({
+                    state: "tutorial",
+                    player: "default",
+                    from: "player",
+                    action: { step: index }
+                }); } }, index === props.step.step ?
+                React.createElement("strong", null, tutorialStep) :
+                tutorialStep);
+        }));
     return (React.createElement("div", { id: "status", className: "tile is-4 is-parent" },
         React.createElement("div", { className: "notification tile is-child" },
             React.createElement("h1", { className: "title" }, "anaander tutorial"),
@@ -10790,7 +10949,7 @@ exports = module.exports = __webpack_require__(54)();
 
 
 // module
-exports.push([module.i, ":root {\r\n    --primary-color: hsl(171, 100%, 41%);\r\n    --info-color: hsl(217, 71%, 53%);\r\n    --success-color: hsl(141, 71%, 48%);\r\n    --warning-color: hsl(48, 100%, 67%);\r\n    --danger-color: hsl(348, 100%, 61%);\r\n    --default-color: hsl(0, 0%, 4%);\r\n}\r\n\r\n@keyframes flip-in-hor-bottom {\r\n  0% {\r\n    transform: rotateX(80deg);\r\n    opacity: 0;\r\n  }\r\n  100% {\r\n    transform: rotateX(0);\r\n    opacity: 1;\r\n  }\r\n}\r\n\r\n@keyframes jello-vertical {\r\n  0% {\r\n    transform: scale(1, 1);\r\n  }\r\n  30% {\r\n    transform: scale(1.07, 1.07);\r\n  }\r\n  40% {\r\n    transform: scale(0.96, 1.2);\r\n  }\r\n  50% {\r\n    transform: scale(1.2, 0.96);\r\n  }\r\n  65% {\r\n    transform: scale(1, 1.13);\r\n  }\r\n  80% {\r\n    transform: scale(1.09, 1.05);\r\n  }\r\n  90% {\r\n    transform: scale(1.05, 1.09);\r\n  }\r\n  100% {\r\n    transform: scale(1.07, 1.07);\r\n  }\r\n}\r\n\r\n.is-primary {\r\n    color: var(--primary-color);\r\n}\r\n\r\n.is-info {\r\n    color: var(--info-color);\r\n}\r\n\r\n.is-success {\r\n    color: var(--success-color);\r\n}\r\n\r\n.is-warning {\r\n    color: var(--warning-color);\r\n}\r\n\r\n.is-danger {\r\n    color: var(--danger-color);\r\n}\r\n\r\n.is-default {\r\n    color: var(--default-color);\r\n}\r\n\r\n.board {\r\n    position: relative;\r\n    box-sizing: border-box;\r\n}\r\n\r\n.terrain {\r\n    position: absolute;\r\n    width: 43px;\r\n    height: 43px;\r\n    transition-property: color, background-color, border-color;\r\n    transition-duration: 0.6s, 0.6s, 0.6s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.meeple {\r\n    position: absolute;\r\n    transition-property: top, left, color, opacity, transform;\r\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;\r\n    transition-timing-function: ease-out;\r\n}\r\n\r\n.player {\r\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\r\n}\r\n\r\n.current-player {\r\n    animation: jello-vertical 0.5s both;\r\n}\r\n", ""]);
+exports.push([module.i, ":root {\n    --primary-color: hsl(171, 100%, 41%);\n    --info-color: hsl(217, 71%, 53%);\n    --success-color: hsl(141, 71%, 48%);\n    --warning-color: hsl(48, 100%, 67%);\n    --danger-color: hsl(348, 100%, 61%);\n    --default-color: hsl(0, 0%, 4%);\n}\n\n@keyframes highlighting {\n\t0% {\n    \toutline-color: black;\n        box-shadow: 0 0 0 1px white;\n    }\n\t50% {\n    \toutline-color: white;\n        box-shadow: 0 0 0 1px black;\n    }\n\t100% {\n    \toutline-color: black;\n        box-shadow: 0 0 0 1px white;\n    }\n}\n\n@keyframes flip-in-hor-bottom {\n  0% {\n    transform: rotateX(80deg);\n    opacity: 0;\n  }\n  100% {\n    transform: rotateX(0);\n    opacity: 1;\n  }\n}\n\n@keyframes jello-vertical {\n  0% {\n    transform: scale(1, 1);\n  }\n  30% {\n    transform: scale(1.07, 1.07);\n  }\n  40% {\n    transform: scale(0.96, 1.2);\n  }\n  50% {\n    transform: scale(1.2, 0.96);\n  }\n  65% {\n    transform: scale(1, 1.13);\n  }\n  80% {\n    transform: scale(1.09, 1.05);\n  }\n  90% {\n    transform: scale(1.05, 1.09);\n  }\n  100% {\n    transform: scale(1.07, 1.07);\n  }\n}\n\n.is-primary {\n    color: var(--primary-color);\n}\n\n.is-info {\n    color: var(--info-color);\n}\n\n.is-success {\n    color: var(--success-color);\n}\n\n.is-warning {\n    color: var(--warning-color);\n}\n\n.is-danger {\n    color: var(--danger-color);\n}\n\n.is-default {\n    color: var(--default-color);\n}\n\n.board {\n    position: relative;\n    box-sizing: border-box;\n}\n\n.terrain {\n    position: absolute;\n    width: 43px;\n    height: 43px;\n    transition-property: color, background-color, border-color;\n    transition-duration: 0.6s, 0.6s, 0.6s;\n    transition-timing-function: ease-out;\n}\n\n.terrain:hover {\n    outline: black dashed thin;\n}\n\n.terrain.selected {\n    outline: black dashed thin;\n    animation: highlighting 1s linear infinite;\n}\n\n.meeple {\n    position: absolute;\n    transition-property: top, left, color, opacity, transform;\n    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;\n    transition-timing-function: ease-out;\n}\n\n.player {\n    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;\n}\n\n.current-player {\n    animation: jello-vertical 0.5s both;\n}\n", ""]);
 
 // exports
 
@@ -23043,4 +23202,4 @@ ReactDOM.render(React.createElement(Table_1.Table, null), document.getElementByI
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=bundle.748c109c0749a1a5f993.js.map
+//# sourceMappingURL=bundle.8847a246b797d818d242.js.map
