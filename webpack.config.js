@@ -1,3 +1,4 @@
+var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -11,7 +12,12 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "anaander",
             template: "index.ejs"
-	})
+	}),
+        new webpack.optimize.UglifyJsPlugin({
+            sourceMap: false,
+            beautify: false,
+            comments: false
+        })
     ],
 
     // Enable sourcemaps for debugging webpack's output.
