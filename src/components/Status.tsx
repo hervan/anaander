@@ -116,8 +116,8 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
     return (
         <div id="status" className="tile is-3 is-parent">
             <div className="notification tile is-child">
-                <h1 className="title">anaander</h1>
-                <h2 className="subtitle">
+                <h1 className="title is-2">anaander</h1>
+                <h2 className="subtitle is-4">
                     {guide}
                 </h2>
                 <span>

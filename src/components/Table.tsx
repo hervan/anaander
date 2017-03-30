@@ -173,7 +173,17 @@ export class Table extends React.Component<{}, IState> {
 
         queue[teams.indexOf(play.player)].push(play);
 
-        this.setState({ playQueue: queue });
+        if (play.state === "tutorial") {
+
+            this.setState({
+                playQueue: queue,
+                tutorialStep: play.action as Step,
+                tutorialPlays: []
+            });
+        } else {
+
+            this.setState({ playQueue: queue });
+        }
     }
 
     componentDidUpdate(): void {
@@ -232,9 +242,8 @@ export class Table extends React.Component<{}, IState> {
                 case "tutorial":
 
                 this.animateTutorial();
-
                 clearInterval(this.refresher);
-                this.refresher = window.setInterval(() => this.animateTutorial(), 1000);
+                this.refresher = window.setInterval(() => this.animateTutorial(), 500);
 
                 break;
             }
@@ -277,7 +286,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
         const plays: Array<Action | Direction> = this.state.tutorialPlays;
-        const action = plays.shift();
+        const action: Action | Direction | undefined = plays.shift();
 
         if (!action) {
 

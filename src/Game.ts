@@ -34,6 +34,15 @@ export type Geography =
 | "mountain"
 | "plains";
 
+const terrainList: Geography[] = [
+    "city",
+    "island",
+    "forest",
+    "swamp",
+    "mountain",
+    "plains"
+];
+
 const terrainDistribution: Geography[] = [
     "city",                 // not very frequent
     "island", "island",     // twice the frequency
@@ -576,7 +585,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 function t(row: number, col: number, topMeeple: number = -1): Terrain {
     return {
         position: { row: row, col: col },
-        geography: "plains",
+        geography: terrainList[(6 + col - row) % 2],
         spaceLeft: 1,
         topMeeple: topMeeple
     };
@@ -588,24 +597,24 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
 
         case 0:
 
-        // let gameStep = this.play(setup(5), {
-        //     state: "tutorial",
-        //     player: "default",
-        //     from: "player",
-        //     action: null
-        // });
+        let gameStep: Game = this.play(setup(5), {
+            state: "tutorial",
+            player: "default",
+            from: "player",
+            action: null
+        });
 
-        // return ({
-        //     game: gameStep,
-        //     plays: [
-        //         "up", "up", "up", "up", "up",
-        //         "left", "left", "left", "left", "left",
-        //         "down", "down", "down", "down", "down",
-        //         "right", "right", "right", "right", "right"
-        //     ]
-        // });
+        return ({
+            game: gameStep,
+            plays: [
+                "up", "up", "up", "up", "up",
+                "left", "left", "left", "left", "left",
+                "down", "down", "down", "down", "down",
+                "right", "right", "right", "right", "right"
+            ]
+        });
 
-        default:
+        case 1:
 
         return ({
             game: {
@@ -614,12 +623,17 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         team: "info",
                         individualActions: 0,
-                        swarmSize: 5
+                        swarmSize: 2
                     },
                     {
                         team: "warning",
                         individualActions: 0,
-                        swarmSize: 5
+                        swarmSize: 1
+                    },
+                    {
+                        team: "success",
+                        individualActions: 0,
+                        swarmSize: 2
                     }
                 ],
                 terrains: [
@@ -627,7 +641,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     t(1, 0),    t(1, 1),    t(1, 2),    t(1, 3),    t(1, 4),    t(1, 5),
                     t(2, 0),    t(2, 1),    t(2, 2, 1), t(2, 3, 0), t(2, 4),    t(2, 5),
                     t(3, 0),    t(3, 1),    t(3, 2),    t(3, 3, 2), t(3, 4),    t(3, 5),
-                    t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
+                    t(4, 0),    t(4, 1, 3), t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
                     t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
                 ],
                 meeples: [
@@ -646,14 +660,24 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                         position: { row: 2, col: 2 },
                         team: "warning",
                         turn: "heads",
-                        strength: 10,
-                        resistance: 30,
+                        strength: 5,
+                        resistance: 10,
                         faith: 30,
                         topsMeeple: -1
                     },
                     {
                         key: 2,
                         position: { row: 3, col: 3 },
+                        team: "success",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 4, col: 1 },
                         team: "default",
                         turn: "heads",
                         strength: 5,
@@ -667,7 +691,124 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 state: "tutorial",
                 lastAction: "skip"
             },
-            plays: ["down"]
+            plays: [
+                "left", "skip",
+                "down", "skip",
+                "right",
+                "skip", "skip", "skip",
+                "skip", "skip", "skip"
+            ]
+        });
+
+        case 2:
+        default:
+
+        return ({
+            game: {
+                boardSize: 6,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 5
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    }
+                ],
+                terrains: [
+                    t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4, 5), t(0, 5),
+                    t(1, 0),    t(1, 1, 6), t(1, 2, 0), t(1, 3),    t(1, 4),    t(1, 5),
+                    t(2, 0),    t(2, 1),    t(2, 2),    t(2, 3, 1), t(2, 4),    t(2, 5),
+                    t(3, 0),    t(3, 1, 4), t(3, 2, 3), t(3, 3, 2), t(3, 4),    t(3, 5),
+                    t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
+                    t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
+                ],
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 2, col: 3 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 3, col: 3 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 3, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 4,
+                        position: { row: 3, col: 1 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 5,
+                        position: { row: 0, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 6,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    }
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "right", "skip",
+                "down", "skip",
+                "left", "skip",
+                "up", "skip"
+            ]
         });
     }
 }
