@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { ITutorialProps } from "./Table";
 
-const tutorialSteps: Array<string> = [
+const tutorialSteps: string[] = [
     "welcome to anaander, a game about post-human armies with a shared mind (veeeeeeery loosely based on Ancillary\
         Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and soldiers form a\
         shared consciousness for single entities, like spaceships, or like the Lord of the Radch herself). click one\

@@ -6,7 +6,7 @@ import { IProps } from "./Table";
 const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
 
     let guide: JSX.Element = <br />;
-    let guide_detail: JSX.Element = <br />;
+    let guideDetail: JSX.Element = <br />;
 
     switch (props.game.state) {
 
@@ -47,7 +47,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                     </span>
                 </a>
             </p>;
-        guide_detail =
+        guideDetail =
             <p>
                 click <a className="is-link" onClick={() => props.enqueuePlay({
                     state: "play",
@@ -87,18 +87,20 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                         + (props.game.turn === "heads" ? "-o" : "")
                         + " is-" + props.game.currentPlayer}></i>
                 </span>;
-            guide_detail = <p>choose an action for these meeples: {side}</p>;
+            guideDetail = <p>choose an action for these meeples: {side}</p>;
             break;
 
             default:
 
-            guide_detail = <p>{props.game.lastAction.explanation}</p>;
+            guideDetail = <p>{props.game.lastAction.explanation}</p>;
             break;
         }
 
         guide =
             <p>
-                it's <span className={"is-" + props.game.currentPlayer}>general {props.game.currentPlayer}</span>'s turn.
+                it's general <span className={"is-" + props.game.currentPlayer}>
+                    {props.game.currentPlayer}
+                </span>'s turn.
             </p>;
 
         break;
@@ -107,11 +109,13 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
 
         guide =
             <p>
-                general <span className={"is-" + props.game.currentPlayer}>{props.game.currentPlayer}</span> won the game!
+                general <span className={"is-" + props.game.currentPlayer}>
+                    {props.game.currentPlayer}
+                </span> won the game!
             </p>;
 
         break;
-    };
+    }
 
     return (
         <div id="status" className="tile is-3 is-parent">
@@ -121,7 +125,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                     {guide}
                 </h2>
                 <span>
-                    {guide_detail}
+                    {guideDetail}
                 </span>
             </div>
         </div>

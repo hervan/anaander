@@ -1,4 +1,4 @@
-import { Game, setup, play, logBoard } from "../src/Game";
+import { Game, logBoard, play, setup } from "../src/Game";
 
 describe("game setup with 2 players on a 4x4 board", () => {
 
@@ -32,9 +32,9 @@ describe("first player move", () => {
 
     beforeAll(() => {
 
-        const setup_game: Game = setup(2, 4);
+        const setupGame: Game = setup(2, 4);
 
-        game = play(setup_game, {
+        game = play(setupGame, {
             state: "play",
             player: "default",
             from: "player",
@@ -63,63 +63,63 @@ describe("first player move", () => {
 
     it("find 2 non-neutral meeples on the board", () => {
 
-        const move_game1: Game = play(game, {
+        const moveGame1: Game = play(game, {
             state: "play",
             player: game.currentPlayer,
             from: "player",
             action: "up"
         });
 
-        const move_game2: Game = play(move_game1, {
+        const moveGame2: Game = play(moveGame1, {
             state: "play",
-            player: move_game1.currentPlayer,
+            player: moveGame1.currentPlayer,
             from: "player",
             action: "up"
         });
 
-        const move_game3: Game = play(move_game2, {
+        const moveGame3: Game = play(moveGame2, {
             state: "play",
-            player: move_game2.currentPlayer,
+            player: moveGame2.currentPlayer,
             from: "player",
             action: "right"
         });
 
-        const move_game4: Game = play(move_game3, {
+        const moveGame4: Game = play(moveGame3, {
             state: "play",
-            player: move_game3.currentPlayer,
+            player: moveGame3.currentPlayer,
             from: "player",
             action: "right"
         });
 
-        const move_game5: Game = play(move_game4, {
+        const moveGame5: Game = play(moveGame4, {
             state: "play",
-            player: move_game4.currentPlayer,
+            player: moveGame4.currentPlayer,
             from: "player",
             action: "down"
         });
 
-        const move_game6: Game = play(move_game5, {
+        const moveGame6: Game = play(moveGame5, {
             state: "play",
-            player: move_game5.currentPlayer,
+            player: moveGame5.currentPlayer,
             from: "player",
             action: "down"
         });
 
-        const move_game7: Game = play(move_game6, {
+        const moveGame7: Game = play(moveGame6, {
             state: "play",
-            player: move_game6.currentPlayer,
+            player: moveGame6.currentPlayer,
             from: "player",
             action: "left"
         });
 
-        const move_game8: Game = play(move_game7, {
+        const moveGame8: Game = play(moveGame7, {
             state: "play",
-            player: move_game7.currentPlayer,
+            player: moveGame7.currentPlayer,
             from: "player",
             action: "left"
         });
 
-        expect(move_game8.terrains.reduce((acc, terrain) =>
+        expect(moveGame8.terrains.reduce((acc, terrain) =>
             terrain.topMeeple > -1 ? acc + 1 : acc, 0))
         .toBeGreaterThanOrEqual(2);
     });

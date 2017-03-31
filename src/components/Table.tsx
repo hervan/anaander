@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import { Game, Meeple, Play, Direction, Action, Step, setup, play, teams, tutorial } from "../Game";
+import { Action, Direction, Game, Meeple, Play, play, setup, Step, teams, tutorial } from "../Game";
 
-import Tutorial from "./Tutorial";
-import Status from "./Status";
 import Board from "./Board";
 import Controls from "./Controls";
+import Status from "./Status";
+import Tutorial from "./Tutorial";
 
 interface IState {
     game: Game;

@@ -9,7 +9,8 @@
         "no-console": [ false ],
         "object-literal-sort-keys": false,
         "object-literal-shorthand": false,
-        "trailing-comma": [ false ]
+        "trailing-comma": [ false ],
+        "switch-default": false
     },
     "rulesDirectory": []
 }
