@@ -596,7 +596,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
 
         case 0:
 
-        let gameStep: Game = this.play(setup(5), {
+        const gameStep: Game = this.play(setup(5), {
             state: "tutorial",
             player: "default",
             from: "player",
@@ -605,15 +605,196 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
 
         return ({
             game: gameStep,
-            plays: [
-                "up", "up", "up", "up", "up",
-                "left", "left", "left", "left", "left",
-                "down", "down", "down", "down", "down",
-                "right", "right", "right", "right", "right"
-            ]
+            plays: [ "skip" ]
         });
 
         case 1:
+
+        return ({
+            game: {
+                boardSize: 8,
+                players: [],
+                terrains: [
+                    t(0, 0),     t(0, 1),     t(0, 2),     t(0, 3),     t(0, 4),     t(0, 5),     t(0, 6),     t(0, 7),
+                    t(1, 0),     t(1, 1, 5),  t(1, 2),     t(1, 3),     t(1, 4),     t(1, 5),     t(1, 6, 0),  t(1, 7),
+                    t(2, 0),     t(2, 1, 6),  t(2, 2),     t(2, 3),     t(2, 4),     t(2, 5),     t(2, 6),     t(2, 7),
+                    t(3, 0),     t(3, 1, 7),  t(3, 2, 11), t(3, 3, 12), t(3, 4),     t(3, 5),     t(3, 6, 1),  t(3, 7),
+                    t(4, 0),     t(4, 1, 8),  t(4, 2),     t(4, 3),     t(4, 4, 13), t(4, 5),     t(4, 6, 2),  t(4, 7),
+                    t(5, 0),     t(5, 1, 9),  t(5, 2),     t(5, 3),     t(5, 4, 14), t(5, 5),     t(5, 6, 3),  t(5, 7),
+                    t(6, 0),     t(6, 1, 10), t(6, 2),     t(6, 3),     t(6, 4, 15), t(6, 5),     t(6, 6, 4),  t(6, 7),
+                    t(7, 0),     t(7, 1),     t(7, 2),     t(7, 3),     t(7, 4),     t(7, 5),     t(7, 6),     t(7, 7)
+                ],
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 3, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 4, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 5, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 4,
+                        position: { row: 6, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 5,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 6,
+                        position: { row: 2, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 7,
+                        position: { row: 3, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 8,
+                        position: { row: 4, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 9,
+                        position: { row: 5, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 10,
+                        position: { row: 6, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 11,
+                        position: { row: 3, col: 2 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 12,
+                        position: { row: 3, col: 3 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 13,
+                        position: { row: 4, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 14,
+                        position: { row: 5, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 15,
+                        position: { row: 6, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
+        });
+
+        case 2:
 
         return ({
             game: {

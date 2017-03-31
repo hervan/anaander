@@ -34,7 +34,7 @@ export class Table extends React.Component<{}, IState> {
 
         super();
 
-        const queue: Play[][] = [];
+        const queue: Play[][] = [[], [], [], [], [], []];
 
         this.state = {
             game: setup(0),
@@ -166,11 +166,6 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (!queue[teams.indexOf(play.player)]) {
-
-            queue[teams.indexOf(play.player)] = [];
-        }
-
         queue[teams.indexOf(play.player)].push(play);
 
         if (play.state === "tutorial") {
@@ -189,16 +184,6 @@ export class Table extends React.Component<{}, IState> {
     componentDidUpdate(): void {
 
         const queue: Play[][] = this.state.playQueue;
-
-        if (!queue[teams.indexOf("default")]) {
-
-            queue[teams.indexOf("default")] = [];
-        }
-
-        if (!queue[teams.indexOf(this.state.game.currentPlayer)]) {
-
-            queue[teams.indexOf(this.state.game.currentPlayer)] = [];
-        }
 
         if (queue[teams.indexOf("default")].length > 0) {
 
@@ -302,12 +287,17 @@ export class Table extends React.Component<{}, IState> {
                 state: "tutorial",
                 player: this.state.game.currentPlayer,
                 from: "player",
-                action: action
+                action: action === "skip" ?
+                    [ "up", "left", "down", "right" ]
+                        [Math.floor(Math.random() * 4)] as Direction :
+                    action
             });
 
             this.setState({
                 playQueue: queue,
-                tutorialPlays: plays.slice(1)
+                tutorialPlays: action === "skip" ?
+                    [ ...plays.slice(1), "skip" ] :
+                    plays.slice(1)
             });
         }
     }
