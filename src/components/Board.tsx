@@ -34,9 +34,10 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 {props.game.terrains
                     .filter((terrain) => terrain.topMeeple !== -1)
                     .map((terrain) => meeplesBelow(props.game, terrain.topMeeple, []))
-                    .reduce((acc, meeples) => acc.concat(
-                        meeples.map((meeple, index) => ({ m: meeple, p: index, l: meeples.length }))
-                    ), new Array<{ m: MeepleType, p: number, l: number }>())
+                    .reduce((acc, meeples) => [
+                        ...acc,
+                        ...meeples.map((meeple, index) => ({ m: meeple, p: index, l: meeples.length }))
+                    ], new Array<{ m: MeepleType, p: number, l: number }>())
                     .sort((a, b) => a.m.key - b.m.key)
                     .map((meeple) =>
                         <Meeple

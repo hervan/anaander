@@ -197,15 +197,14 @@ function positionToIndex(position: Position, boardSize: number): number {
 export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[]): Meeple[] {
 
     const meeple: Meeple = game.meeples[meepleIndex];
-    acc.push(meeple);
 
     if (meeple.topsMeeple !== -1) {
 
-        return meeplesBelow(game, meeple.topsMeeple, acc);
+        return meeplesBelow(game, meeple.topsMeeple, [...acc, meeple]);
 
     } else {
 
-        return acc;
+        return [...acc, meeple];
     }
 }
 
@@ -701,7 +700,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
         });
 
         case 2:
-        default:
+        case 3:
 
         return ({
             game: {
@@ -810,5 +809,16 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 "up", "skip"
             ]
         });
+
+        case 4:
+        case 5:
+
+        return {game: setup(0), plays: [ "up" ]};
+
+        case 6:
+        case 7:
+        default:
+
+        return {game: setup(0), plays: [ "up" ]};
     }
 }

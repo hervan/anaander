@@ -9,15 +9,10 @@ module.exports = {
     },
 
     plugins: [
-        new HtmlWebpackPlugin({
-            title: "anaander",
-            template: "index.ejs"
-	}),
-        new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true,
-            beautify: false,
-            comments: false
-        })
+        new HtmlWebpackPlugin({title: "anaander", template: "index.ejs"}),
+        // new webpack
+        //     .optimize
+        //     .UglifyJsPlugin({sourceMap: false, beautify: false, comments: false})
     ],
 
     // Enable sourcemaps for debugging webpack's output.
@@ -30,31 +25,33 @@ module.exports = {
 
     module: {
         rules: [
-            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+            // All output '.js' files will have any sourcemaps re-processed by
+            // 'source-map-loader'.
             {
                 enforce: 'pre',
-		test: /\.js$/,
-		loader: "source-map-loader"
-	    },
-
-	    // CSS loader
-	    {
-                test: /\.css$/,
-		loader: "style-loader!css-loader"
+                test: /\.js$/,
+                loader: "source-map-loader"
             },
 
-	    // media loader
-	    {
-                test: /\.(png|woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-		loader: 'url-loader'
-	    },
+            // CSS loader
+            {
+                test: /\.css$/,
+                loader: "style-loader!css-loader"
+            },
 
-            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+            // media loader
+            {
+                test: /\.(png|woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                loader: 'url-loader'
+            },
+
+            // All files with a '.ts' or '.tsx' extension will be handled by
+            // 'awesome-typescript-loader'.
             {
                 test: /\.tsx?$/,
-		loader: "awesome-typescript-loader",
-		exclude: [ "node_modules", "tests" ]
-	    }
+                loader: "awesome-typescript-loader",
+                exclude: ["node_modules", "tests"]
+            }
         ]
-    },
+    }
 };

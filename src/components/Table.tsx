@@ -202,7 +202,7 @@ export class Table extends React.Component<{}, IState> {
 
         if (queue[teams.indexOf("default")].length > 0) {
 
-            const playDefault: Play = queue[teams.indexOf("default")].shift() as Play;
+            const playDefault: Play = queue[teams.indexOf("default")][0] as Play;
             queue[teams.indexOf("default")] = [];
 
             switch (playDefault.state) {
@@ -286,7 +286,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
         const plays: Array<Action | Direction> = this.state.tutorialPlays;
-        const action: Action | Direction | undefined = plays.shift();
+        const action: Action | Direction | undefined = plays[0];
 
         if (!action) {
 
@@ -307,7 +307,7 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 playQueue: queue,
-                tutorialPlays: plays
+                tutorialPlays: plays.slice(1)
             });
         }
     }
@@ -364,8 +364,10 @@ export class Table extends React.Component<{}, IState> {
                     });
                 }
 
-                queue[teams.indexOf(this.state.game.currentPlayer)] =
-                    queue[teams.indexOf(this.state.game.currentPlayer)].concat(nextPlay);
+                queue[teams.indexOf(this.state.game.currentPlayer)] = [
+                    ...queue[teams.indexOf(this.state.game.currentPlayer)],
+                    ...nextPlay
+                ];
 
                 this.setState({ playQueue: queue });
 
