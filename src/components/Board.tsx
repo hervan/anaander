@@ -1,20 +1,21 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-import { meeplesBelow, Meeple as MeepleType } from "../Game";
+import { Meeple as MeepleType, meeplesBelow } from "../Game";
 
 import { IProps } from "./Table";
 
-import Terrain from "./Terrain";
 import Meeple from "./Meeple";
+import Terrain from "./Terrain";
 
-const translation: { row: number, col: number }[][] =
+const translation: Array<Array<{ row: number, col: number }>> =
 [
     [{row: 0, col: 0}],
     [{row: -9, col: -9}, {row: 9, col: 9}],
     [{row: -13, col: -13}, {row: 0, col: 0}, {row: 13, col: 13}],
     [{row: -10, col: -10}, {row: -10, col: 10}, {row: 10, col: -10}, {row: 10, col: 10}],
     [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: 0}, {row: 14, col: -14}, {row: 14, col: 14}],
-    [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: -14}, {row: 0, col: 14}, {row: 14, col: -14}, {row: 14, col: 14}]
+    [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: -14}, {row: 0, col: 14}, {row: 14, col: -14},
+        {row: 14, col: 14}]
 ];
 
 const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>

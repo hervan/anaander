@@ -14,7 +14,7 @@ module.exports = {
             template: "index.ejs"
 	}),
         new webpack.optimize.UglifyJsPlugin({
-            sourceMap: false,
+            sourceMap: true,
             beautify: false,
             comments: false
         })

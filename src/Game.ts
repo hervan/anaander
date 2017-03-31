@@ -147,18 +147,18 @@ export type Game = {
 
 export function logBoard(game: Game): void {
 
-    let teams: IDictionary = {
-        "info": "1",
-        "warning": "2",
-        "success": "3",
-        "danger": "4",
-        "primary": "5",
-        "default": "o"
+    let teamSymbol: IDictionary = {
+        info: "1",
+        warning: "2",
+        success: "3",
+        danger: "4",
+        primary: "5",
+        default: "o"
     };
 
     let board: string = "";
     game.terrains.forEach((terrain, index) => {
-        board += (terrain.topMeeple === -1 ? "#" : teams[game.meeples[terrain.topMeeple].team])
+        board += (terrain.topMeeple === -1 ? "#" : teamSymbol[game.meeples[terrain.topMeeple].team])
             + (index % game.boardSize === game.boardSize - 1 ? "\n" : "");
     });
 
@@ -455,7 +455,7 @@ export function play(game: Game, play: Play): Game {
 
         let state: State = gameStep.state;
 
-        if (gameStep.players.filter((player) => player.swarmSize > 0).length < 2) {
+        if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
 
             state = "end";
         }
