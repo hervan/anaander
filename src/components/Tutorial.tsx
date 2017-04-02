@@ -52,8 +52,49 @@ const tutorialSteps: JSX.Element[][] = [
             and these are the other colors a meeple can be.
         </div>,
         <span>
-            blue, yellow, green, red and teal belong to a player of one of these colors.
+            blue, yellow, green, red and teal belong to the player who has been assigned that specific color.
             the black meeple is a <em>neutral</em> one.
+        </span>
+    ],
+    [
+        <div>
+            this is how a meeple moves.
+        </div>,
+        <span>
+            one at a time, it's moving in each of the possible directions:
+            up, right, down, left&mdash;no diagonals allowed.
+        </span>
+    ],
+    [
+        <div>
+            a meeple moved on top of another meeple!
+        </div>,
+        <span>
+            that's because the neutral meeple was in standing in the way of the blue meeple, so the blue meeple climbed
+            on top of the neutral meeple. they're occupying the same terrain now.
+        </span>
+    ],
+    [
+        <div>
+            a meeple changed its color!
+        </div>,
+        <span>
+            it was a <em>conversion</em>, it got converted to another player's cause! how? when you mouse over these
+            meeples, pay attention to their stats, particularly <em>faith</em>. neutral meeple's faith was much lower
+            than blue meeple's faith. so the first thing a meeple does when it moves on top of another meeple is to try
+            to convert it, and if it's successful, it will change its color <em>peacefully</em> (notice how the
+            converted meeple didn't change its stats after the conversion).
+        </span>
+    ],
+    [
+        <div>
+            so what happens if two meeples are stronger in their faith? things get <i>unpeaceful</i>?
+        </div>,
+        <span>
+            yeah, they'll hit each other with their <em>strength</em> (another stat shown when you move your mouse over
+            meeples). after a hit, a meeple loses <em>resistance</em> equal to the hit taken, so each meeple leaves the
+            encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>, in the event that
+            another meeple climbed on top of another meeple.
         </span>
     ],
     [

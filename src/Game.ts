@@ -72,11 +72,11 @@ type State =
 | "end";
 
 export type Action =
-| "attack"
-| "guard"
+| "hold"
 | "explore"
-| "convert"
-| "skip";
+| "skip"
+| "random"
+| "stop";
 
 export type Meeple = {
     key: number;
@@ -590,544 +590,763 @@ function t(row: number, col: number, topMeeple: number = -1): Terrain {
     };
 }
 
-export const tutorial: Array<{ game: Game, plays: Array<Direction | Action> }> = [
-    {
-        game: this.play(setup(5), {
-            state: "tutorial",
-            player: "default",
-            from: "player",
-            action: null
-        }),
-        plays: [ "skip" ]
-    },
-    {
-        game: {
-            boardSize: 16,
-            players: [],
-            terrains: [...Array(16).keys()].reduce((acc, row) =>
-                acc.concat([...Array(16).keys()].map((col) => t(row, col))), [] as Terrain[]),
-            meeples: [],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+export function tutorial(index: number): { game: Game, plays: Array<Direction | Action> } {
+
+    const tutorialStepsScenarios: Array<{ game: Game, plays: Array<Direction | Action> }> = [
+        { // tutorial start
+            game: this.play(setup(5), {
+                state: "tutorial",
+                player: "default",
+                from: "player",
+                action: null
+            }),
+            plays: [ "random" ]
         },
-        plays: []
-    },
-    {
-        game: {
-            boardSize: 4,
-            players: [],
-            terrains: [...Array(4).keys()].reduce((acc, row) =>
-                acc.concat([...Array(4).keys()].map((col) => t(row, col))), [] as Terrain[]),
-            meeples: [
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // the board
+            game: {
+                boardSize: 16,
+                players: [],
+                terrains: [...Array(16).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(16).keys()].map((col) => t(row, col))), [] as Terrain[]),
+                meeples: [],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
         },
-        plays: []
-    },
-    {
-        game: {
-            boardSize: 3,
-            players: [],
-            terrains: [...Array(3).keys()].reduce((acc, row) =>
-                acc.concat([...Array(3).keys()].map((col) =>
-                row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
-            meeples: [
-                {
-                    key: 0,
-                    position: { row: 1, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                }
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // the terrain tiles
+            game: {
+                boardSize: 4,
+                players: [],
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) => t(row, col))), [] as Terrain[]),
+                meeples: [],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
         },
-        plays: []
-    },
-    {
-        game: {
-            boardSize: 3,
-            players: [],
-            terrains: [...Array(3).keys()].reduce((acc, row) =>
-                acc.concat([...Array(3).keys()].map((col) =>
-                row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
-            meeples: [
-                {
-                    key: 0,
-                    position: { row: 1, col: 1 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                }
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // a meeple
+            game: {
+                boardSize: 3,
+                players: [],
+                terrains: [...Array(3).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(3).keys()].map((col) =>
+                    row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    }
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
         },
-        plays: []
-    },
-    {
-        game: {
-            boardSize: 6,
-            players: [],
-            terrains: [...Array(6).keys()].reduce((acc, row) =>
-                acc.concat([...Array(6).keys()].map((col) =>
-                row === col ? t(row, col, row) : t(row, col))), [] as Terrain[]),
-            meeples: [
-                {
-                    key: 0,
-                    position: { row: 0, col: 0 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 1,
-                    position: { row: 1, col: 1 },
-                    team: "warning",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 2,
-                    position: { row: 2, col: 2 },
-                    team: "success",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 3,
-                    position: { row: 3, col: 3 },
-                    team: "danger",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 4,
-                    position: { row: 4, col: 4 },
-                    team: "primary",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 5,
-                    position: { row: 5, col: 5 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // a blue meeple
+            game: {
+                boardSize: 3,
+                players: [],
+                terrains: [...Array(3).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(3).keys()].map((col) =>
+                    row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 1 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    }
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
         },
-        plays: []
-    },
-    {
-        game: {
-            boardSize: 8,
-            players: [],
-            terrains: [
-                t(0, 0),     t(0, 1),     t(0, 2),     t(0, 3),     t(0, 4),     t(0, 5),     t(0, 6),     t(0, 7),
-                t(1, 0),     t(1, 1, 5),  t(1, 2),     t(1, 3),     t(1, 4),     t(1, 5),     t(1, 6, 0),  t(1, 7),
-                t(2, 0),     t(2, 1, 6),  t(2, 2),     t(2, 3),     t(2, 4),     t(2, 5),     t(2, 6),     t(2, 7),
-                t(3, 0),     t(3, 1, 7),  t(3, 2, 11), t(3, 3, 12), t(3, 4),     t(3, 5),     t(3, 6, 1),  t(3, 7),
-                t(4, 0),     t(4, 1, 8),  t(4, 2),     t(4, 3),     t(4, 4, 13), t(4, 5),     t(4, 6, 2),  t(4, 7),
-                t(5, 0),     t(5, 1, 9),  t(5, 2),     t(5, 3),     t(5, 4, 14), t(5, 5),     t(5, 6, 3),  t(5, 7),
-                t(6, 0),     t(6, 1, 10), t(6, 2),     t(6, 3),     t(6, 4, 15), t(6, 5),     t(6, 6, 4),  t(6, 7),
-                t(7, 0),     t(7, 1),     t(7, 2),     t(7, 3),     t(7, 4),     t(7, 5),     t(7, 6),     t(7, 7)
-            ],
-            meeples: [
-                {
-                    key: 0,
-                    position: { row: 1, col: 6 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 1,
-                    position: { row: 3, col: 6 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 2,
-                    position: { row: 4, col: 6 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 3,
-                    position: { row: 5, col: 6 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 4,
-                    position: { row: 6, col: 6 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 5,
-                    position: { row: 1, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 6,
-                    position: { row: 2, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 7,
-                    position: { row: 3, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 8,
-                    position: { row: 4, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 9,
-                    position: { row: 5, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 10,
-                    position: { row: 6, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 11,
-                    position: { row: 3, col: 2 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 12,
-                    position: { row: 3, col: 3 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 13,
-                    position: { row: 4, col: 4 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 14,
-                    position: { row: 5, col: 4 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 15,
-                    position: { row: 6, col: 4 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // the meeple colors
+            game: {
+                boardSize: 6,
+                players: [],
+                terrains: [...Array(6).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(6).keys()].map((col) =>
+                    row === col ? t(row, col, row) : t(row, col))), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 0, col: 0 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 1, col: 1 },
+                        team: "warning",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 2, col: 2 },
+                        team: "success",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 3, col: 3 },
+                        team: "danger",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 4,
+                        position: { row: 4, col: 4 },
+                        team: "primary",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 5,
+                        position: { row: 5, col: 5 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
         },
-        plays: []
-    },
-    {
-        game: {
-            boardSize: 6,
-            players: [
-                {
-                    team: "info",
-                    individualActions: 0,
-                    swarmSize: 2
-                },
-                {
-                    team: "warning",
-                    individualActions: 0,
-                    swarmSize: 1
-                },
-                {
-                    team: "success",
-                    individualActions: 0,
-                    swarmSize: 2
-                }
-            ],
-            terrains: [
-                t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4),    t(0, 5),
-                t(1, 0),    t(1, 1),    t(1, 2),    t(1, 3),    t(1, 4),    t(1, 5),
-                t(2, 0),    t(2, 1),    t(2, 2, 1), t(2, 3, 0), t(2, 4),    t(2, 5),
-                t(3, 0),    t(3, 1),    t(3, 2),    t(3, 3, 2), t(3, 4),    t(3, 5),
-                t(4, 0),    t(4, 1, 3), t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
-                t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
-            ],
-            meeples: [
-                {
-                    key: 0,
-                    position: { row: 2, col: 3 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 1,
-                    position: { row: 2, col: 2 },
-                    team: "warning",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 10,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 2,
-                    position: { row: 3, col: 3 },
-                    team: "success",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 3,
-                    position: { row: 4, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                }
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // the moves
+            game: {
+                boardSize: 3,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                ],
+                terrains: [...Array(3).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(3).keys()].map((col) =>
+                    row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 1 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "up", "skip", "down", "skip",
+                "right", "skip", "left", "skip",
+                "down", "skip", "up", "skip",
+                "left", "skip", "right", "stop"
+            ]
         },
-        plays: [
-            "left", "skip",
-            "down", "skip",
-            "right",
-            "skip", "skip", "skip",
-            "skip", "skip", "skip"
-        ]
-    },
-    {
-        game: {
-            boardSize: 6,
-            players: [
-                {
-                    team: "info",
-                    individualActions: 0,
-                    swarmSize: 5
-                },
-                {
-                    team: "warning",
-                    individualActions: 0,
-                    swarmSize: 1
-                }
-            ],
-            terrains: [
-                t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4, 5), t(0, 5),
-                t(1, 0),    t(1, 1, 6), t(1, 2, 0), t(1, 3),    t(1, 4),    t(1, 5),
-                t(2, 0),    t(2, 1),    t(2, 2),    t(2, 3, 1), t(2, 4),    t(2, 5),
-                t(3, 0),    t(3, 1, 4), t(3, 2, 3), t(3, 3, 2), t(3, 4),    t(3, 5),
-                t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
-                t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
-            ],
-            meeples: [
-                {
-                    key: 0,
-                    position: { row: 1, col: 2 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 1,
-                    position: { row: 2, col: 3 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 2,
-                    position: { row: 3, col: 3 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 3,
-                    position: { row: 3, col: 2 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 4,
-                    position: { row: 3, col: 1 },
-                    team: "info",
-                    turn: "heads",
-                    strength: 10,
-                    resistance: 30,
-                    faith: 30,
-                    topsMeeple: -1
-                },
-                {
-                    key: 5,
-                    position: { row: 0, col: 4 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                },
-                {
-                    key: 6,
-                    position: { row: 1, col: 1 },
-                    team: "default",
-                    turn: "heads",
-                    strength: 5,
-                    resistance: 15,
-                    faith: 15,
-                    topsMeeple: -1
-                }
-            ],
-            turn: "heads",
-            currentPlayer: "info",
-            state: "tutorial",
-            lastAction: "skip"
+        { // moving over meeples
+            game: {
+                boardSize: 4,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                ],
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) =>
+                        row === 1 && col === 2 ?
+                        t(row, col, 0) :
+                        (row === 1 && col === 1 ?
+                        t(row, col, 1) :
+                        t(row, col))
+                    )), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "left", "skip", "right", "skip",
+                "stop"
+            ]
         },
-        plays: [
-            "right", "skip",
-            "down", "skip",
-            "left", "skip",
-            "up", "skip"
-        ]
-    }
-];
+        { // converting a meeple
+            game: {
+                boardSize: 4,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                ],
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) =>
+                        row === 3 && col === 2 ?
+                        t(row, col, 0) :
+                        (row === 1 && col === 1 ?
+                        t(row, col, 1) :
+                        t(row, col))
+                    )), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 3, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "up", "skip", "up", "skip",
+                "left", "skip", "left", "skip",
+                "left", "skip", "left", "skip",
+                "left", "skip", "left", "skip",
+                "stop"
+            ]
+        },
+        { // converting a meeple
+            game: {
+                boardSize: 4,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                ],
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) =>
+                        row === 3 && col === 2 ?
+                        t(row, col, 0) :
+                        (row === 1 && col === 1 ?
+                        t(row, col, 1) :
+                        t(row, col))
+                    )), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 3, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 20,
+                        faith: 20,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "down", "skip", "down", "skip",
+                "down", "skip", "down", "skip",
+                "up", "skip", "up", "skip",
+                "left", "skip", "left", "skip",
+                "left", "skip", "left", "skip",
+                "left", "skip", "left", "skip",
+                "stop"
+            ]
+        },
+        { // hi
+            game: {
+                boardSize: 8,
+                players: [],
+                terrains: [
+                    t(0, 0),     t(0, 1),     t(0, 2),     t(0, 3),     t(0, 4),     t(0, 5),     t(0, 6),     t(0, 7),
+                    t(1, 0),     t(1, 1, 5),  t(1, 2),     t(1, 3),     t(1, 4),     t(1, 5),     t(1, 6, 0),  t(1, 7),
+                    t(2, 0),     t(2, 1, 6),  t(2, 2),     t(2, 3),     t(2, 4),     t(2, 5),     t(2, 6),     t(2, 7),
+                    t(3, 0),     t(3, 1, 7),  t(3, 2, 11), t(3, 3, 12), t(3, 4),     t(3, 5),     t(3, 6, 1),  t(3, 7),
+                    t(4, 0),     t(4, 1, 8),  t(4, 2),     t(4, 3),     t(4, 4, 13), t(4, 5),     t(4, 6, 2),  t(4, 7),
+                    t(5, 0),     t(5, 1, 9),  t(5, 2),     t(5, 3),     t(5, 4, 14), t(5, 5),     t(5, 6, 3),  t(5, 7),
+                    t(6, 0),     t(6, 1, 10), t(6, 2),     t(6, 3),     t(6, 4, 15), t(6, 5),     t(6, 6, 4),  t(6, 7),
+                    t(7, 0),     t(7, 1),     t(7, 2),     t(7, 3),     t(7, 4),     t(7, 5),     t(7, 6),     t(7, 7)
+                ],
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 3, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 4, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 5, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 4,
+                        position: { row: 6, col: 6 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 5,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 6,
+                        position: { row: 2, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 7,
+                        position: { row: 3, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 8,
+                        position: { row: 4, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 9,
+                        position: { row: 5, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 10,
+                        position: { row: 6, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 11,
+                        position: { row: 3, col: 2 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 12,
+                        position: { row: 3, col: 3 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 13,
+                        position: { row: 4, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 14,
+                        position: { row: 5, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 15,
+                        position: { row: 6, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: []
+        },
+        { // the conflicts
+            game: {
+                boardSize: 6,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 2
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "success",
+                        individualActions: 0,
+                        swarmSize: 2
+                    }
+                ],
+                terrains: [
+                    t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4),    t(0, 5),
+                    t(1, 0),    t(1, 1),    t(1, 2),    t(1, 3),    t(1, 4),    t(1, 5),
+                    t(2, 0),    t(2, 1),    t(2, 2, 1), t(2, 3, 0), t(2, 4),    t(2, 5),
+                    t(3, 0),    t(3, 1),    t(3, 2),    t(3, 3, 2), t(3, 4),    t(3, 5),
+                    t(4, 0),    t(4, 1, 3), t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
+                    t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
+                ],
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 2, col: 3 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 2, col: 2 },
+                        team: "warning",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 10,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 3, col: 3 },
+                        team: "success",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 4, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    }
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "left", "skip",
+                "down", "skip",
+                "right",
+                "skip", "skip", "skip",
+                "skip", "skip", "skip"
+            ]
+        },
+        { // the moving swarm
+            game: {
+                boardSize: 6,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 5
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    }
+                ],
+                terrains: [
+                    t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4, 5), t(0, 5),
+                    t(1, 0),    t(1, 1, 6), t(1, 2, 0), t(1, 3),    t(1, 4),    t(1, 5),
+                    t(2, 0),    t(2, 1),    t(2, 2),    t(2, 3, 1), t(2, 4),    t(2, 5),
+                    t(3, 0),    t(3, 1, 4), t(3, 2, 3), t(3, 3, 2), t(3, 4),    t(3, 5),
+                    t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
+                    t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
+                ],
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 1, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 2, col: 3 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 2,
+                        position: { row: 3, col: 3 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 3, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 4,
+                        position: { row: 3, col: 1 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 5,
+                        position: { row: 0, col: 4 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 6,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    }
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "right", "skip",
+                "down", "skip",
+                "left", "skip",
+                "up", "skip"
+            ]
+        }
+    ];
+
+    return tutorialStepsScenarios[index];
+}

@@ -74,11 +74,11 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
             case "down":
             case "left":
             case "right":
-            case "attack":
-            case "guard":
+            case "hold":
             case "explore":
-            case "convert":
             case "skip":
+            case "random":
+            case "stop":
             case null:
 
             const side: JSX.Element =

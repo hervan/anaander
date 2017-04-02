@@ -27,7 +27,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                   state: "play",
                   player: props.player.team,
                   from: "player",
-                  action: "guard"
+                  action: "hold"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-paper-o"></i>
@@ -49,7 +49,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                   state: "play",
                   player: props.player.team,
                   from: "player",
-                  action: "attack"
+                  action: "explore"
                 })}>
                 <span className="icon is-small">
                   <i className="fa fa-hand-rock-o"></i>

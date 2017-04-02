@@ -53,7 +53,7 @@ export class Table extends React.Component<{}, IState> {
                     state: this.state.game.state,
                     player: this.state.game.currentPlayer,
                     from: "player",
-                    action: "guard"
+                    action: "hold"
                 });
 
                 break;
@@ -273,9 +273,9 @@ export class Table extends React.Component<{}, IState> {
         const plays: Array<Action | Direction> = this.state.tutorialPlays;
         const action: Action | Direction | undefined = plays[0];
 
-        if (!action) {
+        if (!action || action === "stop") {
 
-            let { game: tutorialGame, plays: tutorialPlays } = tutorial[this.state.tutorialStep.step];
+            let { game: tutorialGame, plays: tutorialPlays } = tutorial(this.state.tutorialStep.step);
 
             this.setState({
                 game: tutorialGame,
@@ -287,7 +287,7 @@ export class Table extends React.Component<{}, IState> {
                 state: "tutorial",
                 player: this.state.game.currentPlayer,
                 from: "player",
-                action: action === "skip" ?
+                action: action === "random" ?
                     [ "up", "left", "down", "right" ]
                         [Math.floor(Math.random() * 4)] as Direction :
                     action
@@ -295,9 +295,7 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 playQueue: queue,
-                tutorialPlays: action === "skip" ?
-                    [ ...plays.slice(1), "skip" ] :
-                    plays.slice(1)
+                tutorialPlays: [ ...plays.slice(1), action ]
             });
         }
     }
