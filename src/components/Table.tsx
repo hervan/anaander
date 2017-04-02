@@ -275,7 +275,7 @@ export class Table extends React.Component<{}, IState> {
 
         if (!action) {
 
-            let { game: tutorialGame, plays: tutorialPlays } = tutorial(this.state.tutorialStep.step);
+            let { game: tutorialGame, plays: tutorialPlays } = tutorial[this.state.tutorialStep.step];
 
             this.setState({
                 game: tutorialGame,

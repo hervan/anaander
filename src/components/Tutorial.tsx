@@ -3,22 +3,67 @@ import * as React from "react";
 
 import { ITutorialProps } from "./Table";
 
-const tutorialSteps: JSX.Element[] = [
-    <div>
-        welcome to anaander, a game about post-human armies with a shared mind (veeeeeeery loosely based on Ancillary
-        Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and soldiers form a
-        shared consciousness for single entities, like spaceships, or like the Lord of the Radch herself).
-    </div>,
-    <div>
-        this tutorial is composed of paragraphs like this, and if you click them they will load a board where you can
-        better grasp the concepts being taught.
-    </div>,
-    <div>
-        this is the board.
-    </div>,
-    <div>
-        this is a meeple.
-    </div>,
+const tutorialSteps: JSX.Element[][] = [
+    [
+        <div>
+            welcome to anaander, a game about post-human armies with a shared mind&mdash;veeeeeeery loosely based on
+            Ancillary Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and
+            soldiers form a shared consciousness for single entities, like spaceships, or like the Lord of the Radch
+            herself.
+        </div>,
+        <span>
+            click on the paragraph below (clicking on paragraphs will give you details about their instructions).
+        </span>
+    ],
+    [
+        <div>
+            this is the board.
+        </div>,
+        <span>
+            it's usually made of 16&times;16 squares.
+        </span>
+    ],
+    [
+        <div>
+            these tiny squares are terrain tiles.
+        </div>,
+        <span>
+            hover your mouse over them and you'll see the geography of that terrain, matching its pale color.
+        </span>
+    ],
+    [
+        <div>
+            this is a meeple.
+        </div>,
+        <span>
+            it's like a pawn inside a circle. also, they're located on top of a terrain tile.
+        </span>
+    ],
+    [
+        <div>
+            this is a blue meeple.
+        </div>,
+        <span>
+            now it belongs to a player! it matches the color of its owner.
+        </span>
+    ],
+    [
+        <div>
+            and these are the other colors a meeple can be.
+        </div>,
+        <span>
+            blue, yellow, green, red and teal belong to a player of one of these colors.
+            the black meeple is a <em>neutral</em> one.
+        </span>
+    ],
+    [
+        <div>
+        </div>,
+        <span>
+        </span>
+    ]
+];
+/*
     <div>your swarm is composed of every meeple of your color; you move around the map converting meeples of little\
         faith to your swarm, and battling the other swarms, trying to reduce them to zero (causing the players who\
         controlled them to be removed from the game), to finally remain the last player on board, winning the\
@@ -71,7 +116,7 @@ const tutorialSteps: JSX.Element[] = [
     <span>in the example board shown, notice that four blue meeples are on the same side up, and the other blue\
         meeple differs from the others. the turn's side matches those of the four, so only these move.</span>,
     <span>after all players make their moves, the current turn is flipped.</span>
-];
+*/
 
 const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProps) => {
 
@@ -79,7 +124,7 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
 
     tutorial =
         <div className="content">
-            {tutorialSteps.map((tutorialStep, index) =>
+            {tutorialSteps.map(([ tutorialStep, tutorialDetail ], index) =>
                 <div
                     key={index}
                     className="title is-6"
@@ -91,7 +136,10 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
                     })}>
                     {
                         index === props.step.step ?
-                        <strong>{tutorialStep}</strong> :
+                        <div>
+                            <strong>{tutorialStep}</strong>
+                            {tutorialDetail}
+                        </div> :
                         tutorialStep
                     }
                 </div>
@@ -108,7 +156,7 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
                         player: "default",
                         from: "player",
                         action: "skip"
-                    })}>here</a> to go back)
+                    })}>here</a> to go back.)
                 </h2>
                 {tutorial}
             </div>
