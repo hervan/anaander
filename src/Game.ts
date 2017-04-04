@@ -913,7 +913,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 "stop"
             ]
         },
-        { // converting a meeple
+        { // battling meeples
             game: {
                 boardSize: 4,
                 players: [
@@ -965,9 +965,123 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
             },
             plays: [
                 "down", "skip", "down", "skip",
+                "up", "skip", "up", "skip",
+                "left", "skip", "left", "skip",
+                "left", "skip", "left", "skip",
+                "stop"
+            ]
+        },
+        { // dying meeple
+            game: {
+                boardSize: 4,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                ],
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) =>
+                        row === 3 && col === 2 ?
+                        t(row, col, 0) :
+                        (row === 1 && col === 1 ?
+                        t(row, col, 1) :
+                        t(row, col))
+                    )), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 3, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 10,
+                        faith: 20,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
                 "down", "skip", "down", "skip",
                 "up", "skip", "up", "skip",
                 "left", "skip", "left", "skip",
+                "left", "skip", "left", "skip",
+                "stop"
+            ]
+        },
+        { // the swarm
+            game: {
+                boardSize: 4,
+                players: [
+                    {
+                        team: "info",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                    {
+                        team: "warning",
+                        individualActions: 0,
+                        swarmSize: 1
+                    },
+                ],
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) =>
+                        row === 3 && col === 2 ?
+                        t(row, col, 0) :
+                        (row === 1 && col === 1 ?
+                        t(row, col, 1) :
+                        t(row, col))
+                    )), [] as Terrain[]),
+                meeples: [
+                    {
+                        key: 0,
+                        position: { row: 3, col: 2 },
+                        team: "info",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 1,
+                        position: { row: 1, col: 1 },
+                        team: "default",
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 10,
+                        faith: 20,
+                        topsMeeple: -1
+                    },
+                ],
+                turn: "heads",
+                currentPlayer: "info",
+                state: "tutorial",
+                lastAction: "skip"
+            },
+            plays: [
+                "down", "skip", "down", "skip",
+                "up", "skip", "up", "skip",
                 "left", "skip", "left", "skip",
                 "left", "skip", "left", "skip",
                 "stop"
