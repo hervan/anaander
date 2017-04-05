@@ -34,12 +34,12 @@ export type Geography =
 | "mountain"
 | "plains";
 
-const terrainList: Geography[] = [
-    "city",
-    "island",
-    "forest",
+const geographies: Geography[] = [
     "swamp",
+    "island",
     "mountain",
+    "forest",
+    "city",
     "plains"
 ];
 
@@ -489,8 +489,10 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 col: j
             };
 
+            const geography: Geography = terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)];
+
             let topMeeple: number = -1;
-            let spaceLeft: number = Math.ceil(Math.random() * 6);
+            let spaceLeft: number = 1 + geographies.indexOf(geography);
 
             if (spaceLeft > 1 && Math.random() < 0.12) {
 
@@ -514,7 +516,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             terrains[positionToIndex(position, boardSize)] = {
 
                 position: position,
-                geography: terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)],
+                geography: geography,
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple
             };
@@ -584,7 +586,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 function t(row: number, col: number, topMeeple: number = -1): Terrain {
     return {
         position: { row: row, col: col },
-        geography: terrainList[(row + col) % 6],
+        geography: geographies[(row + col) % 6],
         spaceLeft: 1,
         topMeeple: topMeeple
     };

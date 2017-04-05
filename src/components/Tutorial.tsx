@@ -61,8 +61,30 @@ const tutorialSteps: JSX.Element[][] = [
             this is how a meeple moves.
         </div>,
         <span>
-            one at a time, it&rsquo;s moving in each of the possible directions:
-            up, right, down, left&mdash;no diagonals allowed.
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-right"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-down"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <p>
+                one at a time, it&rsquo;s moving in each of the possible directions:
+                up, right, down, and left&mdash;no diagonals allowed.
+            </p>
         </span>
     ],
     [
@@ -70,10 +92,22 @@ const tutorialSteps: JSX.Element[][] = [
             a meeple moved on top of another meeple!
         </div>,
         <span>
-            that&rsquo;s because the neutral meeple was in standing in the way of the blue meeple, so the blue meeple
-            climbed on top of the neutral meeple. they&rsquo;re occupying the same terrain now. on a future turn, only
-            the top meeple is free to move out of this square. other meeples have to wait until there&rsquo;s no other
-            meeple on top of them.
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-right"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <p>
+                that&rsquo;s because the neutral meeple was in standing in the way of the blue meeple, so the blue
+                meeple climbed on top of the neutral meeple. they&rsquo;re occupying the same terrain now. on a future
+                turn, only the top meeple is free to move out of this square. other meeples have to wait until
+                there&rsquo;s no other meeple on top of them.
+            </p>
         </span>
     ],
     [
@@ -81,11 +115,33 @@ const tutorialSteps: JSX.Element[][] = [
             a meeple changed its color!
         </div>,
         <span>
-            it was a <em>conversion</em>, it got converted to another player&rsquo;s cause! how? when you mouse over
-            these meeples, pay attention to their stats, particularly <em>faith</em>. neutral meeple&rsquo;s faith was
-            much lower than blue meeple&rsquo;s faith. so the first thing a meeple does when it moves on top of another
-            meeple is to try to convert it, and if it&rsquo;s successful, it will change its color <em>peacefully</em>
-            (notice how the converted meeple didn&rsquo;t change its stats after the conversion).
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <p>
+                it was a <em>conversion</em>, it got converted to another player&rsquo;s cause! how? when you mouse over
+                these meeples, pay attention to their stats, particularly <em>faith</em>. neutral meeple&rsquo;s faith
+                was much lower than blue meeple&rsquo;s faith. so the first thing a meeple does when it moves on top of
+                another meeple is to try to convert it, and if it&rsquo;s successful, it will change its color
+                <em>peacefully</em> (notice how the converted meeple didn&rsquo;t change its stats after conversion).
+            </p>
         </span>
     ],
     [
@@ -93,10 +149,32 @@ const tutorialSteps: JSX.Element[][] = [
             so what happens if two meeples are stronger in their faith? things get <i>unpeaceful</i>?
         </div>,
         <span>
-            yeah, they&rsquo;ll hit each other with their <em>strength</em> (another stat shown when you move your mouse
-            over meeples). after a hit, a meeple loses <em>resistance</em> equal to the hit taken, so each meeple leaves
-            the encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>, in the event that
-            another meeple climbed on top of another meeple.
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <p>
+                yeah, they&rsquo;ll hit each other with their <em>strength</em> (another stat shown when you move your
+                mouse over meeples). after a hit, a meeple loses <em>resistance</em> equal to the hit taken, so each
+                meeple leaves the encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>,
+                in the event that another meeple climbed on top of another meeple.
+            </p>
         </span>
     ],
     [
@@ -104,22 +182,63 @@ const tutorialSteps: JSX.Element[][] = [
             eventually a meeple&rsquo;s resistance will reach zero, right?
         </div>,
         <span>
-            well, if that happens&hellip; the meeple dies! sad, but obvious, isn&rsquo;t it? also, that needs to happen
-            quite a lot if you want to win the game&mdash;you need to remove every opponent&rsquo;s meeple from the game
-            in order to remove that player from the game, which in turn will make you the winner if you manage to
-            eliminate all players from game. well, except you, just to be clear: in case you eliminate your last
-            opponent <em>and</em> you get killed at the same time, the game is a tie.
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-up"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <a className={"button is-small is-outlined is-info"}>
+                <span className="icon is-small">
+                    <i className="fa fa-hand-o-left"></i>
+                </span>
+            </a>
+            <p>
+                well, if that happens&hellip; the meeple dies! sad, but obvious, isn&rsquo;t it? also, that needs to
+                happen quite a lot if you want to win the game&mdash;you need to remove every opponent&rsquo;s meeple
+                from the game in order to remove that player from the game, which in turn will make you the winner if
+                you manage to eliminate all players from game. well, except you, just to be clear: in case you eliminate
+                your last opponent <em>and</em> you get killed at the same time, the game is a tie.
+            </p>
         </span>
     ],
     [
         <div>
-            now, regarding all those meeples you converted, here comes the most important game mechanic in this
-            game&mdash;<em>the swarm</em>.
+            now, regarding all those meeples you converted, here comes the core mechanic of the game&mdash;
+            <em>the swarm</em>.
         </div>,
         <span>
             the swarm is the collective of all meeples of your color. they move as a single entity, each meeple
-            performing the same action chosen by the player to be performed by the swarm. that is, as long as they can
-            perform that action; all restrictions to individual meeples apply as well to each meeple in the swarm.
+            performing the same action assigned that round to the swarm by the player. that is, as long as they can
+            perform the action; all restrictions to individual meeples apply as well to each meeple in the swarm.
+        </span>
+    ],
+    [
+        <div>
+            speaking of movement restrictions, let&rsquo;s talk about them.
+        </div>,
+        <span>
+            we mentioned about how <em>meeples on top of other meeples</em> will block meeples from taking an action;
+            a meeple <em>can&rsquo;t leave the board</em> from the edges, as it would obviously fall from the board;
+            and there&rsquo;s the <em>terrain</em> restriction&mdash;each geography has a maximum meeple capacity.
+            whenever a meeple in any of these situations tries to move, it doesn&rsquo;t complete the action;
+            if it happens as part of the swarm movement, the other meeples in the swarm are unaffected and may try to
+            complete their own movements, as explained in the previous step of the tutorial.
+        </span>
+    ],
+    [
+        <div>
+        </div>,
+        <span>
         </span>
     ]
 ];
