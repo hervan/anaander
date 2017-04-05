@@ -39,6 +39,8 @@
     "source-map-loader": "^0.1.6",
     "style-loader": "^0.13.2",
     "typescript": "^2.2.1",
+    "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
+    "uglifyjs-webpack-plugin": "^0.4.1",
     "url-loader": "^0.5.8",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.1"

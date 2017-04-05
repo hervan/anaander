@@ -147,7 +147,7 @@ export type Game = {
 
 export function logBoard(game: Game): void {
 
-    let teamSymbol: IDictionary = {
+    const teamSymbol: IDictionary = {
         info: "1",
         warning: "2",
         success: "3",
@@ -156,11 +156,9 @@ export function logBoard(game: Game): void {
         default: "o"
     };
 
-    let board: string = "";
-    game.terrains.forEach((terrain, index) => {
-        board += (terrain.topMeeple === -1 ? "#" : teamSymbol[game.meeples[terrain.topMeeple].team])
-            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "");
-    });
+    const board: string = game.terrains.reduce(((acc, terrain, index) =>
+        acc + (terrain.topMeeple === -1 ? "#" : teamSymbol[game.meeples[terrain.topMeeple].team])
+            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "")), "");
 
     console.log(board);
 }
@@ -596,7 +594,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
 
     const tutorialStepsScenarios: Array<{ game: Game, plays: Array<Direction | Action> }> = [
         { // tutorial start
-            game: this.play(setup(5), {
+            game: play(setup(5), {
                 state: "tutorial",
                 player: "default",
                 from: "player",

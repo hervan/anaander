@@ -1,9 +1,11 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
+import { Direction } from "../Game";
+
 import { ITutorialProps } from "./Table";
 
-const tutorialSteps: JSX.Element[][] = [
+const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
     [
         <div>
             welcome to anaander, a game about post-human armies with a shared mind&mdash;veeeeeeery loosely based on
@@ -61,155 +63,60 @@ const tutorialSteps: JSX.Element[][] = [
             this is how a meeple moves.
         </div>,
         <span>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-right"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-down"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <p>
-                one at a time, it&rsquo;s moving in each of the possible directions:
-                up, right, down, and left&mdash;no diagonals allowed.
-            </p>
-        </span>
+            one at a time, it&rsquo;s moving in each of the possible directions:
+            up, right, down, and left&mdash;no diagonals allowed.
+        </span>,
+        [ "up", "right", "down", "left" ]
     ],
     [
         <div>
             a meeple moved on top of another meeple!
         </div>,
         <span>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-right"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <p>
-                that&rsquo;s because the neutral meeple was in standing in the way of the blue meeple, so the blue
-                meeple climbed on top of the neutral meeple. they&rsquo;re occupying the same terrain now. on a future
-                turn, only the top meeple is free to move out of this square. other meeples have to wait until
-                there&rsquo;s no other meeple on top of them.
-            </p>
-        </span>
+            that&rsquo;s because the neutral meeple was in standing in the way of the blue meeple, so the blue meeple
+            climbed on top of the neutral meeple. they&rsquo;re occupying the same terrain now. on a future turn, only
+            the top meeple is free to move out of this square. other meeples have to wait until there&rsquo;s no other
+            meeple on top of them.
+        </span>,
+        [ "right", "left" ]
     ],
     [
         <div>
             a meeple changed its color!
         </div>,
         <span>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <p>
-                it was a <em>conversion</em>, it got converted to another player&rsquo;s cause! how? when you mouse over
-                these meeples, pay attention to their stats, particularly <em>faith</em>. neutral meeple&rsquo;s faith
-                was much lower than blue meeple&rsquo;s faith. so the first thing a meeple does when it moves on top of
-                another meeple is to try to convert it, and if it&rsquo;s successful, it will change its color
-                <em>peacefully</em> (notice how the converted meeple didn&rsquo;t change its stats after conversion).
-            </p>
-        </span>
+            it was a <em>conversion</em>, it got converted to another player&rsquo;s cause! how? when you mouse over
+            these meeples, pay attention to their stats, particularly <em>faith</em>. neutral meeple&rsquo;s faith was
+            much lower than blue meeple&rsquo;s faith. so the first thing a meeple does when it moves on top of another
+            meeple is to try to convert it, and if it&rsquo;s successful, it will change its color <em>peacefully</em>
+            (notice how the converted meeple didn&rsquo;t change its stats after conversion).
+        </span>,
+        [ "up", "up", "left", "left" ]
     ],
     [
         <div>
             so what happens if two meeples are stronger in their faith? things get <i>unpeaceful</i>?
         </div>,
         <span>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <p>
-                yeah, they&rsquo;ll hit each other with their <em>strength</em> (another stat shown when you move your
-                mouse over meeples). after a hit, a meeple loses <em>resistance</em> equal to the hit taken, so each
-                meeple leaves the encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>,
-                in the event that another meeple climbed on top of another meeple.
-            </p>
-        </span>
+            yeah, they&rsquo;ll hit each other with their <em>strength</em> (another stat shown when you move your mouse
+            over meeples). after a hit, a meeple loses <em>resistance</em> equal to the hit taken, so each meeple leaves
+            the encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>, in the event that
+            another meeple climbed on top of another meeple.
+        </span>,
+        [ "up", "up", "left", "left" ]
     ],
     [
         <div>
             eventually a meeple&rsquo;s resistance will reach zero, right?
         </div>,
         <span>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-up"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <a className={"button is-small is-outlined is-info"}>
-                <span className="icon is-small">
-                    <i className="fa fa-hand-o-left"></i>
-                </span>
-            </a>
-            <p>
-                well, if that happens&hellip; the meeple dies! sad, but obvious, isn&rsquo;t it? also, that needs to
-                happen quite a lot if you want to win the game&mdash;you need to remove every opponent&rsquo;s meeple
-                from the game in order to remove that player from the game, which in turn will make you the winner if
-                you manage to eliminate all players from game. well, except you, just to be clear: in case you eliminate
-                your last opponent <em>and</em> you get killed at the same time, the game is a tie.
-            </p>
-        </span>
+            well, if that happens&hellip; the meeple dies! sad, but obvious, isn&rsquo;t it? also, that needs to happen
+            quite a lot if you want to win the game&mdash;you need to remove every opponent&rsquo;s meeple from the game
+            in order to remove that player from the game, which in turn will make you the winner if you manage to
+            eliminate all players from game. well, except you, just to be clear: in case you eliminate your last
+            opponent <em>and</em> you get killed at the same time, the game is a tie.
+        </span>,
+        [ "up", "up", "left", "left" ]
     ],
     [
         <div>
@@ -269,21 +176,31 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
 
     tutorial =
         <div className="content">
-            {tutorialSteps.map(([ tutorialStep, tutorialDetail ], index) =>
+            {tutorialSteps
+                .map(([ tutorialStep, tutorialDetail, tutorialActions ], i) =>
                 <div
-                    key={index}
+                    key={i}
                     className="title is-6"
                     onClick={() => props.enqueuePlay({
                         state: "tutorial",
                         player: "default",
                         from: "player",
-                        action: { step: index }
+                        action: { step: i }
                     })}>
                     {
-                        index === props.step.step ?
+                        i === props.step.step ?
                         <div>
                             <strong>{tutorialStep}</strong>
                             {tutorialDetail}
+                            <p>
+                                {tutorialActions ? (tutorialActions as Direction[]).map((move, j) =>
+                                    <a key={j} className={"button is-small is-outlined is-info"}>
+                                        <span className="icon is-small">
+                                            <i className={"fa fa-hand-o-" + move}></i>
+                                        </span>
+                                    </a>) :
+                                null}
+                            </p>
                         </div> :
                         tutorialStep
                     }
