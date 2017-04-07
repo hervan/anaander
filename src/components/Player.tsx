@@ -10,19 +10,20 @@ interface IProps {
 
 const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
   <div className="player tile is-parent">
-    <article className={"tile is-child message is-" + props.player.team + (props.active ? " current-player" : "")}
+    <article className={"tile is-child message is-" + Game.Team[props.player.team]
+      + (props.active ? " current-player" : "")}
       style={{
         opacity: props.player.swarmSize === 0 ? 0.1 : 1,
         transition: "opacity 1s"
       }}>
       <div className="message-header">
-        <p>general {props.player.team}</p>
+        <p>general {Game.Team[props.player.team]}</p>
       </div>
       <div className="message-body">
         <div className="field has-addons tile is-parent">
           <div className="control tile is-child">
             <p>
-              <a className={"button is-outlined is-" + props.player.team}
+              <a className={"button is-outlined is-" + Game.Team[props.player.team]}
                 onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
@@ -33,7 +34,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                   <i className="fa fa-hand-paper-o"></i>
                 </span>
               </a>
-              <a className={"button is-outlined is-" + props.player.team}
+              <a className={"button is-outlined is-" + Game.Team[props.player.team]}
                 onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
@@ -44,7 +45,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                   <i className="fa fa-hand-o-up"></i>
                 </span>
               </a>
-              <a className={"button is-outlined is-" + props.player.team}
+              <a className={"button is-outlined is-" + Game.Team[props.player.team]}
                 onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
@@ -57,7 +58,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
               </a>
             </p>
             <p>
-              <a className={"button is-outlined is-" + props.player.team}
+              <a className={"button is-outlined is-" + Game.Team[props.player.team]}
                 onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
@@ -68,7 +69,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                   <i className="fa fa-hand-o-left"></i>
                 </span>
               </a>
-              <a className={"button is-outlined is-" + props.player.team}
+              <a className={"button is-outlined is-" + Game.Team[props.player.team]}
                 onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,
@@ -79,7 +80,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                   <i className="fa fa-hand-o-down"></i>
                 </span>
               </a>
-              <a className={"button is-outlined is-" + props.player.team}
+              <a className={"button is-outlined is-" + Game.Team[props.player.team]}
                 onClick={() => props.enqueuePlay({
                   state: "play",
                   player: props.player.team,

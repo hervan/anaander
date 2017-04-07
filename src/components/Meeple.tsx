@@ -12,7 +12,7 @@ interface IProps {
 };
 
 const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <span className={"icon is-medium meeple is-" + props.meeple.team}
+    <span className={"icon is-medium meeple is-" + Game.Team[props.meeple.team]}
         style={{
             top: props.meeple.position.row * 44 + 7 + props.translation.row,
             left: props.meeple.position.col * 44 + 7 + props.translation.col,

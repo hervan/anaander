@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Action, Direction, Game, Meeple, Play, play, setup, Step, teams, tutorial } from "../Game";
+import { Action, Direction, Game, Meeple, Play, play, setup, Step, Team, tutorial } from "../Game";
 
 import Board from "./Board";
 import Controls from "./Controls";
@@ -143,7 +143,7 @@ export class Table extends React.Component<{}, IState> {
 
                     this.enqueuePlay({
                         state: "setup",
-                        player: "default",
+                        player: Team.default,
                         from: "player",
                         action: "skip"
                     });
@@ -151,7 +151,7 @@ export class Table extends React.Component<{}, IState> {
 
                     this.enqueuePlay({
                         state: "tutorial",
-                        player: "default",
+                        player: Team.default,
                         from: "player",
                         action: { step: 0 }
                     });
@@ -166,7 +166,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        queue[teams.indexOf(play.player)].push(play);
+        queue[play.player].push(play);
 
         if (play.state === "tutorial") {
 
@@ -185,10 +185,10 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (queue[teams.indexOf("default")].length > 0) {
+        if (queue[Team.default].length > 0) {
 
-            const playDefault: Play = queue[teams.indexOf("default")][0] as Play;
-            queue[teams.indexOf("default")] = [];
+            const playDefault: Play = queue[Team.default][0] as Play;
+            queue[Team.default] = [];
 
             switch (playDefault.state) {
 
@@ -233,9 +233,9 @@ export class Table extends React.Component<{}, IState> {
                 break;
             }
 
-        } else if (queue[teams.indexOf(this.state.game.currentPlayer)].length > 0) {
+        } else if (queue[this.state.game.currentPlayer].length > 0) {
 
-            const playData: Play = queue[teams.indexOf(this.state.game.currentPlayer)].shift() as Play;
+            const playData: Play = queue[this.state.game.currentPlayer].shift() as Play;
 
             switch (playData.state) {
 
@@ -283,7 +283,7 @@ export class Table extends React.Component<{}, IState> {
             });
         } else {
 
-            queue[teams.indexOf(this.state.game.currentPlayer)].push({
+            queue[this.state.game.currentPlayer].push({
                 state: "tutorial",
                 player: this.state.game.currentPlayer,
                 from: "player",
@@ -304,7 +304,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (queue[teams.indexOf(this.state.game.currentPlayer)].length === 0) {
+        if (queue[this.state.game.currentPlayer].length === 0) {
 
             const currentPlayerMeeples: Meeple[] = this.state.game.meeples
                 .filter((meeple) => meeple.key !== -1 &&
@@ -352,8 +352,8 @@ export class Table extends React.Component<{}, IState> {
                     });
                 }
 
-                queue[teams.indexOf(this.state.game.currentPlayer)] = [
-                    ...queue[teams.indexOf(this.state.game.currentPlayer)],
+                queue[this.state.game.currentPlayer] = [
+                    ...queue[this.state.game.currentPlayer],
                     ...nextPlay
                 ];
 
@@ -361,7 +361,7 @@ export class Table extends React.Component<{}, IState> {
 
             } else {
 
-                queue[teams.indexOf(this.state.game.currentPlayer)].push({
+                queue[this.state.game.currentPlayer].push({
                     state: this.state.game.state,
                     player: this.state.game.currentPlayer,
                     from: "player",

@@ -1,6 +1,8 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
+import { Team } from "../Game";
+
 import { IProps } from "./Table";
 
 const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
@@ -18,7 +20,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                 &nbsp;
                 <a className="is-link" onClick={() => props.enqueuePlay({
                     state: "setup",
-                    player: "default",
+                    player: Team.default,
                     from: "player",
                     action: "left"
                 })}>
@@ -29,7 +31,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                 &nbsp;
                 <a className="is-link" onClick={() => props.enqueuePlay({
                     state: "setup",
-                    player: "default",
+                    player: Team.default,
                     from: "player",
                     action: null
                 })}>
@@ -38,7 +40,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                 &nbsp;
                 <a className="is-link" onClick={() => props.enqueuePlay({
                     state: "setup",
-                    player: "default",
+                    player: Team.default,
                     from: "player",
                     action: "right"
                 })}>
@@ -51,14 +53,14 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
             <p>
                 click <a className="is-link" onClick={() => props.enqueuePlay({
                     state: "play",
-                    player: "default",
+                    player: Team.default,
                     from: "player",
                     action: null
                 })}>here</a> to begin.
                 <br />
                 (or click <a className="is-link" onClick={() => props.enqueuePlay({
                     state: "tutorial",
-                    player: "default",
+                    player: Team.default,
                     from: "player",
                     action: { step: 0 }
                 })}>here</a> for a short tutorial.)
@@ -85,7 +87,7 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
                 <span className="icon">
                     <i className={"fa fa-user-circle"
                         + (props.game.turn === "heads" ? "-o" : "")
-                        + " is-" + props.game.currentPlayer}></i>
+                        + " is-" + Team[props.game.currentPlayer]}></i>
                 </span>;
             guideDetail = <p>choose an action for these meeples: {side}</p>;
             break;
@@ -98,8 +100,8 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
 
         guide =
             <p>
-                it's general <span className={"is-" + props.game.currentPlayer}>
-                    {props.game.currentPlayer}
+                it's general <span className={"is-" + Team[props.game.currentPlayer]}>
+                    {Team[props.game.currentPlayer]}
                 </span>'s turn.
             </p>;
 
@@ -109,8 +111,8 @@ const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
 
         guide =
             <p>
-                general <span className={"is-" + props.game.currentPlayer}>
-                    {props.game.currentPlayer}
+                general <span className={"is-" + Team[props.game.currentPlayer]}>
+                    {Team[props.game.currentPlayer]}
                 </span> won the game!
             </p>;
 

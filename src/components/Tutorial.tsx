@@ -1,11 +1,11 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import { Direction } from "../Game";
+import { Direction, Team } from "../Game";
 
 import { ITutorialProps } from "./Table";
 
-const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
+const tutorialSteps: Array<[JSX.Element, JSX.Element, Array<[Team, Direction]>]> = [
     [
         <div>
             welcome to anaander, a game about post-human armies with a shared mind&mdash;veeeeeeery loosely based on
@@ -15,7 +15,8 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
         </div>,
         <span>
             click on the paragraph below (clicking on paragraphs will give you details about their instructions).
-        </span>
+        </span>,
+        []
     ],
     [
         <div>
@@ -23,7 +24,8 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
         </div>,
         <span>
             it&rsquo;s usually made of 16&times;16 squares.
-        </span>
+        </span>,
+        []
     ],
     [
         <div>
@@ -31,7 +33,8 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
         </div>,
         <span>
             hover your mouse over them and you&rsquo;ll see the geography of that terrain, matching its pale color.
-        </span>
+        </span>,
+        []
     ],
     [
         <div>
@@ -39,7 +42,8 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
         </div>,
         <span>
             it&rsquo;s like a pawn inside a circle. also, they&rsquo;re located on top of a terrain tile.
-        </span>
+        </span>,
+        []
     ],
     [
         <div>
@@ -47,7 +51,8 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
         </div>,
         <span>
             now it belongs to a player! it matches the color of its owner.
-        </span>
+        </span>,
+        []
     ],
     [
         <div>
@@ -56,7 +61,8 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
         <span>
             blue, yellow, green, red and teal belong to the player who has been assigned that specific color.
             the black meeple is a <em>neutral</em> one.
-        </span>
+        </span>,
+        []
     ],
     [
         <div>
@@ -66,7 +72,12 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
             one at a time, it&rsquo;s moving in each of the possible directions:
             up, right, down, and left&mdash;no diagonals allowed.
         </span>,
-        [ "up", "right", "down", "left" ]
+        [
+            [Team.info, "up"],
+            [Team.info, "right"],
+            [Team.info, "down"],
+            [Team.info, "left"]
+        ]
     ],
     [
         <div>
@@ -78,7 +89,10 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
             the top meeple is free to move out of this square. other meeples have to wait until there&rsquo;s no other
             meeple on top of them.
         </span>,
-        [ "right", "left" ]
+        [
+             [Team.info, "right"],
+             [Team.info, "left"]
+        ]
     ],
     [
         <div>
@@ -91,7 +105,12 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
             meeple is to try to convert it, and if it&rsquo;s successful, it will change its color <em>peacefully</em>
             (notice how the converted meeple didn&rsquo;t change its stats after conversion).
         </span>,
-        [ "up", "up", "left", "left" ]
+        [
+            [Team.info, "up"],
+            [Team.info, "up"],
+            [Team.info, "left"],
+            [Team.info, "left"]
+        ]
     ],
     [
         <div>
@@ -103,7 +122,12 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
             the encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>, in the event that
             another meeple climbed on top of another meeple.
         </span>,
-        [ "up", "up", "left", "left" ]
+        [
+            [Team.info, "up"],
+            [Team.info, "up"],
+            [Team.info, "left"],
+            [Team.info, "left"]
+        ]
     ],
     [
         <div>
@@ -116,18 +140,29 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
             eliminate all players from game. well, except you, just to be clear: in case you eliminate your last
             opponent <em>and</em> you get killed at the same time, the game is a tie.
         </span>,
-        [ "up", "up", "left", "left" ]
+        [
+            [Team.info, "up"],
+            [Team.info, "up"],
+            [Team.info, "left"],
+            [Team.info, "left"]
+        ]
     ],
     [
         <div>
             now, regarding all those meeples you converted, here comes the core mechanic of the game&mdash;
-            <em>the swarm</em>.
+            <i>the swarm</i>.
         </div>,
         <span>
             the swarm is the collective of all meeples of your color. they move as a single entity, each meeple
             performing the same action assigned that round to the swarm by the player. that is, as long as they can
             perform the action; all restrictions to individual meeples apply as well to each meeple in the swarm.
-        </span>
+        </span>,
+        [
+            [Team.info, "right"],
+            [Team.info, "down"],
+            [Team.info, "left"],
+            [Team.info, "up"]
+        ]
     ],
     [
         <div>
@@ -140,14 +175,16 @@ const tutorialSteps: Array<Array<JSX.Element | Direction[]>> = [
             whenever a meeple in any of these situations tries to move, it doesn&rsquo;t complete the action;
             if it happens as part of the swarm movement, the other meeples in the swarm are unaffected and may try to
             complete their own movements, as explained in the previous step of the tutorial.
-        </span>
+        </span>,
+        []
     ],
-    [
+    /*[
         <div>
         </div>,
         <span>
-        </span>
-    ]
+        </span>,
+        []
+    ]*/
 ];
 /*
 players take alternate turns.
@@ -183,7 +220,7 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
                     className="title is-6"
                     onClick={() => props.enqueuePlay({
                         state: "tutorial",
-                        player: "default",
+                        player: Team.default,
                         from: "player",
                         action: { step: i }
                     })}>
@@ -193,12 +230,13 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
                             <strong>{tutorialStep}</strong>
                             {tutorialDetail}
                             <p>
-                                {tutorialActions ? (tutorialActions as Direction[]).map((move, j) =>
-                                    <a key={j} className={"button is-small is-outlined is-info"}>
-                                        <span className="icon is-small">
-                                            <i className={"fa fa-hand-o-" + move}></i>
-                                        </span>
-                                    </a>) :
+                                {tutorialActions ? (tutorialActions as Array<[Team, Direction]>)
+                                    .map(([team, move], j) =>
+                                        <a key={j} className={"button is-small is-outlined is-" + Team[team]}>
+                                            <span className="icon is-small">
+                                                <i className={"fa fa-hand-o-" + move}></i>
+                                            </span>
+                                        </a>) :
                                 null}
                             </p>
                         </div> :
@@ -215,7 +253,7 @@ const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProp
                 <h2 className="subtitle is-4">
                     (click <a className="is-link" onClick={() => props.enqueuePlay({
                         state: "setup",
-                        player: "default",
+                        player: Team.default,
                         from: "player",
                         action: "skip"
                     })}>here</a> to go back.)

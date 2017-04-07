@@ -1,19 +1,11 @@
-export type Team =
-| "primary"
-| "info"
-| "success"
-| "warning"
-| "danger"
-| "default";
-
-export const teams: Team[] = [
-    "info",
-    "warning",
-    "success",
-    "danger",
-    "primary",
-    "default"
-];
+export enum Team {
+    info,
+    warning,
+    success,
+    danger,
+    primary,
+    default
+}
 
 export type Direction =
 | "up"
@@ -26,30 +18,22 @@ type Position = {
     col: number;
 };
 
-export type Geography =
-| "city"
-| "island"
-| "forest"
-| "swamp"
-| "mountain"
-| "plains";
-
-const geographies: Geography[] = [
-    "swamp",
-    "island",
-    "mountain",
-    "forest",
-    "city",
-    "plains"
-];
+export enum Geography {
+    swamp = 1,
+    island,
+    mountain,
+    forest,
+    city,
+    plains
+}
 
 const terrainDistribution: Geography[] = [
-    "city",                 // not very frequent
-    "island", "island",     // twice the frequency
-    "forest", "forest",     // twice the frequency
-    "swamp", "swamp",       // twice the frequency
-    "mountain", "mountain", // twice the frequency
-    "plains", "plains", "plains", "plains" // way more frequent
+    Geography.city,
+    Geography.island, Geography.island,
+    Geography.forest, Geography.forest,
+    Geography.swamp, Geography.swamp,
+    Geography.mountain, Geography.mountain,
+    Geography.plains, Geography.plains, Geography.plains, Geography.plains
 ];
 
 type Item =
@@ -169,8 +153,8 @@ function nextPlayer(game: Game): Team {
     let i: number = game.players.length;
 
     do {
-        player = teams[(teams.indexOf(player) + 1) % game.players.length];
-    } while (game.players.length > 0 && game.players[teams.indexOf(player)].swarmSize === 0 && i-- > 0);
+        player = (player + 1) % game.players.length;
+    } while (game.players.length > 0 && game.players[player].swarmSize === 0 && i-- > 0);
 
     return player;
 }
@@ -182,7 +166,7 @@ function flipTurn(turn: Turn): Turn {
 
 function nextTurn(game: Game): Turn {
 
-    return teams.indexOf(nextPlayer(game)) <= teams.indexOf(game.currentPlayer) ?
+    return nextPlayer(game) <= game.currentPlayer ?
         flipTurn(game.turn) :
         game.turn;
 }
@@ -305,13 +289,13 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
 
                     if (meepleOver.faith > meepleUnder.faith + meepleUnder.strength) {
 
-                        if (teams.indexOf(meepleUnder.team) < gamePlayers.length) {
+                        if (meepleUnder.team < gamePlayers.length) {
 
-                            gamePlayers[teams.indexOf(meepleUnder.team)].swarmSize--;
+                            gamePlayers[meepleUnder.team].swarmSize--;
                         }
 
                         meepleUnder.team = meepleOver.team;
-                        gamePlayers[teams.indexOf(meepleOver.team)].swarmSize++;
+                        gamePlayers[meepleOver.team].swarmSize++;
                         meepleOver.resistance += meepleUnder.resistance;
 
                     } else {
@@ -326,9 +310,9 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
                             meepleOver.faith += meepleUnder.faith;
                             terrainTo.spaceLeft++;
 
-                            if (teams.indexOf(meepleUnder.team) < gamePlayers.length) {
+                            if (meepleUnder.team < gamePlayers.length) {
 
-                                gamePlayers[teams.indexOf(meepleUnder.team)].swarmSize--;
+                                gamePlayers[meepleUnder.team].swarmSize--;
                             }
                         }
 
@@ -339,7 +323,7 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
                             meepleUnder.faith += meepleOver.faith;
                             terrainTo.spaceLeft++;
 
-                            gamePlayers[teams.indexOf(meepleOver.team)].swarmSize--;
+                            gamePlayers[meepleOver.team].swarmSize--;
                         }
                     }
                 }
@@ -411,7 +395,7 @@ export function play(game: Game, play: Play): Game {
 
     switch (play.player) {
 
-        case "default":
+        case Team.default:
 
         return {
 
@@ -420,7 +404,7 @@ export function play(game: Game, play: Play): Game {
             terrains: game.terrains.slice(),
             meeples: game.meeples.slice(),
             turn: game.turn,
-            currentPlayer: teams[0],
+            currentPlayer: 0,
             state: play.state,
             lastAction: "skip"
         };
@@ -490,7 +474,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             const geography: Geography = terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)];
 
             let topMeeple: number = -1;
-            let spaceLeft: number = 1 + geographies.indexOf(geography);
+            let spaceLeft: number = geography;
 
             if (spaceLeft > 1 && Math.random() < 0.12) {
 
@@ -498,7 +482,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
                     key: meepleKey++,
                     position: position,
-                    team: teams[teams.length - 1],
+                    team: Team.default,
                     turn: turns[0],
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
@@ -525,45 +509,40 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
     let i: number = 0;
     meepleKey = 0;
 
-    for (let team of teams) {
+    for (let team = 0; team < playerCount; team++) {
 
-        if (i < playerCount) {
+        let position: Position;
 
-            let position: Position;
+        do {
 
-            do {
+            position = {
 
-                position = {
-
-                    row: Math.floor(Math.random() * (boardSize - 2)) + 1,
-                    col: Math.floor(Math.random() * (boardSize - 2)) + 1
-                };
-
-            } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
-
-            const meeple: Meeple = {
-                key: meepleKey++,
-                position: position,
-                team: team,
-                turn: turns[0],
-                strength: 10 + Math.ceil(Math.random() * 5),
-                resistance: 20 + Math.ceil(Math.random() * 10),
-                faith: 20 + Math.ceil(Math.random() * 10),
-                topsMeeple: -1
+                row: Math.floor(Math.random() * (boardSize - 2)) + 1,
+                col: Math.floor(Math.random() * (boardSize - 2)) + 1
             };
 
-            terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
-            terrains[positionToIndex(position, boardSize)].spaceLeft--;
-            meeples[meeple.key] = meeple;
+        } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
 
-            players[teams.indexOf(team)] = {
-                team: team,
-                individualActions: 0,
-                swarmSize: 1
-            };
+        const meeple: Meeple = {
+            key: meepleKey++,
+            position: position,
+            team: team,
+            turn: turns[0],
+            strength: 10 + Math.ceil(Math.random() * 5),
+            resistance: 20 + Math.ceil(Math.random() * 10),
+            faith: 20 + Math.ceil(Math.random() * 10),
+            topsMeeple: -1
+        };
 
-            i++;
-        }
+        terrains[positionToIndex(position, boardSize)].topMeeple = meeple.key;
+        terrains[positionToIndex(position, boardSize)].spaceLeft--;
+        meeples[meeple.key] = meeple;
+
+        players[team] = {
+            team: team,
+            individualActions: 0,
+            swarmSize: 1
+        };
     }
 
     const game: Game = {
@@ -573,7 +552,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         terrains: terrains,
         meeples: meeples.slice(),
         turn: turns[0],
-        currentPlayer: "default",
+        currentPlayer: Team.default,
         state: "setup",
         lastAction: { explanation: InvalidPlays.None }
     };
@@ -582,10 +561,13 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 }
 
 function t(row: number, col: number, topMeeple: number = -1): Terrain {
+
+    const geography: Geography = (row + col) % 6 + 1;
+
     return {
         position: { row: row, col: col },
-        geography: geographies[(row + col) % 6],
-        spaceLeft: 1,
+        geography: geography,
+        spaceLeft: geography,
         topMeeple: topMeeple
     };
 }
@@ -596,7 +578,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
         { // tutorial start
             game: play(setup(5), {
                 state: "tutorial",
-                player: "default",
+                player: Team.default,
                 from: "player",
                 action: null
             }),
@@ -610,7 +592,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     acc.concat([...Array(16).keys()].map((col) => t(row, col))), [] as Terrain[]),
                 meeples: [],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -624,7 +606,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     acc.concat([...Array(4).keys()].map((col) => t(row, col))), [] as Terrain[]),
                 meeples: [],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -641,7 +623,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 1, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -650,7 +632,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     }
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -667,7 +649,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 1, col: 1 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -676,7 +658,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     }
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -693,7 +675,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 0, col: 0 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -703,7 +685,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 1, col: 1 },
-                        team: "warning",
+                        team: Team.warning,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -713,7 +695,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 2,
                         position: { row: 2, col: 2 },
-                        team: "success",
+                        team: Team.success,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -723,7 +705,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 3,
                         position: { row: 3, col: 3 },
-                        team: "danger",
+                        team: Team.danger,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -733,7 +715,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 4,
                         position: { row: 4, col: 4 },
-                        team: "primary",
+                        team: Team.primary,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -743,7 +725,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 5,
                         position: { row: 5, col: 5 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -752,7 +734,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -763,12 +745,12 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 boardSize: 3,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
                         swarmSize: 1
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -780,7 +762,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 1, col: 1 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -789,7 +771,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -805,12 +787,12 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 boardSize: 4,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
                         swarmSize: 1
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -827,7 +809,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 1, col: 2 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -837,7 +819,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 1, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -846,7 +828,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -860,12 +842,12 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 boardSize: 4,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
                         swarmSize: 1
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -882,7 +864,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 3, col: 2 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -892,7 +874,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 1, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -901,15 +883,15 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
             plays: [
                 "up", "skip", "up", "skip",
                 "left", "skip", "left", "skip",
-                "left", "skip", "left", "skip",
-                "left", "skip", "left", "skip",
+                "skip", "skip", "skip", "skip",
+                "skip", "skip", "skip", "skip",
                 "stop"
             ]
         },
@@ -918,12 +900,12 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 boardSize: 4,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
                         swarmSize: 1
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -940,7 +922,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 3, col: 2 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -950,7 +932,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 1, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 10,
                         resistance: 20,
@@ -959,7 +941,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -976,12 +958,12 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 boardSize: 4,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
                         swarmSize: 1
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -998,7 +980,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 3, col: 2 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -1008,7 +990,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 1, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 10,
                         resistance: 10,
@@ -1017,7 +999,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -1031,32 +1013,32 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
         },
         { // the swarm
             game: {
-                boardSize: 4,
+                boardSize: 6,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
-                        swarmSize: 1
+                        swarmSize: 5
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
-                    },
+                    }
                 ],
-                terrains: [...Array(4).keys()].reduce((acc, row) =>
-                    acc.concat([...Array(4).keys()].map((col) =>
-                        row === 3 && col === 2 ?
-                        t(row, col, 0) :
-                        (row === 1 && col === 1 ?
-                        t(row, col, 1) :
-                        t(row, col))
-                    )), [] as Terrain[]),
+                terrains: [
+                    t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4, 5), t(0, 5),
+                    t(1, 0),    t(1, 1, 6), t(1, 2, 0), t(1, 3),    t(1, 4),    t(1, 5),
+                    t(2, 0),    t(2, 1),    t(2, 2),    t(2, 3, 1), t(2, 4),    t(2, 5),
+                    t(3, 0),    t(3, 1, 4), t(3, 2, 3), t(3, 3, 2), t(3, 4),    t(3, 5),
+                    t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
+                    t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
+                ],
                 meeples: [
                     {
                         key: 0,
-                        position: { row: 3, col: 2 },
-                        team: "info",
+                        position: { row: 1, col: 2 },
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -1065,26 +1047,75 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                     {
                         key: 1,
-                        position: { row: 1, col: 1 },
-                        team: "default",
+                        position: { row: 2, col: 3 },
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
-                        resistance: 10,
-                        faith: 20,
+                        resistance: 30,
+                        faith: 30,
                         topsMeeple: -1
                     },
+                    {
+                        key: 2,
+                        position: { row: 3, col: 3 },
+                        team: Team.info,
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 3,
+                        position: { row: 3, col: 2 },
+                        team: Team.info,
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 4,
+                        position: { row: 3, col: 1 },
+                        team: Team.info,
+                        turn: "heads",
+                        strength: 10,
+                        resistance: 30,
+                        faith: 30,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 5,
+                        position: { row: 0, col: 4 },
+                        team: Team.default,
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    },
+                    {
+                        key: 6,
+                        position: { row: 1, col: 1 },
+                        team: Team.default,
+                        turn: "heads",
+                        strength: 5,
+                        resistance: 15,
+                        faith: 15,
+                        topsMeeple: -1
+                    }
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
             plays: [
-                "down", "skip", "down", "skip",
-                "up", "skip", "up", "skip",
-                "left", "skip", "left", "skip",
-                "left", "skip", "left", "skip",
-                "stop"
+                "right", "skip",
+                "down", "skip",
+                "left", "skip",
+                "up", "skip"
             ]
         },
         { // hi
@@ -1105,7 +1136,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 1, col: 6 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1115,7 +1146,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 3, col: 6 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1125,7 +1156,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 2,
                         position: { row: 4, col: 6 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1135,7 +1166,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 3,
                         position: { row: 5, col: 6 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1145,7 +1176,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 4,
                         position: { row: 6, col: 6 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1155,7 +1186,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 5,
                         position: { row: 1, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1165,7 +1196,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 6,
                         position: { row: 2, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1175,7 +1206,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 7,
                         position: { row: 3, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1185,7 +1216,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 8,
                         position: { row: 4, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1195,7 +1226,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 9,
                         position: { row: 5, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1205,7 +1236,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 10,
                         position: { row: 6, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1215,7 +1246,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 11,
                         position: { row: 3, col: 2 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1225,7 +1256,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 12,
                         position: { row: 3, col: 3 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1235,7 +1266,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 13,
                         position: { row: 4, col: 4 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1245,7 +1276,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 14,
                         position: { row: 5, col: 4 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1255,7 +1286,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 15,
                         position: { row: 6, col: 4 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1264,7 +1295,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     },
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -1275,17 +1306,17 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 boardSize: 6,
                 players: [
                     {
-                        team: "info",
+                        team: Team.info,
                         individualActions: 0,
                         swarmSize: 2
                     },
                     {
-                        team: "warning",
+                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
                     {
-                        team: "success",
+                        team: Team.success,
                         individualActions: 0,
                         swarmSize: 2
                     }
@@ -1302,7 +1333,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 0,
                         position: { row: 2, col: 3 },
-                        team: "info",
+                        team: Team.info,
                         turn: "heads",
                         strength: 10,
                         resistance: 30,
@@ -1312,7 +1343,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 1,
                         position: { row: 2, col: 2 },
-                        team: "warning",
+                        team: Team.warning,
                         turn: "heads",
                         strength: 5,
                         resistance: 10,
@@ -1322,7 +1353,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 2,
                         position: { row: 3, col: 3 },
-                        team: "success",
+                        team: Team.success,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1332,7 +1363,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     {
                         key: 3,
                         position: { row: 4, col: 1 },
-                        team: "default",
+                        team: Team.default,
                         turn: "heads",
                         strength: 5,
                         resistance: 15,
@@ -1341,7 +1372,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                     }
                 ],
                 turn: "heads",
-                currentPlayer: "info",
+                currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
             },
@@ -1351,113 +1382,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 "right",
                 "skip", "skip", "skip",
                 "skip", "skip", "skip"
-            ]
-        },
-        { // the moving swarm
-            game: {
-                boardSize: 6,
-                players: [
-                    {
-                        team: "info",
-                        individualActions: 0,
-                        swarmSize: 5
-                    },
-                    {
-                        team: "warning",
-                        individualActions: 0,
-                        swarmSize: 1
-                    }
-                ],
-                terrains: [
-                    t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4, 5), t(0, 5),
-                    t(1, 0),    t(1, 1, 6), t(1, 2, 0), t(1, 3),    t(1, 4),    t(1, 5),
-                    t(2, 0),    t(2, 1),    t(2, 2),    t(2, 3, 1), t(2, 4),    t(2, 5),
-                    t(3, 0),    t(3, 1, 4), t(3, 2, 3), t(3, 3, 2), t(3, 4),    t(3, 5),
-                    t(4, 0),    t(4, 1),    t(4, 2),    t(4, 3),    t(4, 4),    t(4, 5),
-                    t(5, 0),    t(5, 1),    t(5, 2),    t(5, 3),    t(5, 4),    t(5, 5)
-                ],
-                meeples: [
-                    {
-                        key: 0,
-                        position: { row: 1, col: 2 },
-                        team: "info",
-                        turn: "heads",
-                        strength: 10,
-                        resistance: 30,
-                        faith: 30,
-                        topsMeeple: -1
-                    },
-                    {
-                        key: 1,
-                        position: { row: 2, col: 3 },
-                        team: "info",
-                        turn: "heads",
-                        strength: 10,
-                        resistance: 30,
-                        faith: 30,
-                        topsMeeple: -1
-                    },
-                    {
-                        key: 2,
-                        position: { row: 3, col: 3 },
-                        team: "info",
-                        turn: "heads",
-                        strength: 10,
-                        resistance: 30,
-                        faith: 30,
-                        topsMeeple: -1
-                    },
-                    {
-                        key: 3,
-                        position: { row: 3, col: 2 },
-                        team: "info",
-                        turn: "heads",
-                        strength: 10,
-                        resistance: 30,
-                        faith: 30,
-                        topsMeeple: -1
-                    },
-                    {
-                        key: 4,
-                        position: { row: 3, col: 1 },
-                        team: "info",
-                        turn: "heads",
-                        strength: 10,
-                        resistance: 30,
-                        faith: 30,
-                        topsMeeple: -1
-                    },
-                    {
-                        key: 5,
-                        position: { row: 0, col: 4 },
-                        team: "default",
-                        turn: "heads",
-                        strength: 5,
-                        resistance: 15,
-                        faith: 15,
-                        topsMeeple: -1
-                    },
-                    {
-                        key: 6,
-                        position: { row: 1, col: 1 },
-                        team: "default",
-                        turn: "heads",
-                        strength: 5,
-                        resistance: 15,
-                        faith: 15,
-                        topsMeeple: -1
-                    }
-                ],
-                turn: "heads",
-                currentPlayer: "info",
-                state: "tutorial",
-                lastAction: "skip"
-            },
-            plays: [
-                "right", "skip",
-                "down", "skip",
-                "left", "skip",
-                "up", "skip"
             ]
         }
     ];
