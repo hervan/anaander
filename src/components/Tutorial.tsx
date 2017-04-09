@@ -207,61 +207,143 @@ after all players make their moves, the current turn is flipped.
 only the top meeple in a terrain is free to move. others are free to do other things?
 */
 
-const Tutorial: ((props: ITutorialProps) => JSX.Element) = (props: ITutorialProps) => {
+export default class Tutorial extends React.Component<ITutorialProps, {}> {
 
-    let tutorial: JSX.Element = <br />;
+    constructor(props: ITutorialProps) {
 
-    tutorial =
-        <div className="content">
-            {tutorialSteps
-                .map(([ tutorialStep, tutorialDetail, tutorialActions ], i) =>
-                <div
-                    key={i}
-                    className="title is-6"
-                    onClick={() => props.enqueuePlay({
-                        state: "tutorial",
-                        player: Team.default,
-                        from: "player",
-                        action: { step: i }
-                    })}>
-                    {
-                        i === props.step.step ?
-                        <div>
-                            <strong>{tutorialStep}</strong>
-                            {tutorialDetail}
-                            <p>
-                                {tutorialActions ? (tutorialActions as Array<[Team, Direction]>)
-                                    .map(([team, move], j) =>
-                                        <a key={j} className={"button is-small is-outlined is-" + Team[team]}>
-                                            <span className="icon is-small">
-                                                <i className={"fa fa-hand-o-" + move}></i>
-                                            </span>
-                                        </a>) :
-                                null}
-                            </p>
-                        </div> :
-                        tutorialStep
-                    }
+        super(props);
+        this.eventListener = this.eventListener.bind(this);
+        document.removeEventListener("keypress", this.eventListener);
+        document.addEventListener("keypress", this.eventListener);
+    }
+
+    eventListener(event: KeyboardEvent): void {
+
+        if (this.props.game.state !== "tutorial") {
+
+            return;
+        }
+
+        switch (event.key) {
+
+            case "a":
+
+            this.props.enqueuePlay({
+                state: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: { step:
+                    this.props.step.step === 0 ?
+                    this.props.step.step :
+                    this.props.step.step - 1 }
+            });
+
+            break;
+
+            case "d":
+
+            this.props.enqueuePlay({
+                state: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: { step:
+                    this.props.step.step === tutorialSteps.length - 1 ?
+                    this.props.step.step :
+                    this.props.step.step + 1 }
+            });
+
+            break;
+
+            case " ":
+
+            this.props.enqueuePlay({
+                state: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: "skip"
+            });
+
+            break;
+
+            case "/":
+            case "?":
+
+            this.props.enqueuePlay({
+                state: "setup",
+                player: Team.default,
+                from: "player",
+                action: "skip"
+            });
+
+            break;
+        }
+    }
+
+    componentDidUpdate(): void {
+
+        document.removeEventListener("keypress", this.eventListener);
+        document.addEventListener("keypress", this.eventListener);
+    }
+
+    componentWillUnmount(): void {
+
+        document.removeEventListener("keypress", this.eventListener);
+    }
+
+    render(): JSX.Element {
+
+        let tutorial: JSX.Element = <br />;
+
+        tutorial =
+            <div className="content">
+                {tutorialSteps
+                    .map(([ tutorialStep, tutorialDetail, tutorialActions ], i) =>
+                    <div
+                        key={i}
+                        className="title is-6"
+                        onClick={() => this.props.enqueuePlay({
+                            state: "tutorial",
+                            player: Team.default,
+                            from: "player",
+                            action: { step: i }
+                        })}>
+                        {
+                            i === this.props.step.step ?
+                            <div>
+                                <strong>{tutorialStep}</strong>
+                                {tutorialDetail}
+                                <p>
+                                    {tutorialActions ? (tutorialActions as Array<[Team, Direction]>)
+                                        .map(([team, move], j) =>
+                                            <a key={j} className={"button is-small is-outlined is-" + Team[team]}>
+                                                <span className="icon is-small">
+                                                    <i className={"fa fa-hand-o-" + move}></i>
+                                                </span>
+                                            </a>) :
+                                    null}
+                                </p>
+                            </div> :
+                            tutorialStep
+                        }
+                    </div>
+                )}
+            </div>;
+
+        return (
+            <div id="status" className="tile is-4 is-parent">
+                <div className="notification tile is-child">
+                    <h1 className="title is-2">anaander tutorial</h1>
+                    <h2 className="subtitle is-4">
+                        (click <a className="is-link" onClick={() => this.props.enqueuePlay({
+                            state: "setup",
+                            player: Team.default,
+                            from: "player",
+                            action: "skip"
+                        })}>here</a> to go back.)
+                    </h2>
+                    {tutorial}
                 </div>
-            )}
-        </div>;
-
-    return (
-        <div id="status" className="tile is-4 is-parent">
-            <div className="notification tile is-child">
-                <h1 className="title is-2">anaander tutorial</h1>
-                <h2 className="subtitle is-4">
-                    (click <a className="is-link" onClick={() => props.enqueuePlay({
-                        state: "setup",
-                        player: Team.default,
-                        from: "player",
-                        action: "skip"
-                    })}>here</a> to go back.)
-                </h2>
-                {tutorial}
             </div>
-        </div>
-    );
-};
-
-export default Tutorial;
+        );
+    };
+}

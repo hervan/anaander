@@ -4,6 +4,7 @@ import { Action, Direction, Game, Meeple, Play, play, setup, Step, Team, tutoria
 
 import Board from "./Board";
 import Controls from "./Controls";
+import Setup from "./Setup";
 import Status from "./Status";
 import Tutorial from "./Tutorial";
 
@@ -34,132 +35,12 @@ export class Table extends React.Component<{}, IState> {
 
         super();
 
-        const queue: Play[][] = [[], [], [], [], [], []];
-
         this.state = {
             game: setup(0),
-            playQueue: queue,
+            playQueue: [[], [], [], [], [], []],
             tutorialStep: { step: 0 },
             tutorialPlays: []
         };
-
-        document.addEventListener("keypress", (event) => {
-
-            switch (event.key) {
-
-                case "q":
-
-                this.enqueuePlay({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: "hold"
-                });
-
-                break;
-
-                case "w":
-
-                this.enqueuePlay({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: "up"
-                });
-
-                break;
-
-                case "e":
-
-                this.enqueuePlay({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: "explore"
-                });
-
-                break;
-
-                case "a":
-
-                this.enqueuePlay({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: "left"
-                });
-
-                break;
-
-                case "s":
-
-                this.enqueuePlay({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: "down"
-                });
-
-                break;
-
-                case "d":
-
-                this.enqueuePlay({
-                    state: this.state.game.state,
-                    player: this.state.game.currentPlayer,
-                    from: "player",
-                    action: "right"
-                });
-
-                break;
-
-                case " ":
-
-                if (this.state.game.state === "tutorial") {
-
-                    this.enqueuePlay({
-                        state: "tutorial",
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: "skip"
-                    });
-
-                } else {
-
-                    this.enqueuePlay({
-                        state: "play",
-                        player: this.state.game.currentPlayer,
-                        from: "player",
-                        action: null
-                    });
-                }
-
-                break;
-
-                case "/":
-                case "?":
-
-                if (this.state.game.state === "tutorial") {
-
-                    this.enqueuePlay({
-                        state: "setup",
-                        player: Team.default,
-                        from: "player",
-                        action: "skip"
-                    });
-                } else {
-
-                    this.enqueuePlay({
-                        state: "tutorial",
-                        player: Team.default,
-                        from: "player",
-                        action: { step: 0 }
-                    });
-                }
-
-                break;
-            }
-        });
     }
 
     enqueuePlay(play: Play): void {
@@ -194,7 +75,7 @@ export class Table extends React.Component<{}, IState> {
 
                 case "setup":
 
-                if (this.state.game.state === "tutorial") {
+                if (this.state.game.state !== "setup") {
 
                     clearInterval(this.refresher);
                     this.setState({ game: setup(0), playQueue: queue });
@@ -380,39 +261,49 @@ export class Table extends React.Component<{}, IState> {
 
     render(): JSX.Element {
 
-        if (this.state.game.state === "tutorial") {
-            return (
-                <section className="section">
-                    <div className="container is-fluid">
-                        <div id="table" className="tile is-ancestor">
-                            <Tutorial game={this.state.game}
-                                enqueuePlay={this.enqueuePlay.bind(this)}
-                                step={this.state.tutorialStep} />
-                            <Board
-                                game={this.state.game}
-                                enqueuePlay={this.enqueuePlay.bind(this)} />
-                        </div>
-                    </div>
-                </section>
-            );
-        } else {
-            return (
-                <section className="section">
-                    <div className="container is-fluid">
-                        <div id="table" className="tile is-ancestor">
-                            <Status
-                                game={this.state.game}
-                                enqueuePlay={this.enqueuePlay.bind(this)} />
-                            <Board
-                                game={this.state.game}
-                                    enqueuePlay={this.enqueuePlay.bind(this)} />
-                            <Controls
-                                game={this.state.game}
-                                    enqueuePlay={this.enqueuePlay.bind(this)} />
-                        </div>
-                    </div>
-                </section>
-            );
+        let leftPanel: JSX.Element;
+
+        switch (this.state.game.state) {
+
+            case "tutorial":
+            leftPanel = <Tutorial game={this.state.game}
+                enqueuePlay={this.enqueuePlay.bind(this)}
+                step={this.state.tutorialStep} />;
+            break;
+
+            case "setup":
+            leftPanel = <Setup
+                game={this.state.game}
+                enqueuePlay={this.enqueuePlay.bind(this)} />;
+            break;
+
+            default:
+            leftPanel = <Status
+                game={this.state.game}
+                enqueuePlay={this.enqueuePlay.bind(this)} />;
         }
+
+        const rightPanel = this.state.game.state !== "tutorial" ?
+            <Controls
+                game={this.state.game}
+                    enqueuePlay={this.enqueuePlay.bind(this)} /> :
+            null;
+
+        return (
+            <section className="section">
+                <div className="container is-fluid">
+                    <div id="table" className="tile is-ancestor">
+
+                        {leftPanel}
+
+                        <Board
+                            game={this.state.game}
+                            enqueuePlay={this.enqueuePlay.bind(this)} />
+
+                        {rightPanel}
+                    </div>
+                </div>
+            </section>
+        );
     }
 }

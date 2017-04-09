@@ -436,7 +436,8 @@ export function play(game: Game, play: Play): Game {
 
         let state: State = gameStep.state;
 
-        if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
+        if (state !== "tutorial"
+            && gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
 
             state = "end";
         }

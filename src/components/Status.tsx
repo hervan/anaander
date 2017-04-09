@@ -5,133 +5,130 @@ import { Team } from "../Game";
 
 import { IProps } from "./Table";
 
-const Status: ((props: IProps) => JSX.Element) = (props: IProps) => {
+export default class Status extends React.Component<IProps, {}> {
 
-    let guide: JSX.Element = <br />;
-    let guideDetail: JSX.Element = <br />;
+    constructor(props: IProps) {
 
-    switch (props.game.state) {
+        super(props);
+        this.eventListener = this.eventListener.bind(this);
+        document.removeEventListener("keypress", this.eventListener);
+        document.addEventListener("keypress", this.eventListener);
+    }
 
-        case "setup":
+    eventListener(event: KeyboardEvent): void {
 
-        guide =
-            <p>
-                how many players?
-                &nbsp;
-                <a className="is-link" onClick={() => props.enqueuePlay({
-                    state: "setup",
-                    player: Team.default,
-                    from: "player",
-                    action: "left"
-                })}>
-                    <span className="icon">
-                        <i className="fa fa-minus"></i>
-                    </span>
-                </a>
-                &nbsp;
-                <a className="is-link" onClick={() => props.enqueuePlay({
-                    state: "setup",
-                    player: Team.default,
-                    from: "player",
-                    action: null
-                })}>
-                    {props.game.players.length}
-                </a>
-                &nbsp;
-                <a className="is-link" onClick={() => props.enqueuePlay({
-                    state: "setup",
-                    player: Team.default,
-                    from: "player",
-                    action: "right"
-                })}>
-                    <span className="icon">
-                        <i className="fa fa-plus"></i>
-                    </span>
-                </a>
-            </p>;
-        guideDetail =
-            <p>
-                click <a className="is-link" onClick={() => props.enqueuePlay({
-                    state: "play",
-                    player: Team.default,
-                    from: "player",
-                    action: null
-                })}>here</a> to begin.
-                <br />
-                (or click <a className="is-link" onClick={() => props.enqueuePlay({
-                    state: "tutorial",
-                    player: Team.default,
-                    from: "player",
-                    action: { step: 0 }
-                })}>here</a> for a short tutorial.)
-            </p>;
+        if (this.props.game.state !== "end") {
 
-        break;
+            return;
+        }
 
-        case "play":
+        switch (event.key) {
 
-        switch (props.game.lastAction) {
+            case "/":
+            case "?":
 
-            case "up":
-            case "down":
-            case "left":
-            case "right":
-            case "hold":
-            case "explore":
-            case "skip":
-            case "random":
-            case "stop":
-            case null:
+            this.props.enqueuePlay({
+                state: "setup",
+                player: Team.default,
+                from: "player",
+                action: "skip"
+            });
 
-            const side: JSX.Element =
-                <span className="icon">
-                    <i className={"fa fa-user-circle"
-                        + (props.game.turn === "heads" ? "-o" : "")
-                        + " is-" + Team[props.game.currentPlayer]}></i>
-                </span>;
-            guideDetail = <p>choose an action for these meeples: {side}</p>;
+            break;
+        }
+    }
+
+    componentDidUpdate(): void {
+
+        document.removeEventListener("keypress", this.eventListener);
+        document.addEventListener("keypress", this.eventListener);
+    }
+
+    componentWillUnmount(): void {
+
+        document.removeEventListener("keypress", this.eventListener);
+    }
+
+    render(): JSX.Element {
+
+        let guide: JSX.Element = <br />;
+        let guideDetail: JSX.Element = <br />;
+
+        switch (this.props.game.state) {
+
+            case "end":
+
+            guide =
+                <p>
+                    general <span className={"is-" + Team[this.props.game.currentPlayer]}>
+                        {Team[this.props.game.currentPlayer]}
+                    </span> won the game!
+                </p>;
+
+            guideDetail =
+                <p>
+                    click <a className="is-link" onClick={() => this.props.enqueuePlay({
+                        state: "setup",
+                        player: Team.default,
+                        from: "player",
+                        action: "skip"
+                    })}>here</a> to start a new game.
+                </p>;
+
             break;
 
             default:
 
-            guideDetail = <p>{props.game.lastAction.explanation}</p>;
-            break;
+            guide =
+                <p>
+                    it's general <span className={"is-" + Team[this.props.game.currentPlayer]}>
+                        {Team[this.props.game.currentPlayer]}
+                    </span>'s turn.
+                </p>;
+
+            switch (this.props.game.lastAction) {
+
+                case "up":
+                case "down":
+                case "left":
+                case "right":
+                case "hold":
+                case "explore":
+                case "skip":
+                case "random":
+                case "stop":
+                case null:
+
+                const side: JSX.Element =
+                    <span className="icon">
+                        <i className={"fa fa-user-circle"
+                            + (this.props.game.turn === "heads" ? "-o" : "")
+                            + " is-" + Team[this.props.game.currentPlayer]}></i>
+                    </span>;
+                guideDetail = <p>choose an action for these meeples: {side}</p>;
+
+                break;
+
+                default:
+
+                guideDetail = <p>{this.props.game.lastAction.explanation}</p>;
+
+                break;
+            }
         }
 
-        guide =
-            <p>
-                it's general <span className={"is-" + Team[props.game.currentPlayer]}>
-                    {Team[props.game.currentPlayer]}
-                </span>'s turn.
-            </p>;
-
-        break;
-
-        case "end":
-
-        guide =
-            <p>
-                general <span className={"is-" + Team[props.game.currentPlayer]}>
-                    {Team[props.game.currentPlayer]}
-                </span> won the game!
-            </p>;
-
-        break;
-    }
-
-    return (
-        <div id="status" className="tile is-3 is-parent">
-            <div className="notification tile is-child">
-                <h1 className="title is-2">anaander</h1>
-                <h2 className="subtitle is-4">
-                    {guide}
-                </h2>
-                <span>
-                    {guideDetail}
-                </span>
+        return (
+            <div id="status" className="tile is-3 is-parent">
+                <div className="notification tile is-child">
+                    <h1 className="title is-2">anaander</h1>
+                    <h2 className="subtitle is-4">
+                        {guide}
+                    </h2>
+                    <span>
+                        {guideDetail}
+                    </span>
+                </div>
             </div>
-        </div>
-    );
-};
-
-export default Status;
+        );
+    }
+}
