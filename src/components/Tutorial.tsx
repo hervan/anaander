@@ -16,13 +16,11 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
         <span>
             click on the paragraph below (clicking on paragraphs will give you details about their instructions).
         </span>,
-        [
-            [ Team.default, "random" ]
-        ]
+        []
     ],
     [
         <div>
-            this is the board.
+            that is the board.
         </div>,
         <span>
             it&rsquo;s usually made of 16&times;16 squares.
@@ -31,7 +29,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
     ],
     [
         <div>
-            these tiny squares are terrain tiles.
+            those tiny squares are terrain tiles.
         </div>,
         <span>
             hover your mouse over them and you&rsquo;ll see the geography of that terrain, matching its pale color.
@@ -40,7 +38,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
     ],
     [
         <div>
-            this is a meeple.
+            that is a meeple.
         </div>,
         <span>
             it&rsquo;s like a pawn inside a circle. also, they&rsquo;re located on top of a terrain tile.
@@ -49,7 +47,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
     ],
     [
         <div>
-            this is a blue meeple.
+            that is a blue meeple.
         </div>,
         <span>
             now it belongs to a player! it matches the color of its owner.
@@ -58,7 +56,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
     ],
     [
         <div>
-            and these are the other colors a meeple can be.
+            and those are the other colors a meeple can be.
         </div>,
         <span>
             blue, yellow, green, red and teal belong to the player who has been assigned that specific color.
@@ -68,7 +66,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
     ],
     [
         <div>
-            this is how a meeple moves.
+            that is how a meeple moves.
         </div>,
         <span>
             one at a time, it&rsquo;s moving in each of the possible directions:
@@ -86,7 +84,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             a meeple moved on top of another meeple!
         </div>,
         <span>
-            that&rsquo;s because the neutral meeple was in standing in the way of the blue meeple, so the blue meeple
+            that&rsquo;s because the neutral meeple was standing in the way of the blue meeple, so the blue meeple
             climbed on top of the neutral meeple. they&rsquo;re occupying the same terrain now. on a future turn, only
             the top meeple is free to move out of this square. other meeples have to wait until there&rsquo;s no other
             meeple on top of them.
@@ -121,8 +119,12 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
         <span>
             yeah, they&rsquo;ll hit each other with their <em>strength</em> (another stat shown when you move your mouse
             over meeples). after a hit, a meeple loses <em>resistance</em> equal to the hit taken, so each meeple leaves
-            the encounter weaker. oh, notice that each meeple only strikes the other <em>once</em>, in the event that
-            another meeple climbed on top of another meeple.
+            the encounter weaker. there's a difference here to conversion&mdash;while both meeples hit each other's
+            resistance, only the meeple that's moving on top of the other can try to convert the other. also notice that
+            each meeple only strikes the other <em>once</em>, in the event that another meeple climbed on top of another
+            meeple. if you want to hit that meeple again, you first have to move away from that tile (and from the top
+            of that meeple), and move back on top of it (or wait for it to move on top of you later, at the risk of
+            being converted).
         </span>,
         [
             [Team.info, "up"],
@@ -133,13 +135,13 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
     ],
     [
         <div>
-            eventually a meeple&rsquo;s resistance will reach zero, right?
+            eventually a meeple&rsquo;s resistance will reach zero.
         </div>,
         <span>
-            well, if that happens&hellip; the meeple dies! sad, but obvious, isn&rsquo;t it? also, that needs to happen
-            quite a lot if you want to win the game&mdash;you need to remove every opponent&rsquo;s meeple from the game
-            in order to remove that player from the game, which in turn will make you the winner if you manage to
-            eliminate all players from game. well, except you, just to be clear: in case you eliminate your last
+            well, if that happens&hellip; the meeple dies! sad, but obvious, isn&rsquo;t it? by the way, that needs to
+            happen quite a lot if you want to win the game&mdash;you need to remove every opponent&rsquo;s meeple from
+            the game in order to remove that player from the game, which in turn will make you the winner if you manage
+            to eliminate all players from game. well, except you, just to be clear: in case you eliminate your last
             opponent <em>and</em> you get killed at the same time, the game is a tie.
         </span>,
         [
@@ -217,19 +219,25 @@ export default class Tutorial extends React.Component<IProps, {}> {
 
         super(props);
         this.eventListener = this.eventListener.bind(this);
-        document.removeEventListener("keypress", this.eventListener);
-        document.addEventListener("keypress", this.eventListener);
+        this.componentDidUpdate();
     }
 
     componentDidUpdate(): void {
 
-        if (this.props.lesson.step < 0) {
+        clearInterval(this.refresher);
 
-            clearInterval(this.refresher);
-            this.refresher = window.setInterval(() => this.animateTutorial(), 5000);
+        if (!this.props.lesson) {
+
+            return;
+        }
+
+        if (this.props.lesson.autoplay) {
+
+            this.refresher = window.setInterval(() => this.playTutorial(), 1000);
+
         } else {
 
-            clearInterval(this.refresher);
+            this.playTutorial();
         }
 
         document.removeEventListener("keypress", this.eventListener);
@@ -259,7 +267,8 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 from: "player",
                 action: {
                     index: this.props.lesson.index - (this.props.lesson.index > 0 ? 1 : 0),
-                    step: -1
+                    step: -1,
+                    autoplay: true
                 }
             });
 
@@ -273,7 +282,8 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 from: "player",
                 action: {
                     index: this.props.lesson.index,
-                    step: this.props.lesson.step - (this.props.lesson.step > 0 ? 1 : 0)
+                    step: this.props.lesson.step - (this.props.lesson.step > 0 ? 1 : 0),
+                    autoplay: false
                 }
             });
 
@@ -288,7 +298,8 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 action: {
                     index: this.props.lesson.index +
                         (this.props.lesson.index < lessons.length - 1 ? 1 : 0),
-                    step: -1
+                    step: -1,
+                    autoplay: true
                 }
             });
 
@@ -303,26 +314,28 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 action: {
                     index: this.props.lesson.index,
                     step: this.props.lesson.step +
-                        (this.props.lesson.step < lessons[this.props.lesson.index][2].length - 1 ? 1 : 0)
+                        (this.props.lesson.step < lessons[this.props.lesson.index][2].length - 1 ? 1 : 0),
+                    autoplay: false
                 }
             });
 
             break;
 
-            // case " ":
+            case " ":
 
-            // const nextStep: number = (this.props.lesson.step + 1) % lessons[this.props.lesson.index][2].length;
-            // this.props.enqueuePlay({
-            //     state: "tutorial",
-            //     player: Team.default,
-            //     from: "player",
-            //     action: {
-            //         index: this.props.lesson.index + (nextStep === 0 ? 1 : 0),
-            //         step: nextStep
-            //     }
-            // });
+            const nextStep: number = (this.props.lesson.step + 1) % lessons[this.props.lesson.index][2].length;
+            this.props.enqueuePlay({
+                state: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: {
+                    index: this.props.lesson.index + (nextStep === 0 ? 1 : 0),
+                    step: nextStep,
+                    autoplay: false
+                }
+            });
 
-            // break;
+            break;
 
             case "/":
             case "?":
@@ -338,52 +351,76 @@ export default class Tutorial extends React.Component<IProps, {}> {
         }
     }
 
-    animateTutorial(): void {
+    playTutorial(): void {
 
-        const plays = lessons[this.props.lesson.index][2];
-        if (plays.length === 0) {
+        if (!this.props.lesson) {
 
             return;
         }
 
-        let nextStep: number;
-        let player: Team;
-        let action: Action | Direction | Lesson;
+        const plays = lessons[this.props.lesson.index][2];
 
-        if (this.props.lesson.step < 0) {
+        if (plays.length === 0) {
 
-            nextStep = (this.props.lesson.step % plays.length) - 1;
-            [ player, action ] = plays[-1 * this.props.lesson.step - 1];
+            if (this.props.game.currentPlayer !== Team.default) {
 
+                this.props.enqueuePlay({
+                    state: "tutorial",
+                    player: this.props.game.currentPlayer,
+                    from: "player",
+                    action: [ "up", "left", "down", "right" ]
+                        [Math.floor(Math.random() * 4)] as Direction
+                });
+            }
         } else {
 
-            nextStep = (this.props.lesson.step + 1) % plays.length;
-            [ player, action ] = plays[this.props.lesson.step];
-        }
+            const lesson = this.props.lesson;
 
-        if (action) {
+            if (lesson.autoplay) {
 
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: (action === "random" && player === Team.default) ?
-                    this.props.game.currentPlayer :
-                    player,
-                from: "player",
-                action: action === "random" ?
-                    [ "up", "left", "down", "right" ]
-                        [Math.floor(Math.random() * 4)] as Direction :
-                    action
-            });
+                if (lesson.step >= 0) {
 
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: this.props.lesson.index,
-                    step: nextStep
+                    const [ player, action ] = plays[lesson.step];
+
+                    this.props.enqueuePlay({
+                        state: "tutorial",
+                        player: player,
+                        from: "player",
+                        action: action
+                    });
                 }
-            });
+
+                let nextStep = lesson.step + 1;
+
+                if (nextStep >= plays.length) {
+
+                    nextStep = -1;
+                }
+
+                this.props.enqueuePlay({
+                    state: "tutorial",
+                    player: Team.default,
+                    from: "player",
+                    action: {
+                        index: lesson.index,
+                        step: nextStep,
+                        autoplay: true
+                    }
+                });
+            } else {
+
+                for (let i = 0; i <= lesson.step; i++) {
+
+                    const [ player, action ] = plays[i];
+
+                    this.props.enqueuePlay({
+                        state: "tutorial",
+                        player: player,
+                        from: "player",
+                        action: action
+                    });
+                }
+            }
         }
     }
 
@@ -404,24 +441,23 @@ export default class Tutorial extends React.Component<IProps, {}> {
                             from: "player",
                             action: {
                                 index: i,
-                                step: -1
+                                step: -1,
+                                autoplay: true
                             }
                         })}>
                         {
-                            i === this.props.lesson.index ?
+                            (this.props.lesson && (i === this.props.lesson.index)) ?
                             <div>
                                 <strong>{lesson}</strong>
                                 {detail}
                                 <p>
                                     {steps ? (steps as Array<[Team, Action | Direction]>)
-                                        .filter(([team, step]) => step !== "random")
                                         .map(([team, step], j) =>
                                             <a
                                                 key={j}
                                                 className={"button is-small is-"
                                                     + Team[team]
-                                                    + ((j !== this.props.lesson.step
-                                                        && -1 * j - 1 !== this.props.lesson.step) ?
+                                                    + ((this.props.lesson && (j !== this.props.lesson.step)) ?
                                                         " is-outlined" : "")}
                                                 onClick={() => this.props.enqueuePlay({
                                                     state: "tutorial",
@@ -429,7 +465,8 @@ export default class Tutorial extends React.Component<IProps, {}> {
                                                     from: "player",
                                                     action: {
                                                         index: i,
-                                                        step: (j < 0) ? (-1 * j - 1) : j
+                                                        step: j,
+                                                        autoplay: false
                                                     }
                                                 })}>
                                                 <span className="icon is-small">

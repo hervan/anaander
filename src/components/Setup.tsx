@@ -59,12 +59,15 @@ export default class Setup extends React.Component<IProps, {}> {
 
             case " ":
 
-            this.props.enqueuePlay({
-                state: "play",
-                player: Team.default,
-                from: "player",
-                action: "skip"
-            });
+            if (this.props.game.players.length > 0) {
+
+                this.props.enqueuePlay({
+                    state: "play",
+                    player: Team.default,
+                    from: "player",
+                    action: "skip"
+                });
+            }
 
             break;
 
@@ -77,7 +80,8 @@ export default class Setup extends React.Component<IProps, {}> {
                 from: "player",
                 action: {
                     index: 0,
-                    step: -1
+                    step: -1,
+                    autoplay: true
                 }
             });
 
@@ -151,7 +155,8 @@ export default class Setup extends React.Component<IProps, {}> {
                     from: "player",
                     action: {
                         index: 0,
-                        step: -1
+                        step: -1,
+                        autoplay: true
                     }
                 })}>here</a> for a short tutorial.)
             </p>;

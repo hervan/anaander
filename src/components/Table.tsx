@@ -17,7 +17,7 @@ interface IState {
 export interface IProps {
     game: Game;
     enqueuePlay: (play: Play) => void;
-    lesson: Lesson;
+    lesson?: Lesson;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -31,7 +31,7 @@ export class Table extends React.Component<{}, IState> {
         this.state = {
             game: setup(0),
             playQueue: [[], [], [], [], [], []],
-            lesson: { index: 0, step: 0 }
+            lesson: { index: 0, step: 0, autoplay: false }
         };
     }
 
@@ -64,15 +64,18 @@ export class Table extends React.Component<{}, IState> {
                 const lesson = playData.action as Lesson;
                 const tutorialGame: Game = tutorial(lesson.index).game;
 
-                if (lesson.step >= -1) {
+                if (!lesson.autoplay || lesson.step < 0) {
+
                     this.setState({
-                        game: tutorialGame
+                        game: tutorialGame,
+                        lesson: lesson
+                    });
+                } else {
+
+                    this.setState({
+                        lesson: lesson
                     });
                 }
-
-                this.setState({
-                    lesson: lesson
-                });
 
                 break;
 
@@ -95,7 +98,7 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (queue[this.state.game.currentPlayer].length > 0) {
+        if (this.state.game.players.length > 0 && queue[this.state.game.currentPlayer].length > 0) {
 
             const playData: Play = queue[this.state.game.currentPlayer].shift() as Play;
             this.setState({ game: play(this.state.game, playData), playQueue: queue });
@@ -112,29 +115,26 @@ export class Table extends React.Component<{}, IState> {
             leftPanel = <Tutorial
                 game={this.state.game}
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={{ index: this.state.lesson.index, step: this.state.lesson.step }}
+                lesson={this.state.lesson}
                 />;
             break;
 
             case "setup":
             leftPanel = <Setup
                 game={this.state.game}
-                enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={{ index: 0, step: 0 }} />;
+                enqueuePlay={this.enqueuePlay.bind(this)} />;
             break;
 
             default:
             leftPanel = <Status
                 game={this.state.game}
-                enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={{ index: 0, step: 0 }} />;
+                enqueuePlay={this.enqueuePlay.bind(this)} />;
         }
 
         const rightPanel = this.state.game.state !== "tutorial" ?
             <Controls
                 game={this.state.game}
-                enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={{ index: 0, step: 0 }} /> :
+                enqueuePlay={this.enqueuePlay.bind(this)} /> :
             null;
 
         return (
@@ -146,8 +146,7 @@ export class Table extends React.Component<{}, IState> {
 
                         <Board
                             game={this.state.game}
-                            enqueuePlay={this.enqueuePlay.bind(this)}
-                            lesson={{ index: 0, step: 0 }} />
+                            enqueuePlay={this.enqueuePlay.bind(this)} />
 
                         {rightPanel}
 

@@ -58,9 +58,7 @@ type State =
 export type Action =
 | "hold"
 | "explore"
-| "skip"
-| "random"
-| "stop";
+| "skip";
 
 export type Meeple = {
     key: number;
@@ -91,6 +89,7 @@ export type Player = {
 export type Lesson = {
     index: number;
     step: number;
+    autoplay: boolean;
 };
 
 export type Play = {
