@@ -88,7 +88,8 @@ export type Player = {
     // items: Item[];
 };
 
-export type Step = {
+export type Lesson = {
+    index: number;
     step: number;
 };
 
@@ -96,7 +97,7 @@ export type Play = {
     state: State;
     player: Team;
     from: Position | "player";
-    action: Direction | Action | Step | null;
+    action: Direction | Action | Lesson | null;
 };
 
 interface IDictionary {
@@ -573,17 +574,16 @@ function t(row: number, col: number, topMeeple: number = -1): Terrain {
     };
 }
 
-export function tutorial(index: number): { game: Game, plays: Array<Direction | Action> } {
+export function tutorial(index: number): { game: Game, plays?: Array<Direction | Action> } {
 
-    const tutorialStepsScenarios: Array<{ game: Game, plays: Array<Direction | Action> }> = [
+    const tutorialStepsScenarios: Array<{ game: Game, plays?: Array<Direction | Action> }> = [
         { // tutorial start
             game: play(setup(5), {
                 state: "tutorial",
                 player: Team.default,
                 from: "player",
                 action: null
-            }),
-            plays: [ "random" ]
+            })
         },
         { // the board
             game: {
@@ -596,8 +596,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: []
+            }
         },
         { // the terrain tiles
             game: {
@@ -610,8 +609,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: []
+            }
         },
         { // a meeple
             game: {
@@ -636,8 +634,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: []
+            }
         },
         { // a blue meeple
             game: {
@@ -662,8 +659,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: []
+            }
         },
         { // the meeple colors
             game: {
@@ -738,26 +734,20 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: []
+            }
         },
         { // the moves
             game: {
-                boardSize: 3,
+                boardSize: 4,
                 players: [
                     {
                         team: Team.info,
                         individualActions: 0,
                         swarmSize: 1
                     },
-                    {
-                        team: Team.warning,
-                        individualActions: 0,
-                        swarmSize: 1
-                    },
                 ],
-                terrains: [...Array(3).keys()].reduce((acc, row) =>
-                    acc.concat([...Array(3).keys()].map((col) =>
+                terrains: [...Array(4).keys()].reduce((acc, row) =>
+                    acc.concat([...Array(4).keys()].map((col) =>
                     row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
                 meeples: [
                     {
@@ -775,13 +765,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "up", "skip", "down", "skip",
-                "right", "skip", "left", "skip",
-                "down", "skip", "up", "skip",
-                "left", "skip", "right", "stop"
-            ]
+            }
         },
         { // moving over meeples
             game: {
@@ -789,11 +773,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 players: [
                     {
                         team: Team.info,
-                        individualActions: 0,
-                        swarmSize: 1
-                    },
-                    {
-                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -832,11 +811,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "left", "skip", "right", "skip",
-                "stop"
-            ]
+            }
         },
         { // converting a meeple
             game: {
@@ -844,11 +819,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 players: [
                     {
                         team: Team.info,
-                        individualActions: 0,
-                        swarmSize: 1
-                    },
-                    {
-                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -887,14 +857,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "up", "skip", "up", "skip",
-                "left", "skip", "left", "skip",
-                "skip", "skip", "skip", "skip",
-                "skip", "skip", "skip", "skip",
-                "stop"
-            ]
+            }
         },
         { // battling meeples
             game: {
@@ -902,11 +865,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 players: [
                     {
                         team: Team.info,
-                        individualActions: 0,
-                        swarmSize: 1
-                    },
-                    {
-                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -945,14 +903,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "down", "skip", "down", "skip",
-                "up", "skip", "up", "skip",
-                "left", "skip", "left", "skip",
-                "left", "skip", "left", "skip",
-                "stop"
-            ]
+            }
         },
         { // dying meeple
             game: {
@@ -960,11 +911,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 players: [
                     {
                         team: Team.info,
-                        individualActions: 0,
-                        swarmSize: 1
-                    },
-                    {
-                        team: Team.warning,
                         individualActions: 0,
                         swarmSize: 1
                     },
@@ -1003,14 +949,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "down", "skip", "down", "skip",
-                "up", "skip", "up", "skip",
-                "left", "skip", "left", "skip",
-                "left", "skip", "left", "skip",
-                "stop"
-            ]
+            }
         },
         { // the swarm
             game: {
@@ -1021,11 +960,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                         individualActions: 0,
                         swarmSize: 5
                     },
-                    {
-                        team: Team.warning,
-                        individualActions: 0,
-                        swarmSize: 1
-                    }
                 ],
                 terrains: [
                     t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4, 5), t(0, 5),
@@ -1111,13 +1045,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "right", "skip",
-                "down", "skip",
-                "left", "skip",
-                "up", "skip"
-            ]
+            }
         },
         { // hi
             game: {
@@ -1299,8 +1227,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: []
+            }
         },
         { // the conflicts
             game: {
@@ -1311,16 +1238,6 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                         individualActions: 0,
                         swarmSize: 2
                     },
-                    {
-                        team: Team.warning,
-                        individualActions: 0,
-                        swarmSize: 1
-                    },
-                    {
-                        team: Team.success,
-                        individualActions: 0,
-                        swarmSize: 2
-                    }
                 ],
                 terrains: [
                     t(0, 0),    t(0, 1),    t(0, 2),    t(0, 3),    t(0, 4),    t(0, 5),
@@ -1376,14 +1293,7 @@ export function tutorial(index: number): { game: Game, plays: Array<Direction | 
                 currentPlayer: Team.info,
                 state: "tutorial",
                 lastAction: "skip"
-            },
-            plays: [
-                "left", "skip",
-                "down", "skip",
-                "right",
-                "skip", "skip", "skip",
-                "skip", "skip", "skip"
-            ]
+            }
         }
     ];
 

@@ -75,7 +75,10 @@ export default class Setup extends React.Component<IProps, {}> {
                 state: "tutorial",
                 player: Team.default,
                 from: "player",
-                action: { step: 0 }
+                action: {
+                    index: 0,
+                    step: -1
+                }
             });
 
             break;
@@ -95,8 +98,8 @@ export default class Setup extends React.Component<IProps, {}> {
 
     render(): JSX.Element {
 
-        let guide: JSX.Element = <br />;
-        let guideDetail: JSX.Element = <br />;
+        let guide: JSX.Element;
+        let guideDetail: JSX.Element;
 
         guide =
             <p>
@@ -117,7 +120,7 @@ export default class Setup extends React.Component<IProps, {}> {
                     state: "setup",
                     player: Team.default,
                     from: "player",
-                    action: null
+                    action: "skip"
                 })}>
                     {this.props.game.players.length}
                 </a>
@@ -146,7 +149,10 @@ export default class Setup extends React.Component<IProps, {}> {
                     state: "tutorial",
                     player: Team.default,
                     from: "player",
-                    action: { step: 0 }
+                    action: {
+                        index: 0,
+                        step: -1
+                    }
                 })}>here</a> for a short tutorial.)
             </p>;
 

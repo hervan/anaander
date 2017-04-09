@@ -1,11 +1,13 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import { Team } from "../Game";
+import { Direction, Meeple, Play, Team } from "../Game";
 
 import { IProps } from "./Table";
 
 export default class Status extends React.Component<IProps, {}> {
+
+    refresher: number;
 
     constructor(props: IProps) {
 
@@ -31,7 +33,7 @@ export default class Status extends React.Component<IProps, {}> {
                 state: "setup",
                 player: Team.default,
                 from: "player",
-                action: "skip"
+                action: null
             });
 
             break;
@@ -40,19 +42,85 @@ export default class Status extends React.Component<IProps, {}> {
 
     componentDidUpdate(): void {
 
+        if (this.props.game.state === "end") {
+
+            clearInterval(this.refresher);
+            this.refresher = window.setInterval(() => this.animateEnding(), 300);
+        }
+
         document.removeEventListener("keypress", this.eventListener);
         document.addEventListener("keypress", this.eventListener);
     }
 
     componentWillUnmount(): void {
 
+        clearInterval(this.refresher);
         document.removeEventListener("keypress", this.eventListener);
+    }
+
+    animateEnding(): void {
+
+        const currentPlayerMeeples: Meeple[] = this.props.game.meeples
+            .filter((meeple) => meeple.key !== -1 &&
+                meeple.team === this.props.game.currentPlayer);
+
+        if (currentPlayerMeeples.length > 0) {
+
+            const dirs: Direction[] = [ "up", "left", "down", "right" ];
+
+            const weights: number[] = currentPlayerMeeples
+                .map((meeple) => [
+                    (meeple.position.row + 1) / (this.props.game.boardSize + 1),
+                    (meeple.position.col + 1) / (this.props.game.boardSize + 1),
+                    (this.props.game.boardSize - meeple.position.row) / (this.props.game.boardSize + 1),
+                    (this.props.game.boardSize - meeple.position.col) / (this.props.game.boardSize + 1)
+                ])
+                .reduce((acc, positions) => [
+                    acc[0] + (positions[0] / currentPlayerMeeples.length),
+                    acc[1] + (positions[1] / currentPlayerMeeples.length),
+                    acc[2] + (positions[2] / currentPlayerMeeples.length),
+                    acc[3] + (positions[3] / currentPlayerMeeples.length)
+                ], [0, 0, 0, 0]);
+
+            let rollNumber: number = Math.random() * 2;
+            let roll: number = 0;
+
+            while (rollNumber > 0) {
+
+                rollNumber -= weights[roll++];
+            }
+
+            const dir: Direction = dirs[roll - 1];
+
+            const repetitions: number = Math.random() * this.props.game.boardSize / 2;
+
+            const nextPlay: Play[] = [];
+
+            for (let i: number = 0; i < repetitions; i++) {
+
+                this.props.enqueuePlay({
+                    state: this.props.game.state,
+                    player: this.props.game.currentPlayer,
+                    from: "player",
+                    action: dir
+                });
+            }
+
+        } else {
+
+            this.props.enqueuePlay({
+                state: this.props.game.state,
+                player: this.props.game.currentPlayer,
+                from: "player",
+                action: "skip"
+            });
+        }
     }
 
     render(): JSX.Element {
 
-        let guide: JSX.Element = <br />;
-        let guideDetail: JSX.Element = <br />;
+        let guide: JSX.Element;
+        let guideDetail: JSX.Element;
 
         switch (this.props.game.state) {
 
@@ -71,7 +139,7 @@ export default class Status extends React.Component<IProps, {}> {
                         state: "setup",
                         player: Team.default,
                         from: "player",
-                        action: "skip"
+                        action: null
                     })}>here</a> to start a new game.
                 </p>;
 
