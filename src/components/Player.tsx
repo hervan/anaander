@@ -30,7 +30,7 @@ export default class Player extends React.Component<IProps, {}> {
             case "q":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "hold"
@@ -41,7 +41,7 @@ export default class Player extends React.Component<IProps, {}> {
             case "w":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "up"
@@ -52,7 +52,7 @@ export default class Player extends React.Component<IProps, {}> {
             case "e":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "explore"
@@ -63,7 +63,7 @@ export default class Player extends React.Component<IProps, {}> {
             case "a":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "left"
@@ -74,7 +74,7 @@ export default class Player extends React.Component<IProps, {}> {
             case "s":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "down"
@@ -85,7 +85,7 @@ export default class Player extends React.Component<IProps, {}> {
             case "d":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "right"
@@ -96,7 +96,7 @@ export default class Player extends React.Component<IProps, {}> {
             case " ":
 
             this.props.enqueuePlay({
-                state: "play",
+                mode: "play",
                 player: this.props.player.team,
                 from: "player",
                 action: "skip"
@@ -136,7 +136,7 @@ export default class Player extends React.Component<IProps, {}> {
                                 <p>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        state: "play",
+                                        mode: "play",
                                         player: this.props.player.team,
                                         from: "player",
                                         action: "hold"
@@ -147,7 +147,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        state: "play",
+                                        mode: "play",
                                         player: this.props.player.team,
                                         from: "player",
                                         action: "up"
@@ -158,7 +158,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        state: "play",
+                                        mode: "play",
                                         player: this.props.player.team,
                                         from: "player",
                                         action: "explore"
@@ -171,7 +171,7 @@ export default class Player extends React.Component<IProps, {}> {
                                 <p>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        state: "play",
+                                        mode: "play",
                                         player: this.props.player.team,
                                         from: "player",
                                         action: "left"
@@ -182,7 +182,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        state: "play",
+                                        mode: "play",
                                         player: this.props.player.team,
                                         from: "player",
                                         action: "down"
@@ -193,7 +193,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        state: "play",
+                                        mode: "play",
                                         player: this.props.player.team,
                                         from: "player",
                                         action: "right"

@@ -5,6 +5,282 @@ import { Action, Direction, Lesson, Team, tutorial } from "../Game";
 
 import { IProps } from "./Table";
 
+export default class Tutorial extends React.Component<IProps, {}> {
+
+    refresher: number;
+
+    constructor(props: IProps) {
+
+        super(props);
+        this.eventListener = this.eventListener.bind(this);
+
+        clearInterval(this.refresher);
+        this.refresher = window.setInterval(() => this.playTutorial(), 1000);
+
+        document.removeEventListener("keypress", this.eventListener);
+        document.addEventListener("keypress", this.eventListener);
+    }
+
+    componentDidUpdate(): void {
+
+        const lesson = this.props.lesson;
+
+        if (lesson && !lesson.autoplay) {
+
+            for (let i = 0; i <= lesson.step; i++) {
+
+                const [ player, action ] = lessons[lesson.index][2][i];
+
+                this.props.enqueuePlay({
+                    mode: "tutorial",
+                    player: player,
+                    from: "player",
+                    action: action
+                });
+            }
+        }
+    }
+
+    componentWillUnmount(): void {
+
+        clearInterval(this.refresher);
+        document.removeEventListener("keypress", this.eventListener);
+    }
+
+    playTutorial(): void {
+
+        const lesson = this.props.lesson;
+
+        if (lesson && lesson.autoplay) {
+
+            const plays = lessons[lesson.index][2];
+
+            if (plays.length === 0) {
+
+                if (this.props.game.currentPlayer !== Team.default
+                    && this.props.game.players.length > 0) {
+
+                    this.props.enqueuePlay({
+                        mode: "tutorial",
+                        player: this.props.game.currentPlayer,
+                        from: "player",
+                        action: [ "up", "left", "down", "right" ]
+                            [Math.floor(Math.random() * 4)] as Direction
+                    });
+                }
+            } else {
+
+                if (lesson.step >= 0) {
+
+                    const [ player, action ] = plays[lesson.step];
+
+                    this.props.enqueuePlay({
+                        mode: "tutorial",
+                        player: player,
+                        from: "player",
+                        action: action
+                    });
+                }
+
+                let nextStep = lesson.step + 1;
+
+                if (nextStep >= plays.length) {
+
+                    nextStep = -1;
+                }
+
+                this.props.enqueuePlay({
+                    mode: "tutorial",
+                    player: Team.default,
+                    from: "player",
+                    action: {
+                        index: lesson.index,
+                        step: nextStep,
+                        autoplay: true
+                    }
+                });
+            }
+        }
+    }
+
+    eventListener(event: KeyboardEvent): void {
+
+        if (this.props.game.mode !== "tutorial" || !this.props.lesson) {
+
+            return;
+        }
+
+        switch (event.key) {
+
+            case "w":
+
+            this.props.enqueuePlay({
+                mode: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: {
+                    index: this.props.lesson.index - (this.props.lesson.index > 0 ? 1 : 0),
+                    step: -1,
+                    autoplay: true
+                }
+            });
+
+            break;
+
+            case "a":
+console.log("esquece de mim nao!");
+            this.props.enqueuePlay({
+                mode: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: {
+                    index: this.props.lesson.index,
+                    step: this.props.lesson.step - (this.props.lesson.step > 0 ? 1 : 0),
+                    autoplay: false
+                }
+            });
+
+            break;
+
+            case "s":
+
+            this.props.enqueuePlay({
+                mode: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: {
+                    index: this.props.lesson.index +
+                        (this.props.lesson.index < lessons.length - 1 ? 1 : 0),
+                    step: -1,
+                    autoplay: true
+                }
+            });
+
+            break;
+
+            case "d":
+console.log("de mim tb nao!");
+            this.props.enqueuePlay({
+                mode: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: {
+                    index: this.props.lesson.index,
+                    step: this.props.lesson.step +
+                        (this.props.lesson.step < lessons[this.props.lesson.index][2].length - 1 ? 1 : 0),
+                    autoplay: false
+                }
+            });
+
+            break;
+
+            case " ":
+console.log("nem de mim!");
+            const nextStep: number = (this.props.lesson.step + 1) % lessons[this.props.lesson.index][2].length;
+            this.props.enqueuePlay({
+                mode: "tutorial",
+                player: Team.default,
+                from: "player",
+                action: {
+                    index: this.props.lesson.index + (nextStep === 0 ? 1 : 0),
+                    step: nextStep,
+                    autoplay: false
+                }
+            });
+
+            break;
+
+            case "/":
+            case "?":
+
+            this.props.enqueuePlay({
+                mode: "setup",
+                player: Team.default,
+                from: "player",
+                action: null
+            });
+
+            break;
+        }
+    }
+
+    render(): JSX.Element {
+
+        let elTutorial: JSX.Element;
+
+        elTutorial =
+            <div className="content">
+                {lessons
+                    .map(([ lesson, detail, steps ], i) =>
+                    <div
+                        key={i}
+                        className="title is-6"
+                        onClick={() => this.props.enqueuePlay({
+                            mode: "tutorial",
+                            player: Team.default,
+                            from: "player",
+                            action: {
+                                index: i,
+                                step: -1,
+                                autoplay: true
+                            }
+                        })}>
+                        {
+                            (this.props.lesson && (i === this.props.lesson.index)) ?
+                            <div>
+                                <strong>{lesson}</strong>
+                                {detail}
+                                <p>
+                                    {steps ? (steps as Array<[Team, Action | Direction]>)
+                                        .map(([team, step], j) =>
+                                            <a
+                                                key={j}
+                                                className={"button is-small is-"
+                                                    + Team[team]
+                                                    + ((this.props.lesson && (j !== this.props.lesson.step)) ?
+                                                        " is-outlined" : "")}
+                                                onClick={() => this.props.enqueuePlay({
+                                                    mode: "tutorial",
+                                                    player: team,
+                                                    from: "player",
+                                                    action: {
+                                                        index: i,
+                                                        step: j,
+                                                        autoplay: false
+                                                    }
+                                                })}>
+                                                <span className="icon is-small">
+                                                    <i className={"fa fa-hand-o-" + step}></i>
+                                                </span>
+                                            </a>) :
+                                    null}
+                                </p>
+                            </div> :
+                            lesson
+                        }
+                    </div>
+                )}
+            </div>;
+
+        return (
+            <div id="status" className="tile is-4 is-parent">
+                <div className="notification tile is-child">
+                    <h1 className="title is-2">anaander tutorial</h1>
+                    <h2 className="subtitle is-4">
+                        (click <a className="is-link" onClick={() => this.props.enqueuePlay({
+                            mode: "setup",
+                            player: Team.default,
+                            from: "player",
+                            action: null
+                        })}>here</a> to go back.)
+                    </h2>
+                    {elTutorial}
+                </div>
+            </div>
+        );
+    };
+}
+
 const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]>]> = [
     [
         <div>
@@ -210,293 +486,3 @@ flow.
 after all players make their moves, the current turn is flipped.
 only the top meeple in a terrain is free to move. others are free to do other things?
 */
-
-export default class Tutorial extends React.Component<IProps, {}> {
-
-    refresher: number;
-
-    constructor(props: IProps) {
-
-        super(props);
-        this.eventListener = this.eventListener.bind(this);
-        this.componentDidUpdate();
-    }
-
-    componentDidUpdate(): void {
-
-        clearInterval(this.refresher);
-
-        if (!this.props.lesson) {
-
-            return;
-        }
-
-        if (this.props.lesson.autoplay) {
-
-            this.refresher = window.setInterval(() => this.playTutorial(), 1000);
-
-        } else {
-
-            this.playTutorial();
-        }
-
-        document.removeEventListener("keypress", this.eventListener);
-        document.addEventListener("keypress", this.eventListener);
-    }
-
-    componentWillUnmount(): void {
-
-        clearInterval(this.refresher);
-        document.removeEventListener("keypress", this.eventListener);
-    }
-
-    eventListener(event: KeyboardEvent): void {
-
-        if (this.props.game.state !== "tutorial" || !this.props.lesson) {
-
-            return;
-        }
-
-        switch (event.key) {
-
-            case "w":
-
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: this.props.lesson.index - (this.props.lesson.index > 0 ? 1 : 0),
-                    step: -1,
-                    autoplay: true
-                }
-            });
-
-            break;
-
-            case "a":
-
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: this.props.lesson.index,
-                    step: this.props.lesson.step - (this.props.lesson.step > 0 ? 1 : 0),
-                    autoplay: false
-                }
-            });
-
-            break;
-
-            case "s":
-
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: this.props.lesson.index +
-                        (this.props.lesson.index < lessons.length - 1 ? 1 : 0),
-                    step: -1,
-                    autoplay: true
-                }
-            });
-
-            break;
-
-            case "d":
-
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: this.props.lesson.index,
-                    step: this.props.lesson.step +
-                        (this.props.lesson.step < lessons[this.props.lesson.index][2].length - 1 ? 1 : 0),
-                    autoplay: false
-                }
-            });
-
-            break;
-
-            case " ":
-
-            const nextStep: number = (this.props.lesson.step + 1) % lessons[this.props.lesson.index][2].length;
-            this.props.enqueuePlay({
-                state: "tutorial",
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: this.props.lesson.index + (nextStep === 0 ? 1 : 0),
-                    step: nextStep,
-                    autoplay: false
-                }
-            });
-
-            break;
-
-            case "/":
-            case "?":
-
-            this.props.enqueuePlay({
-                state: "setup",
-                player: Team.default,
-                from: "player",
-                action: null
-            });
-
-            break;
-        }
-    }
-
-    playTutorial(): void {
-
-        if (!this.props.lesson) {
-
-            return;
-        }
-
-        const plays = lessons[this.props.lesson.index][2];
-
-        if (plays.length === 0) {
-
-            if (this.props.game.currentPlayer !== Team.default) {
-
-                this.props.enqueuePlay({
-                    state: "tutorial",
-                    player: this.props.game.currentPlayer,
-                    from: "player",
-                    action: [ "up", "left", "down", "right" ]
-                        [Math.floor(Math.random() * 4)] as Direction
-                });
-            }
-        } else {
-
-            const lesson = this.props.lesson;
-
-            if (lesson.autoplay) {
-
-                if (lesson.step >= 0) {
-
-                    const [ player, action ] = plays[lesson.step];
-
-                    this.props.enqueuePlay({
-                        state: "tutorial",
-                        player: player,
-                        from: "player",
-                        action: action
-                    });
-                }
-
-                let nextStep = lesson.step + 1;
-
-                if (nextStep >= plays.length) {
-
-                    nextStep = -1;
-                }
-
-                this.props.enqueuePlay({
-                    state: "tutorial",
-                    player: Team.default,
-                    from: "player",
-                    action: {
-                        index: lesson.index,
-                        step: nextStep,
-                        autoplay: true
-                    }
-                });
-            } else {
-
-                for (let i = 0; i <= lesson.step; i++) {
-
-                    const [ player, action ] = plays[i];
-
-                    this.props.enqueuePlay({
-                        state: "tutorial",
-                        player: player,
-                        from: "player",
-                        action: action
-                    });
-                }
-            }
-        }
-    }
-
-    render(): JSX.Element {
-
-        let elTutorial: JSX.Element;
-
-        elTutorial =
-            <div className="content">
-                {lessons
-                    .map(([ lesson, detail, steps ], i) =>
-                    <div
-                        key={i}
-                        className="title is-6"
-                        onClick={() => this.props.enqueuePlay({
-                            state: "tutorial",
-                            player: Team.default,
-                            from: "player",
-                            action: {
-                                index: i,
-                                step: -1,
-                                autoplay: true
-                            }
-                        })}>
-                        {
-                            (this.props.lesson && (i === this.props.lesson.index)) ?
-                            <div>
-                                <strong>{lesson}</strong>
-                                {detail}
-                                <p>
-                                    {steps ? (steps as Array<[Team, Action | Direction]>)
-                                        .map(([team, step], j) =>
-                                            <a
-                                                key={j}
-                                                className={"button is-small is-"
-                                                    + Team[team]
-                                                    + ((this.props.lesson && (j !== this.props.lesson.step)) ?
-                                                        " is-outlined" : "")}
-                                                onClick={() => this.props.enqueuePlay({
-                                                    state: "tutorial",
-                                                    player: team,
-                                                    from: "player",
-                                                    action: {
-                                                        index: i,
-                                                        step: j,
-                                                        autoplay: false
-                                                    }
-                                                })}>
-                                                <span className="icon is-small">
-                                                    <i className={"fa fa-hand-o-" + step}></i>
-                                                </span>
-                                            </a>) :
-                                    null}
-                                </p>
-                            </div> :
-                            lesson
-                        }
-                    </div>
-                )}
-            </div>;
-
-        return (
-            <div id="status" className="tile is-4 is-parent">
-                <div className="notification tile is-child">
-                    <h1 className="title is-2">anaander tutorial</h1>
-                    <h2 className="subtitle is-4">
-                        (click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                            state: "setup",
-                            player: Team.default,
-                            from: "player",
-                            action: null
-                        })}>here</a> to go back.)
-                    </h2>
-                    {elTutorial}
-                </div>
-            </div>
-        );
-    };
-}

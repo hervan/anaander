@@ -17,7 +17,7 @@ export default class Setup extends React.Component<IProps, {}> {
 
     eventListener(event: KeyboardEvent): void {
 
-        if (this.props.game.state !== "setup") {
+        if (this.props.game.mode !== "setup") {
 
             return;
         }
@@ -27,7 +27,7 @@ export default class Setup extends React.Component<IProps, {}> {
             case "a":
 
             this.props.enqueuePlay({
-                state: "setup",
+                mode: "setup",
                 player: Team.default,
                 from: "player",
                 action: "left"
@@ -38,7 +38,7 @@ export default class Setup extends React.Component<IProps, {}> {
             case "s":
 
             this.props.enqueuePlay({
-                state: "setup",
+                mode: "setup",
                 player: Team.default,
                 from: "player",
                 action: "down"
@@ -49,7 +49,7 @@ export default class Setup extends React.Component<IProps, {}> {
             case "d":
 
             this.props.enqueuePlay({
-                state: "setup",
+                mode: "setup",
                 player: Team.default,
                 from: "player",
                 action: "right"
@@ -62,7 +62,7 @@ export default class Setup extends React.Component<IProps, {}> {
             if (this.props.game.players.length > 0) {
 
                 this.props.enqueuePlay({
-                    state: "play",
+                    mode: "play",
                     player: Team.default,
                     from: "player",
                     action: "skip"
@@ -75,7 +75,7 @@ export default class Setup extends React.Component<IProps, {}> {
             case "?":
 
             this.props.enqueuePlay({
-                state: "tutorial",
+                mode: "tutorial",
                 player: Team.default,
                 from: "player",
                 action: {
@@ -110,7 +110,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 how many players?
                 &nbsp;
                 <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    state: "setup",
+                    mode: "setup",
                     player: Team.default,
                     from: "player",
                     action: "left"
@@ -121,7 +121,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 </a>
                 &nbsp;
                 <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    state: "setup",
+                    mode: "setup",
                     player: Team.default,
                     from: "player",
                     action: "skip"
@@ -130,7 +130,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 </a>
                 &nbsp;
                 <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    state: "setup",
+                    mode: "setup",
                     player: Team.default,
                     from: "player",
                     action: "right"
@@ -143,14 +143,14 @@ export default class Setup extends React.Component<IProps, {}> {
         guideDetail =
             <p>
                 click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    state: "play",
+                    mode: "play",
                     player: Team.default,
                     from: "player",
                     action: null
                 })}>here</a> to begin.
                 <br />
                 (or click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    state: "tutorial",
+                    mode: "tutorial",
                     player: Team.default,
                     from: "player",
                     action: {

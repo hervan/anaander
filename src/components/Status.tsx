@@ -19,7 +19,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     eventListener(event: KeyboardEvent): void {
 
-        if (this.props.game.state !== "end") {
+        if (this.props.game.mode !== "end") {
 
             return;
         }
@@ -30,7 +30,7 @@ export default class Status extends React.Component<IProps, {}> {
             case "?":
 
             this.props.enqueuePlay({
-                state: "setup",
+                mode: "setup",
                 player: Team.default,
                 from: "player",
                 action: null
@@ -42,7 +42,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     componentDidUpdate(): void {
 
-        if (this.props.game.state === "end") {
+        if (this.props.game.mode === "end") {
 
             clearInterval(this.refresher);
             this.refresher = window.setInterval(() => this.animateEnding(), 300);
@@ -99,7 +99,7 @@ export default class Status extends React.Component<IProps, {}> {
             for (let i: number = 0; i < repetitions; i++) {
 
                 this.props.enqueuePlay({
-                    state: this.props.game.state,
+                    mode: this.props.game.mode,
                     player: this.props.game.currentPlayer,
                     from: "player",
                     action: dir
@@ -109,7 +109,7 @@ export default class Status extends React.Component<IProps, {}> {
         } else {
 
             this.props.enqueuePlay({
-                state: this.props.game.state,
+                mode: this.props.game.mode,
                 player: this.props.game.currentPlayer,
                 from: "player",
                 action: "skip"
@@ -122,7 +122,7 @@ export default class Status extends React.Component<IProps, {}> {
         let guide: JSX.Element;
         let guideDetail: JSX.Element;
 
-        switch (this.props.game.state) {
+        switch (this.props.game.mode) {
 
             case "end":
 
@@ -136,7 +136,7 @@ export default class Status extends React.Component<IProps, {}> {
             guideDetail =
                 <p>
                     click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                        state: "setup",
+                        mode: "setup",
                         player: Team.default,
                         from: "player",
                         action: null

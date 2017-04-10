@@ -49,7 +49,7 @@ type Turn =
 
 const turns: Turn[] = [ "heads", "tails" ];
 
-type State =
+type Mode =
 | "tutorial"
 | "setup"
 | "play"
@@ -93,7 +93,7 @@ export type Lesson = {
 };
 
 export type Play = {
-    state: State;
+    mode: Mode;
     player: Team;
     from: Position | "player";
     action: Direction | Action | Lesson | null;
@@ -125,7 +125,7 @@ export type Game = {
     meeples: Meeple[];
     turn: Turn;
     currentPlayer: Team;
-    state: State;
+    mode: Mode;
     lastAction: Direction | Action | InvalidPlay;
 };
 
@@ -342,7 +342,7 @@ function moveMeeple(game: Game, from: Position, action: Direction | Action): Gam
         meeples: gameMeeples.slice(),
         turn: game.turn,
         currentPlayer: game.currentPlayer,
-        state: game.state,
+        mode: game.mode,
         lastAction: lastAction
     };
 }
@@ -365,7 +365,7 @@ function moveSwarm(game: Game, action: Direction | Action): Game {
 
 export function play(game: Game, play: Play): Game {
 
-    if (play.state === "setup") {
+    if (play.mode === "setup") {
 
         return {
 
@@ -375,7 +375,7 @@ export function play(game: Game, play: Play): Game {
             meeples: game.meeples.slice(),
             turn: game.turn,
             currentPlayer: game.currentPlayer,
-            state: game.state,
+            mode: game.mode,
             lastAction: { explanation: InvalidPlays.NoGameYet }
         };
     } else if (game.currentPlayer !== play.player) {
@@ -388,7 +388,7 @@ export function play(game: Game, play: Play): Game {
             meeples: game.meeples.slice(),
             turn: game.turn,
             currentPlayer: game.currentPlayer,
-            state: game.state,
+            mode: game.mode,
             lastAction: { explanation: InvalidPlays.NotYourTurn }
         };
     }
@@ -405,7 +405,7 @@ export function play(game: Game, play: Play): Game {
             meeples: game.meeples.slice(),
             turn: game.turn,
             currentPlayer: 0,
-            state: play.state,
+            mode: play.mode,
             lastAction: "skip"
         };
 
@@ -434,12 +434,12 @@ export function play(game: Game, play: Play): Game {
             break;
         }
 
-        let state: State = gameStep.state;
+        let mode: Mode = gameStep.mode;
 
-        if (state !== "tutorial"
+        if (mode !== "tutorial"
             && gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
 
-            state = "end";
+            mode = "end";
         }
 
         return {
@@ -450,7 +450,7 @@ export function play(game: Game, play: Play): Game {
             meeples: gameStep.meeples.slice(),
             turn: turn,
             currentPlayer: player,
-            state: state,
+            mode: mode,
             lastAction: gameStep.lastAction
         };
     }
@@ -554,7 +554,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         meeples: meeples.slice(),
         turn: turns[0],
         currentPlayer: Team.default,
-        state: "setup",
+        mode: "setup",
         lastAction: { explanation: InvalidPlays.None }
     };
 
@@ -578,7 +578,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
     const tutorialStepsScenarios: Array<{ game: Game, plays?: Array<Direction | Action> }> = [
         { // tutorial start
             game: play(setup(5), {
-                state: "tutorial",
+                mode: "tutorial",
                 player: Team.default,
                 from: "player",
                 action: null
@@ -593,7 +593,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 meeples: [],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -606,7 +606,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 meeples: [],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -631,7 +631,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -656,7 +656,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -731,7 +731,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -762,7 +762,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -808,7 +808,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -854,7 +854,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -900,7 +900,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -946,7 +946,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -1042,7 +1042,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -1224,7 +1224,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         },
@@ -1290,7 +1290,7 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 ],
                 turn: "heads",
                 currentPlayer: Team.info,
-                state: "tutorial",
+                mode: "tutorial",
                 lastAction: "skip"
             }
         }

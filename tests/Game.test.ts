@@ -35,7 +35,7 @@ describe("first player move", () => {
         const setupGame: Game = setup(2, 4);
 
         game = play(setupGame, {
-            state: "play",
+            mode: "play",
             player: "default",
             from: "player",
             action: null
@@ -64,56 +64,56 @@ describe("first player move", () => {
     it("find 2 non-neutral meeples on the board", () => {
 
         const moveGame1: Game = play(game, {
-            state: "play",
+            mode: "play",
             player: game.currentPlayer,
             from: "player",
             action: "up"
         });
 
         const moveGame2: Game = play(moveGame1, {
-            state: "play",
+            mode: "play",
             player: moveGame1.currentPlayer,
             from: "player",
             action: "up"
         });
 
         const moveGame3: Game = play(moveGame2, {
-            state: "play",
+            mode: "play",
             player: moveGame2.currentPlayer,
             from: "player",
             action: "right"
         });
 
         const moveGame4: Game = play(moveGame3, {
-            state: "play",
+            mode: "play",
             player: moveGame3.currentPlayer,
             from: "player",
             action: "right"
         });
 
         const moveGame5: Game = play(moveGame4, {
-            state: "play",
+            mode: "play",
             player: moveGame4.currentPlayer,
             from: "player",
             action: "down"
         });
 
         const moveGame6: Game = play(moveGame5, {
-            state: "play",
+            mode: "play",
             player: moveGame5.currentPlayer,
             from: "player",
             action: "down"
         });
 
         const moveGame7: Game = play(moveGame6, {
-            state: "play",
+            mode: "play",
             player: moveGame6.currentPlayer,
             from: "player",
             action: "left"
         });
 
         const moveGame8: Game = play(moveGame7, {
-            state: "play",
+            mode: "play",
             player: moveGame7.currentPlayer,
             from: "player",
             action: "left"

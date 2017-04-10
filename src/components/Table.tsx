@@ -22,8 +22,6 @@ export interface IProps {
 
 export class Table extends React.Component<{}, IState> {
 
-    state: IState;
-
     constructor() {
 
         super();
@@ -39,7 +37,7 @@ export class Table extends React.Component<{}, IState> {
 
         if (playData.player === Team.default) {
 
-            switch (playData.state) {
+            switch (playData.mode) {
 
                 case "setup":
 
@@ -99,7 +97,6 @@ export class Table extends React.Component<{}, IState> {
         const queue: Play[][] = this.state.playQueue;
 
         if (this.state.game.players.length > 0 && queue[this.state.game.currentPlayer].length > 0) {
-
             const playData: Play = queue[this.state.game.currentPlayer].shift() as Play;
             this.setState({ game: play(this.state.game, playData), playQueue: queue });
         }
@@ -109,7 +106,7 @@ export class Table extends React.Component<{}, IState> {
 
         let leftPanel: JSX.Element;
 
-        switch (this.state.game.state) {
+        switch (this.state.game.mode) {
 
             case "tutorial":
             leftPanel = <Tutorial
@@ -131,7 +128,7 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)} />;
         }
 
-        const rightPanel = this.state.game.state !== "tutorial" ?
+        const rightPanel = this.state.game.mode !== "tutorial" ?
             <Controls
                 game={this.state.game}
                 enqueuePlay={this.enqueuePlay.bind(this)} /> :
