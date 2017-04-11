@@ -15,30 +15,10 @@ export default class Tutorial extends React.Component<IProps, {}> {
         this.eventListener = this.eventListener.bind(this);
 
         clearInterval(this.refresher);
-        this.refresher = window.setInterval(() => this.playTutorial(), 1000);
+        this.refresher = window.setInterval(() => this.playTutorial(), 500);
 
         document.removeEventListener("keypress", this.eventListener);
         document.addEventListener("keypress", this.eventListener);
-    }
-
-    componentDidUpdate(): void {
-
-        const lesson = this.props.lesson;
-
-        if (lesson && !lesson.autoplay) {
-
-            for (let i = 0; i <= lesson.step; i++) {
-
-                const [ player, action ] = lessons[lesson.index][2][i];
-
-                this.props.enqueuePlay({
-                    mode: "tutorial",
-                    player: player,
-                    from: "player",
-                    action: action
-                });
-            }
-        }
     }
 
     componentWillUnmount(): void {
@@ -70,9 +50,16 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 }
             } else {
 
-                if (lesson.step >= 0) {
+                let nextStep = lesson.step + 1;
 
-                    const [ player, action ] = plays[lesson.step];
+                if (nextStep >= plays.length) {
+
+                    nextStep = -1;
+                }
+
+                if (nextStep >= 0) {
+
+                    const [ player, action ] = plays[nextStep];
 
                     this.props.enqueuePlay({
                         mode: "tutorial",
@@ -80,13 +67,6 @@ export default class Tutorial extends React.Component<IProps, {}> {
                         from: "player",
                         action: action
                     });
-                }
-
-                let nextStep = lesson.step + 1;
-
-                if (nextStep >= plays.length) {
-
-                    nextStep = -1;
                 }
 
                 this.props.enqueuePlay({
@@ -98,6 +78,19 @@ export default class Tutorial extends React.Component<IProps, {}> {
                         step: nextStep,
                         autoplay: true
                     }
+                });
+            }
+        } else if (lesson && !lesson.autoplay) {
+
+            for (let i = 0; i <= lesson.step; i++) {
+
+                const [ player, action ] = lessons[lesson.index][2][i];
+
+                this.props.enqueuePlay({
+                    mode: "tutorial",
+                    player: player,
+                    from: "player",
+                    action: action
                 });
             }
         }
@@ -212,19 +205,7 @@ console.log("nem de mim!");
             <div className="content">
                 {lessons
                     .map(([ lesson, detail, steps ], i) =>
-                    <div
-                        key={i}
-                        className="title is-6"
-                        onClick={() => this.props.enqueuePlay({
-                            mode: "tutorial",
-                            player: Team.default,
-                            from: "player",
-                            action: {
-                                index: i,
-                                step: -1,
-                                autoplay: true
-                            }
-                        })}>
+                    <div key={i} className="title is-6">
                         {
                             (this.props.lesson && (i === this.props.lesson.index)) ?
                             <div>
@@ -241,7 +222,7 @@ console.log("nem de mim!");
                                                         " is-outlined" : "")}
                                                 onClick={() => this.props.enqueuePlay({
                                                     mode: "tutorial",
-                                                    player: team,
+                                                    player: Team.default,
                                                     from: "player",
                                                     action: {
                                                         index: i,
@@ -256,7 +237,19 @@ console.log("nem de mim!");
                                     null}
                                 </p>
                             </div> :
-                            lesson
+                            <div
+                                onClick={() => this.props.enqueuePlay({
+                                    mode: "tutorial",
+                                    player: Team.default,
+                                    from: "player",
+                                    action: {
+                                        index: i,
+                                        step: -1,
+                                        autoplay: true
+                                    }
+                                })}>
+                                {lesson}
+                            </div>
                         }
                     </div>
                 )}
