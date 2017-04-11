@@ -1,6 +1,10 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 import * as Game from "../Game";
+import {
+    Action,
+    Mode
+} from "../Game";
 
 interface IProps {
     player: Game.Player;
@@ -30,10 +34,10 @@ export default class Player extends React.Component<IProps, {}> {
             case "q":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "hold"
+                action: Action.hold
             });
 
             break;
@@ -41,10 +45,10 @@ export default class Player extends React.Component<IProps, {}> {
             case "w":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "up"
+                action: Action.up
             });
 
             break;
@@ -52,10 +56,10 @@ export default class Player extends React.Component<IProps, {}> {
             case "e":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "explore"
+                action: Action.explore
             });
 
             break;
@@ -63,10 +67,10 @@ export default class Player extends React.Component<IProps, {}> {
             case "a":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "left"
+                action: Action.left
             });
 
             break;
@@ -74,10 +78,10 @@ export default class Player extends React.Component<IProps, {}> {
             case "s":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "down"
+                action: Action.down
             });
 
             break;
@@ -85,10 +89,10 @@ export default class Player extends React.Component<IProps, {}> {
             case "d":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "right"
+                action: Action.right
             });
 
             break;
@@ -96,10 +100,10 @@ export default class Player extends React.Component<IProps, {}> {
             case " ":
 
             this.props.enqueuePlay({
-                mode: "play",
+                mode: Mode.play,
                 player: this.props.player.team,
                 from: "player",
-                action: "skip"
+                action: Action.skip
             });
 
             break;
@@ -136,10 +140,10 @@ export default class Player extends React.Component<IProps, {}> {
                                 <p>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        mode: "play",
+                                        mode: Mode.play,
                                         player: this.props.player.team,
                                         from: "player",
-                                        action: "hold"
+                                        action: Action.hold
                                     })}>
                                         <span className="icon is-small">
                                             <i className="fa fa-hand-paper-o"></i>
@@ -147,10 +151,10 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        mode: "play",
+                                        mode: Mode.play,
                                         player: this.props.player.team,
                                         from: "player",
-                                        action: "up"
+                                        action: Action.up
                                     })}>
                                         <span className="icon is-small">
                                             <i className="fa fa-hand-o-up"></i>
@@ -158,10 +162,10 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        mode: "play",
+                                        mode: Mode.play,
                                         player: this.props.player.team,
                                         from: "player",
-                                        action: "explore"
+                                        action: Action.explore
                                     })}>
                                         <span className="icon is-small">
                                             <i className="fa fa-hand-rock-o"></i>
@@ -171,10 +175,10 @@ export default class Player extends React.Component<IProps, {}> {
                                 <p>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        mode: "play",
+                                        mode: Mode.play,
                                         player: this.props.player.team,
                                         from: "player",
-                                        action: "left"
+                                        action: Action.left
                                     })}>
                                         <span className="icon is-small">
                                             <i className="fa fa-hand-o-left"></i>
@@ -182,10 +186,10 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        mode: "play",
+                                        mode: Mode.play,
                                         player: this.props.player.team,
                                         from: "player",
-                                        action: "down"
+                                        action: Action.down
                                     })}>
                                         <span className="icon is-small">
                                             <i className="fa fa-hand-o-down"></i>
@@ -193,10 +197,10 @@ export default class Player extends React.Component<IProps, {}> {
                                     </a>
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
-                                        mode: "play",
+                                        mode: Mode.play,
                                         player: this.props.player.team,
                                         from: "player",
-                                        action: "right"
+                                        action: Action.right
                                     })}>
                                         <span className="icon is-small">
                                             <i className="fa fa-hand-o-right"></i>

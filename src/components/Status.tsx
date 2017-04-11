@@ -1,7 +1,14 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import { Direction, Meeple, Play, Team } from "../Game";
+import {
+    Action,
+    Meeple,
+    Mode,
+    Play,
+    Team,
+    Turn
+} from "../Game";
 
 import { IProps } from "./Table";
 
@@ -19,7 +26,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     eventListener(event: KeyboardEvent): void {
 
-        if (this.props.game.mode !== "end") {
+        if (this.props.game.mode !== Mode.end) {
 
             return;
         }
@@ -30,7 +37,7 @@ export default class Status extends React.Component<IProps, {}> {
             case "?":
 
             this.props.enqueuePlay({
-                mode: "setup",
+                mode: Mode.setup,
                 player: Team.default,
                 from: "player",
                 action: null
@@ -42,7 +49,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     componentDidUpdate(): void {
 
-        if (this.props.game.mode === "end") {
+        if (this.props.game.mode === Mode.end) {
 
             clearInterval(this.refresher);
             this.refresher = window.setInterval(() => this.animateEnding(), 300);
@@ -66,7 +73,7 @@ export default class Status extends React.Component<IProps, {}> {
 
         if (currentPlayerMeeples.length > 0) {
 
-            const dirs: Direction[] = [ "up", "left", "down", "right" ];
+            const actions: Action[] = [ Action.up, Action.left, Action.down, Action.right ];
 
             const weights: number[] = currentPlayerMeeples
                 .map((meeple) => [
@@ -90,7 +97,7 @@ export default class Status extends React.Component<IProps, {}> {
                 rollNumber -= weights[roll++];
             }
 
-            const dir: Direction = dirs[roll - 1];
+            const action: Action = actions[roll - 1];
 
             const repetitions: number = Math.random() * this.props.game.boardSize / 2;
 
@@ -102,7 +109,7 @@ export default class Status extends React.Component<IProps, {}> {
                     mode: this.props.game.mode,
                     player: this.props.game.currentPlayer,
                     from: "player",
-                    action: dir
+                    action: action
                 });
             }
 
@@ -112,7 +119,7 @@ export default class Status extends React.Component<IProps, {}> {
                 mode: this.props.game.mode,
                 player: this.props.game.currentPlayer,
                 from: "player",
-                action: "skip"
+                action: Action.skip
             });
         }
     }
@@ -124,7 +131,7 @@ export default class Status extends React.Component<IProps, {}> {
 
         switch (this.props.game.mode) {
 
-            case "end":
+            case Mode.end:
 
             guide =
                 <p>
@@ -136,7 +143,7 @@ export default class Status extends React.Component<IProps, {}> {
             guideDetail =
                 <p>
                     click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                        mode: "setup",
+                        mode: Mode.setup,
                         player: Team.default,
                         from: "player",
                         action: null
@@ -156,21 +163,19 @@ export default class Status extends React.Component<IProps, {}> {
 
             switch (this.props.game.lastAction) {
 
-                case "up":
-                case "down":
-                case "left":
-                case "right":
-                case "hold":
-                case "explore":
-                case "skip":
-                case "random":
-                case "stop":
+                case Action.up:
+                case Action.down:
+                case Action.left:
+                case Action.right:
+                case Action.hold:
+                case Action.explore:
+                case Action.skip:
                 case null:
 
                 const side: JSX.Element =
                     <span className="icon">
                         <i className={"fa fa-user-circle"
-                            + (this.props.game.turn === "heads" ? "-o" : "")
+                            + (this.props.game.turn === Turn.heads ? "-o" : "")
                             + " is-" + Team[this.props.game.currentPlayer]}></i>
                     </span>;
                 guideDetail = <p>choose an action for these meeples: {side}</p>;

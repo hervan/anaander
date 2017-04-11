@@ -23,7 +23,7 @@ const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
             title={"strength: " + props.meeple.strength
                 + "\nresistance: " + props.meeple.resistance
                 + "\nfaith: " + props.meeple.faith}
-            className={"fa fa-user-circle" + (props.meeple.turn === "heads" ? "-o" : "")}>
+            className={"fa fa-user-circle" + (props.meeple.turn === Game.Turn.heads ? "-o" : "")}>
         </i>
     </span>;
 

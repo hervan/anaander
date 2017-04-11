@@ -1,6 +1,17 @@
 import * as React from "react";
 
-import { Action, Direction, Game, Lesson, Meeple, Play, play, setup, Team, tutorial } from "../Game";
+import {
+    Action,
+    Game,
+    Lesson,
+    Meeple,
+    Mode,
+    Play,
+    play,
+    setup,
+    Team,
+    tutorial
+} from "../Game";
 
 import Board from "./Board";
 import Controls from "./Controls";
@@ -39,7 +50,7 @@ export class Table extends React.Component<{}, IState> {
 
             switch (playData.mode) {
 
-                case "setup":
+                case Mode.setup:
 
                 if (playData.action === null) {
 
@@ -48,16 +59,16 @@ export class Table extends React.Component<{}, IState> {
                 } else {
 
                     const change: number =
-                        (playData.action === "skip" ? 0 : this.state.game.players.length)
-                        + (playData.action === "right" && this.state.game.players.length < 5 ? 1 : 0)
-                        + (playData.action === "left" && this.state.game.players.length > 0 ? -1 : 0);
+                        (playData.action === Action.skip ? 0 : this.state.game.players.length)
+                        + (playData.action === Action.right && this.state.game.players.length < 5 ? 1 : 0)
+                        + (playData.action === Action.left && this.state.game.players.length > 0 ? -1 : 0);
 
                     this.setState({ game: setup(change) });
                 }
 
                 break;
 
-                case "tutorial":
+                case Mode.tutorial:
 
                 const lesson = playData.action as Lesson;
                 const tutorialGame: Game = tutorial(lesson.index).game;
@@ -79,7 +90,7 @@ export class Table extends React.Component<{}, IState> {
 
                 break;
 
-                case "play":
+                case Mode.play:
 
                 const gameStep: Game = play(this.state.game, playData);
                 this.setState({ game: gameStep });
@@ -110,7 +121,7 @@ export class Table extends React.Component<{}, IState> {
 
         switch (this.state.game.mode) {
 
-            case "tutorial":
+            case Mode.tutorial:
             leftPanel = <Tutorial
                 game={this.state.game}
                 enqueuePlay={this.enqueuePlay.bind(this)}
@@ -118,7 +129,7 @@ export class Table extends React.Component<{}, IState> {
                 />;
             break;
 
-            case "setup":
+            case Mode.setup:
             leftPanel = <Setup
                 game={this.state.game}
                 enqueuePlay={this.enqueuePlay.bind(this)} />;
@@ -130,7 +141,7 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)} />;
         }
 
-        const rightPanel = this.state.game.mode !== "tutorial" ?
+        const rightPanel = this.state.game.mode !== Mode.tutorial ?
             <Controls
                 game={this.state.game}
                 enqueuePlay={this.enqueuePlay.bind(this)} /> :

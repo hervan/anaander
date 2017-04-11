@@ -1,7 +1,13 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import { Action, Direction, Lesson, Team, tutorial } from "../Game";
+import {
+    Action,
+    Lesson,
+    Mode,
+    Team,
+    tutorial
+} from "../Game";
 
 import { IProps } from "./Table";
 
@@ -48,18 +54,18 @@ export default class Tutorial extends React.Component<IProps, {}> {
                     && this.props.game.players.length > 0) {
 
                     this.props.enqueuePlay({
-                        mode: "tutorial",
+                        mode: Mode.tutorial,
                         player: this.props.game.currentPlayer,
                         from: "player",
-                        action: [ "up", "left", "down", "right" ]
-                            [Math.floor(Math.random() * 4)] as Direction
+                        action: [ Action.up, Action.left, Action.down, Action.right ]
+                            [Math.floor(Math.random() * 4)]
                     });
                 }
 
                 if (lesson.reload) {
 
                     this.props.enqueuePlay({
-                        mode: "tutorial",
+                        mode: Mode.tutorial,
                         player: Team.default,
                         from: "player",
                         action: {
@@ -78,7 +84,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 const [ player, action ] = plays[nextStep];
 
                 this.props.enqueuePlay({
-                    mode: "tutorial",
+                    mode: Mode.tutorial,
                     player: Team.default,
                     from: "player",
                     action: {
@@ -90,7 +96,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 });
 
                 this.props.enqueuePlay({
-                    mode: "tutorial",
+                    mode: Mode.tutorial,
                     player: player,
                     from: "player",
                     action: action
@@ -99,7 +105,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
         } else if (lesson.reload) {
 
             this.props.enqueuePlay({
-                mode: "tutorial",
+                mode: Mode.tutorial,
                 player: Team.default,
                 from: "player",
                 action: {
@@ -115,7 +121,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                 const [ player, action ] = plays[i];
 
                 this.props.enqueuePlay({
-                    mode: "tutorial",
+                    mode: Mode.tutorial,
                     player: player,
                     from: "player",
                     action: action
@@ -127,7 +133,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
     eventListener(event: KeyboardEvent): void {
 
         const lesson = this.props.lesson;
-        if (this.props.game.mode !== "tutorial" || !lesson) {
+        if (this.props.game.mode !== Mode.tutorial || !lesson) {
 
             return;
         }
@@ -139,7 +145,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
             case "w":
 
             this.props.enqueuePlay({
-                mode: "tutorial",
+                mode: Mode.tutorial,
                 player: Team.default,
                 from: "player",
                 action: {
@@ -155,7 +161,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
             case "a":
 
             this.props.enqueuePlay({
-                mode: "tutorial",
+                mode: Mode.tutorial,
                 player: Team.default,
                 from: "player",
                 action: {
@@ -171,7 +177,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
             case "s":
 
             this.props.enqueuePlay({
-                mode: "tutorial",
+                mode: Mode.tutorial,
                 player: Team.default,
                 from: "player",
                 action: {
@@ -187,7 +193,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
 
             case "d":
             this.props.enqueuePlay({
-                mode: "tutorial",
+                mode: Mode.tutorial,
                 player: Team.default,
                 from: "player",
                 action: {
@@ -205,7 +211,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
 
             const nextStep: number = (lesson.step + 1) % plays.length;
             this.props.enqueuePlay({
-                mode: "tutorial",
+                mode: Mode.tutorial,
                 player: Team.default,
                 from: "player",
                 action: {
@@ -222,7 +228,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
             case "?":
 
             this.props.enqueuePlay({
-                mode: "setup",
+                mode: Mode.setup,
                 player: Team.default,
                 from: "player",
                 action: null
@@ -247,7 +253,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                                 <strong>{lesson}</strong>
                                 {detail}
                                 <p>
-                                    {steps ? (steps as Array<[Team, Action | Direction]>)
+                                    {steps ? (steps as Array<[Team, Action]>)
                                         .map(([team, step], j) =>
                                             <a
                                                 key={j}
@@ -256,7 +262,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                                                     + ((this.props.lesson && (j !== this.props.lesson.step)) ?
                                                         " is-outlined" : "")}
                                                 onClick={() => this.props.enqueuePlay({
-                                                    mode: "tutorial",
+                                                    mode: Mode.tutorial,
                                                     player: Team.default,
                                                     from: "player",
                                                     action: {
@@ -267,7 +273,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                                                     }
                                                 })}>
                                                 <span className="icon is-small">
-                                                    <i className={"fa fa-hand-o-" + step}></i>
+                                                    <i className={"fa fa-hand-o-" + Action[step]}></i>
                                                 </span>
                                             </a>) :
                                     null}
@@ -275,7 +281,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                             </div> :
                             <div
                                 onClick={() => this.props.enqueuePlay({
-                                    mode: "tutorial",
+                                    mode: Mode.tutorial,
                                     player: Team.default,
                                     from: "player",
                                     action: {
@@ -298,7 +304,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                     <h1 className="title is-2">anaander tutorial</h1>
                     <h2 className="subtitle is-4">
                         (click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                            mode: "setup",
+                            mode: Mode.setup,
                             player: Team.default,
                             from: "player",
                             action: null
@@ -311,7 +317,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
     };
 }
 
-const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]>]> = [
+const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action]>]> = [
     [
         <div>
             welcome to anaander, a game about post-human armies with a shared mind&mdash;veeeeeeery loosely based on
@@ -365,10 +371,10 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             push them any time, it will pause the animation and take you to the selected step for closer inspection.
         </span>,
         [
-            [Team.info, "right"],
-            [Team.info, "down"],
-            [Team.info, "left"],
-            [Team.info, "up"]
+            [Team.info, Action.right],
+            [Team.info, Action.down],
+            [Team.info, Action.left],
+            [Team.info, Action.up]
         ]
     ],
     [
@@ -382,8 +388,8 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             meeple on top of them.
         </span>,
         [
-             [Team.info, "left"],
-             [Team.info, "right"]
+             [Team.info, Action.left],
+             [Team.info, Action.right]
         ]
     ],
     [
@@ -398,10 +404,10 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             (notice how the converted meeple didn&rsquo;t change its stats after conversion).
         </span>,
         [
-            [Team.info, "up"],
-            [Team.info, "up"],
-            [Team.info, "left"],
-            [Team.info, "left"]
+            [Team.info, Action.up],
+            [Team.info, Action.up],
+            [Team.info, Action.left],
+            [Team.info, Action.left]
         ]
     ],
     [
@@ -419,10 +425,10 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             being converted).
         </span>,
         [
-            [Team.info, "up"],
-            [Team.info, "up"],
-            [Team.info, "left"],
-            [Team.info, "left"]
+            [Team.info, Action.up],
+            [Team.info, Action.up],
+            [Team.info, Action.left],
+            [Team.info, Action.left]
         ]
     ],
     [
@@ -437,10 +443,10 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             opponent <em>and</em> you get killed at the same time, the game is a tie.
         </span>,
         [
-            [Team.info, "up"],
-            [Team.info, "up"],
-            [Team.info, "left"],
-            [Team.info, "left"]
+            [Team.info, Action.up],
+            [Team.info, Action.up],
+            [Team.info, Action.left],
+            [Team.info, Action.left]
         ]
     ],
     [
@@ -454,10 +460,10 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action | Direction]
             perform the action; all restrictions to individual meeples apply to each meeple in the swarm as well.
         </span>,
         [
-            [Team.info, "right"],
-            [Team.info, "down"],
-            [Team.info, "left"],
-            [Team.info, "up"]
+            [Team.info, Action.right],
+            [Team.info, Action.down],
+            [Team.info, Action.left],
+            [Team.info, Action.up]
         ]
     ],
     [

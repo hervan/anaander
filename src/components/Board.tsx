@@ -1,11 +1,14 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-import { Meeple as MeepleType, meeplesBelow } from "../Game";
 
-import { IProps } from "./Table";
-
+import {
+    Meeple as MeepleType,
+    meeplesBelow
+} from "../Game";
 import Meeple from "./Meeple";
 import Terrain from "./Terrain";
+
+import { IProps } from "./Table";
 
 const translation: Array<Array<{ row: number, col: number }>> =
 [
