@@ -1,57 +1,64 @@
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+function buildConfig(env) {
 
-module.exports = {
-    entry: "./src/index.tsx",
-    output: {
-        filename: "bundle.[hash].js",
-        path: __dirname + "/dist"
-    },
+    var webpack = require('webpack');
+    var HtmlWebpackPlugin = require('html-webpack-plugin');
 
-    plugins: [
-        new HtmlWebpackPlugin({title: "anaander", template: "index.ejs"}),
-        // new webpack
-        //     .optimize
-        //     .UglifyJsPlugin({sourceMap: false, beautify: false, comments: false})
-    ],
+    return {
+        entry: "./src/index.tsx",
+        output: {
+            filename: "bundle.[hash].js",
+            path: __dirname + "/dist"
+        },
 
-    // Enable sourcemaps for debugging webpack's output.
-    devtool: "source-map",
+        plugins: env === "prod" ? [
+            new HtmlWebpackPlugin({title: "anaander", template: "index.ejs"}),
+            new webpack
+                .optimize
+                .UglifyJsPlugin({sourceMap: false, beautify: false, comments: false})
+        ] : [
+            new HtmlWebpackPlugin({title: "anaander", template: "index.ejs"})
+        ],
 
-    resolve: {
-        // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
-    },
+        // Enable sourcemaps for debugging webpack's output.
+        devtool: "source-map",
 
-    module: {
-        rules: [
-            // All output '.js' files will have any sourcemaps re-processed by
-            // 'source-map-loader'.
-            {
-                enforce: 'pre',
-                test: /\.js$/,
-                loader: "source-map-loader"
-            },
+        resolve: {
+            // Add '.ts' and '.tsx' as resolvable extensions.
+            extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
+        },
 
-            // CSS loader
-            {
-                test: /\.css$/,
-                loader: "style-loader!css-loader"
-            },
+        module: {
+            rules: [
+                // All output '.js' files will have any sourcemaps re-processed by
+                // 'source-map-loader'.
+                {
+                    enforce: 'pre',
+                    test: /\.js$/,
+                    loader: "source-map-loader"
+                },
 
-            // media loader
-            {
-                test: /\.(png|woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: 'url-loader'
-            },
+                // CSS loader
+                {
+                    test: /\.css$/,
+                    loader: "style-loader!css-loader"
+                },
 
-            // All files with a '.ts' or '.tsx' extension will be handled by
-            // 'awesome-typescript-loader'.
-            {
-                test: /\.tsx?$/,
-                loader: "awesome-typescript-loader",
-                exclude: ["node_modules", "tests"]
-            }
-        ]
-    }
-};
+                // media loader
+                {
+                    test: /\.(png|woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                    loader: 'url-loader'
+                },
+
+                // All files with a '.ts' or '.tsx' extension will be handled by
+                // 'awesome-typescript-loader'.
+                {
+                    test: /\.tsx?$/,
+                    loader: "awesome-typescript-loader",
+                    exclude: ["node_modules", "tests"]
+                }
+            ]
+        }
+    };
+}
+
+module.exports = buildConfig;

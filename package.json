@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "webpack-dev-server --port 8080 --host 0.0.0.0",
-    "build": "webpack",
+    "build": "webpack --env=prod",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
