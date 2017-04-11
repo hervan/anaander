@@ -80,8 +80,9 @@ export default class Setup extends React.Component<IProps, {}> {
                 from: "player",
                 action: {
                     index: 0,
-                    step: -1,
-                    autoplay: true
+                    step: 0,
+                    autoplay: true,
+                    reload: true
                 }
             });
 
@@ -155,8 +156,9 @@ export default class Setup extends React.Component<IProps, {}> {
                     from: "player",
                     action: {
                         index: 0,
-                        step: -1,
-                        autoplay: true
+                        step: 0,
+                        autoplay: true,
+                        reload: true
                     }
                 })}>here</a> for a short tutorial.)
             </p>;

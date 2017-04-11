@@ -90,6 +90,7 @@ export type Lesson = {
     index: number;
     step: number;
     autoplay: boolean;
+    reload: boolean;
 };
 
 export type Play = {
@@ -591,44 +592,6 @@ export function tutorial(index: number): { game: Game, plays?: Array<Direction |
                 terrains: [...Array(16).keys()].reduce((acc, row) =>
                     acc.concat([...Array(16).keys()].map((col) => t(row, col))), [] as Terrain[]),
                 meeples: [],
-                turn: "heads",
-                currentPlayer: Team.info,
-                mode: "tutorial",
-                lastAction: "skip"
-            }
-        },
-        { // the terrain tiles
-            game: {
-                boardSize: 4,
-                players: [],
-                terrains: [...Array(4).keys()].reduce((acc, row) =>
-                    acc.concat([...Array(4).keys()].map((col) => t(row, col))), [] as Terrain[]),
-                meeples: [],
-                turn: "heads",
-                currentPlayer: Team.info,
-                mode: "tutorial",
-                lastAction: "skip"
-            }
-        },
-        { // a meeple
-            game: {
-                boardSize: 3,
-                players: [],
-                terrains: [...Array(3).keys()].reduce((acc, row) =>
-                    acc.concat([...Array(3).keys()].map((col) =>
-                    row === 1 && col === 1 ? t(row, col, 0) : t(row, col))), [] as Terrain[]),
-                meeples: [
-                    {
-                        key: 0,
-                        position: { row: 1, col: 1 },
-                        team: Team.default,
-                        turn: "heads",
-                        strength: 5,
-                        resistance: 15,
-                        faith: 15,
-                        topsMeeple: -1
-                    }
-                ],
                 turn: "heads",
                 currentPlayer: Team.info,
                 mode: "tutorial",

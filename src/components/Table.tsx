@@ -29,7 +29,7 @@ export class Table extends React.Component<{}, IState> {
         this.state = {
             game: setup(0),
             playQueue: [[], [], [], [], [], []],
-            lesson: { index: 0, step: 0, autoplay: false }
+            lesson: { index: 0, step: 0, autoplay: false, reload: false }
         };
     }
 
@@ -62,15 +62,17 @@ export class Table extends React.Component<{}, IState> {
                 const lesson = playData.action as Lesson;
                 const tutorialGame: Game = tutorial(lesson.index).game;
 
-                if (!lesson.autoplay || lesson.step < 0) {
+                if (lesson.reload) {
 
                     this.setState({
                         game: tutorialGame,
+                        playQueue: [[], [], [], [], [], []],
                         lesson: lesson
                     });
                 } else {
 
                     this.setState({
+                        playQueue: [[], [], [], [], [], []],
                         lesson: lesson
                     });
                 }
