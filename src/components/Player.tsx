@@ -35,7 +35,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.hold
             });
@@ -46,7 +46,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.up
             });
@@ -57,7 +57,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.explore
             });
@@ -68,7 +68,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.left
             });
@@ -79,7 +79,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.down
             });
@@ -90,7 +90,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.right
             });
@@ -101,7 +101,7 @@ export default class Player extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                player: this.props.player.team,
+                team: this.props.player.team,
                 from: "player",
                 action: Action.skip
             });
@@ -141,7 +141,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
                                         mode: Mode.play,
-                                        player: this.props.player.team,
+                                        team: this.props.player.team,
                                         from: "player",
                                         action: Action.hold
                                     })}>
@@ -152,7 +152,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
                                         mode: Mode.play,
-                                        player: this.props.player.team,
+                                        team: this.props.player.team,
                                         from: "player",
                                         action: Action.up
                                     })}>
@@ -163,7 +163,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
                                         mode: Mode.play,
-                                        player: this.props.player.team,
+                                        team: this.props.player.team,
                                         from: "player",
                                         action: Action.explore
                                     })}>
@@ -176,7 +176,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
                                         mode: Mode.play,
-                                        player: this.props.player.team,
+                                        team: this.props.player.team,
                                         from: "player",
                                         action: Action.left
                                     })}>
@@ -187,7 +187,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
                                         mode: Mode.play,
-                                        player: this.props.player.team,
+                                        team: this.props.player.team,
                                         from: "player",
                                         action: Action.down
                                     })}>
@@ -198,7 +198,7 @@ export default class Player extends React.Component<IProps, {}> {
                                     <a className={"button is-outlined is-" + Game.Team[this.props.player.team]}
                                         onClick={() => this.props.enqueuePlay({
                                         mode: Mode.play,
-                                        player: this.props.player.team,
+                                        team: this.props.player.team,
                                         from: "player",
                                         action: Action.right
                                     })}>

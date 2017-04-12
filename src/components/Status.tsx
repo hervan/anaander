@@ -38,7 +38,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.setup,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: null
             });
@@ -107,7 +107,7 @@ export default class Status extends React.Component<IProps, {}> {
 
                 this.props.enqueuePlay({
                     mode: this.props.game.mode,
-                    player: this.props.game.currentPlayer,
+                    team: this.props.game.currentPlayer,
                     from: "player",
                     action: action
                 });
@@ -117,7 +117,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: this.props.game.mode,
-                player: this.props.game.currentPlayer,
+                team: this.props.game.currentPlayer,
                 from: "player",
                 action: Action.skip
             });
@@ -144,7 +144,7 @@ export default class Status extends React.Component<IProps, {}> {
                 <p>
                     click <a className="is-link" onClick={() => this.props.enqueuePlay({
                         mode: Mode.setup,
-                        player: Team.default,
+                        team: Team.default,
                         from: "player",
                         action: null
                     })}>here</a> to start a new game.

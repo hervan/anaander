@@ -9,21 +9,33 @@ import {
     tutorial
 } from "../Game";
 
-import { IProps } from "./Table";
+import { ITutorialProps } from "./Table";
 
-export default class Tutorial extends React.Component<IProps, {}> {
+interface IState {
+    lesson: Lesson;
+    step: number;
+    autoplay: boolean;
+}
+
+export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
     refresher: number;
 
-    constructor(props: IProps) {
+    constructor(props: ITutorialProps, state: IState) {
 
-        super(props);
-        this.eventListener = this.eventListener.bind(this);
+        super(props, state);
+
+        this.state = {
+            lesson: { index: -1 },
+            step: -1,
+            autoplay: false
+        };
 
         clearInterval(this.refresher);
-        this.refresher = window.setInterval(() => this.playTutorial(), 1000);
+        this.refresher = window.setInterval(() => this.autoplay(), 1000);
 
         document.removeEventListener("keypress", this.eventListener);
+        this.eventListener = this.eventListener.bind(this);
         document.addEventListener("keypress", this.eventListener);
     }
 
@@ -33,7 +45,76 @@ export default class Tutorial extends React.Component<IProps, {}> {
         document.removeEventListener("keypress", this.eventListener);
     }
 
-    playTutorial(): void {
+    componentDidUpdate(): void {
+
+        if (this.props.lesson.index !== this.state.lesson.index) {
+
+            this.setState({
+                lesson: this.props.lesson,
+                step: 0,
+                autoplay: true
+            });
+        } else if (!this.state.autoplay) {
+
+            this.playStep();
+        }
+    }
+
+    autoplay(): void {
+
+        if (this.state.autoplay) {
+
+            this.playStep();
+
+            const nextStep = this.state.step + 1;
+
+            if (nextStep < lessons[this.state.lesson.index][2].length) {
+
+                this.setState({
+                    step: nextStep
+                });
+            } else {
+
+                this.props.enqueuePlay({
+                    mode: Mode.tutorial,
+                    team: Team.default,
+                    from: "player",
+                    action: this.state.lesson
+                });
+            }
+        }
+    }
+
+    playStep(): void {
+
+        const plays = lessons[this.state.lesson.index][2];
+
+        if (plays.length > 0) {
+
+            const [ team, action ] = plays[this.state.step];
+
+            this.props.enqueuePlay({
+                mode: Mode.tutorial,
+                team: team,
+                from: "player",
+                action: action
+            });
+        } else {
+
+            for (let player of tutorial(this.state.lesson.index).players) {
+
+                this.props.enqueuePlay({
+                    mode: Mode.tutorial,
+                    team: player.team,
+                    from: "player",
+                    action: [ Action.up, Action.left, Action.down, Action.right ]
+                        [Math.floor(Math.random() * 4)]
+                });
+            }
+        }
+    }
+
+    eventListener(event: KeyboardEvent): void {
 
         const lesson = this.props.lesson;
 
@@ -43,110 +124,14 @@ export default class Tutorial extends React.Component<IProps, {}> {
         }
 
         const plays = lessons[lesson.index][2];
-        let nextStep = lesson.step;
-        let reload = false;
-
-        if (lesson.autoplay) {
-
-            if (plays.length === 0) {
-
-                if (this.props.game.currentPlayer !== Team.default
-                    && this.props.game.players.length > 0) {
-
-                    this.props.enqueuePlay({
-                        mode: Mode.tutorial,
-                        player: this.props.game.currentPlayer,
-                        from: "player",
-                        action: [ Action.up, Action.left, Action.down, Action.right ]
-                            [Math.floor(Math.random() * 4)]
-                    });
-                }
-
-                if (lesson.reload) {
-
-                    this.props.enqueuePlay({
-                        mode: Mode.tutorial,
-                        player: Team.default,
-                        from: "player",
-                        action: {
-                            index: lesson.index,
-                            step: nextStep,
-                            autoplay: lesson.autoplay,
-                            reload: reload
-                        }
-                    });
-                }
-            } else {
-
-                nextStep = (lesson.step + 1) % plays.length;
-                reload = nextStep === 0;
-
-                const [ player, action ] = plays[nextStep];
-
-                this.props.enqueuePlay({
-                    mode: Mode.tutorial,
-                    player: Team.default,
-                    from: "player",
-                    action: {
-                        index: lesson.index,
-                        step: nextStep,
-                        autoplay: lesson.autoplay,
-                        reload: reload
-                    }
-                });
-
-                this.props.enqueuePlay({
-                    mode: Mode.tutorial,
-                    player: player,
-                    from: "player",
-                    action: action
-                });
-            }
-        } else if (lesson.reload) {
-
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                player: Team.default,
-                from: "player",
-                action: {
-                    index: lesson.index,
-                    step: nextStep,
-                    autoplay: lesson.autoplay,
-                    reload: reload
-                }
-            });
-
-            for (let i = 0; i <= lesson.step && i < plays.length; i++) {
-
-                const [ player, action ] = plays[i];
-
-                this.props.enqueuePlay({
-                    mode: Mode.tutorial,
-                    player: player,
-                    from: "player",
-                    action: action
-                });
-            }
-        }
-    }
-
-    eventListener(event: KeyboardEvent): void {
-
-        const lesson = this.props.lesson;
-        if (this.props.game.mode !== Mode.tutorial || !lesson) {
-
-            return;
-        }
-
-        const plays = lessons[lesson.index][2];
 
         switch (event.key) {
-
+/*
             case "w":
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: {
                     index: lesson.index - (lesson.index > 0 ? 1 : 0),
@@ -162,7 +147,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: {
                     index: lesson.index,
@@ -178,7 +163,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: {
                     index: lesson.index +
@@ -194,7 +179,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
             case "d":
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: {
                     index: lesson.index,
@@ -212,7 +197,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
             const nextStep: number = (lesson.step + 1) % plays.length;
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: {
                     index: lesson.index + (nextStep === 0 ? 1 : 0),
@@ -223,13 +208,13 @@ export default class Tutorial extends React.Component<IProps, {}> {
             });
 
             break;
-
+*/
             case "/":
             case "?":
 
             this.props.enqueuePlay({
                 mode: Mode.setup,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: null
             });
@@ -259,18 +244,11 @@ export default class Tutorial extends React.Component<IProps, {}> {
                                                 key={j}
                                                 className={"button is-small is-"
                                                     + Team[team]
-                                                    + ((this.props.lesson && (j !== this.props.lesson.step)) ?
+                                                    + ((this.state.step && (j !== this.state.step)) ?
                                                         " is-outlined" : "")}
-                                                onClick={() => this.props.enqueuePlay({
-                                                    mode: Mode.tutorial,
-                                                    player: Team.default,
-                                                    from: "player",
-                                                    action: {
-                                                        index: i,
-                                                        step: j,
-                                                        autoplay: false,
-                                                        reload: true
-                                                    }
+                                                onClick={() => this.setState({
+                                                    step: j,
+                                                    autoplay: false
                                                 })}>
                                                 <span className="icon is-small">
                                                     <i className={"fa fa-hand-o-" + Action[step]}></i>
@@ -282,14 +260,9 @@ export default class Tutorial extends React.Component<IProps, {}> {
                             <div
                                 onClick={() => this.props.enqueuePlay({
                                     mode: Mode.tutorial,
-                                    player: Team.default,
+                                    team: Team.default,
                                     from: "player",
-                                    action: {
-                                        index: i,
-                                        step: 0,
-                                        autoplay: true,
-                                        reload: true
-                                    }
+                                    action: { index: i }
                                 })}>
                                 {lesson}
                             </div>
@@ -305,7 +278,7 @@ export default class Tutorial extends React.Component<IProps, {}> {
                     <h2 className="subtitle is-4">
                         (click <a className="is-link" onClick={() => this.props.enqueuePlay({
                             mode: Mode.setup,
-                            player: Team.default,
+                            team: Team.default,
                             from: "player",
                             action: null
                         })}>here</a> to go back.)

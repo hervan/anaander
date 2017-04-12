@@ -22,14 +22,18 @@ import Tutorial from "./Tutorial";
 interface IState {
     game: Game;
     playQueue: Play[][];
-    lesson: Lesson;
+    lesson?: Lesson;
 };
 
 export interface IProps {
     game: Game;
     enqueuePlay: (play: Play) => void;
-    lesson?: Lesson;
 };
+
+export interface ITutorialProps {
+    enqueuePlay: (play: Play) => void;
+    lesson: Lesson;
+}
 
 export class Table extends React.Component<{}, IState> {
 
@@ -39,14 +43,13 @@ export class Table extends React.Component<{}, IState> {
 
         this.state = {
             game: setup(0),
-            playQueue: [[], [], [], [], [], []],
-            lesson: { index: 0, step: 0, autoplay: false, reload: false }
+            playQueue: [[], [], [], [], [], []]
         };
     }
 
     enqueuePlay(playData: Play): void {
 
-        if (playData.player === Team.default) {
+        if (playData.team === Team.default) {
 
             switch (playData.mode) {
 
@@ -54,7 +57,10 @@ export class Table extends React.Component<{}, IState> {
 
                 if (playData.action === null) {
 
-                    this.setState({ game: setup(0) });
+                    this.setState({
+                        game: setup(0),
+                        lesson: undefined
+                    });
 
                 } else {
 
@@ -63,7 +69,10 @@ export class Table extends React.Component<{}, IState> {
                         + (playData.action === Action.right && this.state.game.players.length < 5 ? 1 : 0)
                         + (playData.action === Action.left && this.state.game.players.length > 0 ? -1 : 0);
 
-                    this.setState({ game: setup(change) });
+                    this.setState({
+                        game: setup(change),
+                        lesson: undefined
+                    });
                 }
 
                 break;
@@ -71,18 +80,18 @@ export class Table extends React.Component<{}, IState> {
                 case Mode.tutorial:
 
                 const lesson = playData.action as Lesson;
-                const tutorialGame: Game = tutorial(lesson.index).game;
+                const tutorialGame: Game = tutorial(lesson.index);
 
-                if (lesson.reload) {
+                if (this.state.lesson && this.state.lesson.index === lesson.index) {
 
                     this.setState({
                         game: tutorialGame,
-                        playQueue: [[], [], [], [], [], []],
-                        lesson: lesson
+                        playQueue: [[], [], [], [], [], []]
                     });
                 } else {
 
                     this.setState({
+                        game: tutorialGame,
                         playQueue: [[], [], [], [], [], []],
                         lesson: lesson
                     });
@@ -93,14 +102,17 @@ export class Table extends React.Component<{}, IState> {
                 case Mode.play:
 
                 const gameStep: Game = play(this.state.game, playData);
-                this.setState({ game: gameStep });
+                this.setState({
+                    game: gameStep,
+                    lesson: undefined
+                });
 
                 break;
             }
         } else {
 
             const queue: Play[][] = this.state.playQueue;
-            queue[playData.player].push(playData);
+            queue[playData.team].push(playData);
             this.setState({ playQueue: queue });
         }
     }
@@ -123,9 +135,8 @@ export class Table extends React.Component<{}, IState> {
 
             case Mode.tutorial:
             leftPanel = <Tutorial
-                game={this.state.game}
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={this.state.lesson}
+                lesson={this.state.lesson ? this.state.lesson : { index: 0 }}
                 />;
             break;
 

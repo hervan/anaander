@@ -32,7 +32,7 @@ export default class Setup extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.setup,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: Action.left
             });
@@ -43,7 +43,7 @@ export default class Setup extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.setup,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: Action.down
             });
@@ -54,7 +54,7 @@ export default class Setup extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.setup,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
                 action: Action.right
             });
@@ -67,7 +67,7 @@ export default class Setup extends React.Component<IProps, {}> {
 
                 this.props.enqueuePlay({
                     mode: Mode.play,
-                    player: Team.default,
+                    team: Team.default,
                     from: "player",
                     action: Action.skip
                 });
@@ -80,14 +80,9 @@ export default class Setup extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                player: Team.default,
+                team: Team.default,
                 from: "player",
-                action: {
-                    index: 0,
-                    step: 0,
-                    autoplay: true,
-                    reload: true
-                }
+                action: { index: 0 }
             });
 
             break;
@@ -116,7 +111,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 &nbsp;
                 <a className="is-link" onClick={() => this.props.enqueuePlay({
                     mode: Mode.setup,
-                    player: Team.default,
+                    team: Team.default,
                     from: "player",
                     action: Action.left
                 })}>
@@ -127,7 +122,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 &nbsp;
                 <a className="is-link" onClick={() => this.props.enqueuePlay({
                     mode: Mode.setup,
-                    player: Team.default,
+                    team: Team.default,
                     from: "player",
                     action: Action.skip
                 })}>
@@ -136,7 +131,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 &nbsp;
                 <a className="is-link" onClick={() => this.props.enqueuePlay({
                     mode: Mode.setup,
-                    player: Team.default,
+                    team: Team.default,
                     from: "player",
                     action: Action.right
                 })}>
@@ -149,21 +144,16 @@ export default class Setup extends React.Component<IProps, {}> {
             <p>
                 click <a className="is-link" onClick={() => this.props.enqueuePlay({
                     mode: Mode.play,
-                    player: Team.default,
+                    team: Team.default,
                     from: "player",
                     action: null
                 })}>here</a> to begin.
                 <br />
                 (or click <a className="is-link" onClick={() => this.props.enqueuePlay({
                     mode: Mode.tutorial,
-                    player: Team.default,
+                    team: Team.default,
                     from: "player",
-                    action: {
-                        index: 0,
-                        step: 0,
-                        autoplay: true,
-                        reload: true
-                    }
+                    action: { index: 0 }
                 })}>here</a> for a short tutorial.)
             </p>;
 
