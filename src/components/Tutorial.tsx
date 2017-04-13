@@ -47,17 +47,21 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
         if (this.state.autoplay) {
 
+            const plays = lessons[this.props.lesson.index][2];
+
             const nextStep = this.state.step + 1;
 
-            if (nextStep < lessons[this.props.lesson.index][2].length) {
+            if (plays.length > 0) { // scripted play
 
-                this.playStep(nextStep);
+                if (nextStep < lessons[this.props.lesson.index][2].length) {
 
-            } else if (lessons[this.props.lesson.index][2].length > 0) {
+                    this.playStep(nextStep);
 
-                this.loadLesson(this.props.lesson.index);
+                } else {
 
-            } else {
+                    this.loadLesson(this.props.lesson.index);
+                }
+            } else { // random play
 
                 this.playStep(nextStep < tutorial(this.props.lesson.index).players.length ? nextStep : 0);
             }
@@ -85,7 +89,7 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
         const plays = lessons[this.props.lesson.index][2];
 
-        if (plays.length > 0) {
+        if (plays.length > 0) { // scripted play
 
             const [ team, action ] = plays[this.state.step];
 
@@ -95,7 +99,7 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
                 from: "player",
                 action: action
             });
-        } else {
+        } else { // random play
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
@@ -138,7 +142,7 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
             case "a":
 
-            if (plays.length > 0) {
+            if (plays.length > 0) { // control scripted plays
 
                 this.loadStep((this.state.step - 1 + plays.length) % plays.length);
             }
@@ -153,7 +157,7 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
             case "d":
 
-            if (plays.length > 0) {
+            if (plays.length > 0) { // control scripted plays
 
                 this.loadStep((this.state.step + 1) % plays.length);
             }

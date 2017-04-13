@@ -116,8 +116,7 @@ export class Table extends React.Component<{}, IState> {
             case Mode.tutorial:
             leftPanel = <Tutorial
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={this.state.lesson!}
-                />;
+                lesson={this.state.lesson!} />;
             break;
 
             case Mode.setup:
