@@ -19,8 +19,12 @@ export default class Status extends React.Component<IProps, {}> {
     constructor(props: IProps) {
 
         super(props);
-        this.eventListener = this.eventListener.bind(this);
+
+        clearInterval(this.refresher);
+        this.refresher = window.setInterval(() => this.animateEnding(), 300);
+
         document.removeEventListener("keypress", this.eventListener);
+        this.eventListener = this.eventListener.bind(this);
         document.addEventListener("keypress", this.eventListener);
     }
 
@@ -47,18 +51,6 @@ export default class Status extends React.Component<IProps, {}> {
         }
     }
 
-    componentDidUpdate(): void {
-
-        if (this.props.game.mode === Mode.end) {
-
-            clearInterval(this.refresher);
-            this.refresher = window.setInterval(() => this.animateEnding(), 300);
-        }
-
-        document.removeEventListener("keypress", this.eventListener);
-        document.addEventListener("keypress", this.eventListener);
-    }
-
     componentWillUnmount(): void {
 
         clearInterval(this.refresher);
@@ -67,60 +59,63 @@ export default class Status extends React.Component<IProps, {}> {
 
     animateEnding(): void {
 
-        const currentPlayerMeeples: Meeple[] = this.props.game.meeples
-            .filter((meeple) => meeple.key !== -1 &&
-                meeple.team === this.props.game.currentPlayer);
+        if (this.props.game.mode === Mode.end) {
 
-        if (currentPlayerMeeples.length > 0) {
+            const currentPlayerMeeples: Meeple[] = this.props.game.meeples
+                .filter((meeple) => meeple.key !== -1 &&
+                    meeple.team === this.props.game.currentPlayer);
 
-            const actions: Action[] = [ Action.up, Action.left, Action.down, Action.right ];
+            if (currentPlayerMeeples.length > 0) {
 
-            const weights: number[] = currentPlayerMeeples
-                .map((meeple) => [
-                    (meeple.position.row + 1) / (this.props.game.boardSize + 1),
-                    (meeple.position.col + 1) / (this.props.game.boardSize + 1),
-                    (this.props.game.boardSize - meeple.position.row) / (this.props.game.boardSize + 1),
-                    (this.props.game.boardSize - meeple.position.col) / (this.props.game.boardSize + 1)
-                ])
-                .reduce((acc, positions) => [
-                    acc[0] + (positions[0] / currentPlayerMeeples.length),
-                    acc[1] + (positions[1] / currentPlayerMeeples.length),
-                    acc[2] + (positions[2] / currentPlayerMeeples.length),
-                    acc[3] + (positions[3] / currentPlayerMeeples.length)
-                ], [0, 0, 0, 0]);
+                const actions: Action[] = [ Action.up, Action.left, Action.down, Action.right ];
 
-            let rollNumber: number = Math.random() * 2;
-            let roll: number = 0;
+                const weights: number[] = currentPlayerMeeples
+                    .map((meeple) => [
+                        (meeple.position.row + 1) / (this.props.game.boardSize + 1),
+                        (meeple.position.col + 1) / (this.props.game.boardSize + 1),
+                        (this.props.game.boardSize - meeple.position.row) / (this.props.game.boardSize + 1),
+                        (this.props.game.boardSize - meeple.position.col) / (this.props.game.boardSize + 1)
+                    ])
+                    .reduce((acc, positions) => [
+                        acc[0] + (positions[0] / currentPlayerMeeples.length),
+                        acc[1] + (positions[1] / currentPlayerMeeples.length),
+                        acc[2] + (positions[2] / currentPlayerMeeples.length),
+                        acc[3] + (positions[3] / currentPlayerMeeples.length)
+                    ], [0, 0, 0, 0]);
 
-            while (rollNumber > 0) {
+                let rollNumber: number = Math.random() * 2;
+                let roll: number = 0;
 
-                rollNumber -= weights[roll++];
-            }
+                while (rollNumber > 0) {
 
-            const action: Action = actions[roll - 1];
+                    rollNumber -= weights[roll++];
+                }
 
-            const repetitions: number = Math.random() * this.props.game.boardSize / 2;
+                const action: Action = actions[roll - 1];
 
-            const nextPlay: Play[] = [];
+                const repetitions: number = Math.random() * this.props.game.boardSize / 2;
 
-            for (let i: number = 0; i < repetitions; i++) {
+                const nextPlay: Play[] = [];
+
+                for (let i: number = 0; i < repetitions; i++) {
+
+                    this.props.enqueuePlay({
+                        mode: this.props.game.mode,
+                        team: this.props.game.currentPlayer,
+                        from: "player",
+                        action: action
+                    });
+                }
+
+            } else {
 
                 this.props.enqueuePlay({
                     mode: this.props.game.mode,
                     team: this.props.game.currentPlayer,
                     from: "player",
-                    action: action
+                    action: Action.skip
                 });
             }
-
-        } else {
-
-            this.props.enqueuePlay({
-                mode: this.props.game.mode,
-                team: this.props.game.currentPlayer,
-                from: "player",
-                action: Action.skip
-            });
         }
     }
 

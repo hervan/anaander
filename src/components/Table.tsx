@@ -57,10 +57,7 @@ export class Table extends React.Component<{}, IState> {
 
                 if (playData.action === null) {
 
-                    this.setState({
-                        game: setup(0),
-                        lesson: undefined
-                    });
+                    this.setState({ game: setup(0) });
 
                 } else {
 
@@ -69,10 +66,7 @@ export class Table extends React.Component<{}, IState> {
                         + (playData.action === Action.right && this.state.game.players.length < 5 ? 1 : 0)
                         + (playData.action === Action.left && this.state.game.players.length > 0 ? -1 : 0);
 
-                    this.setState({
-                        game: setup(change),
-                        lesson: undefined
-                    });
+                    this.setState({ game: setup(change) });
                 }
 
                 break;
@@ -80,32 +74,18 @@ export class Table extends React.Component<{}, IState> {
                 case Mode.tutorial:
 
                 const lesson = playData.action as Lesson;
-                const tutorialGame: Game = tutorial(lesson.index);
 
-                if (this.state.lesson && this.state.lesson.index === lesson.index) {
-
-                    this.setState({
-                        game: tutorialGame,
-                        playQueue: [[], [], [], [], [], []]
-                    });
-                } else {
-
-                    this.setState({
-                        game: tutorialGame,
-                        playQueue: [[], [], [], [], [], []],
-                        lesson: lesson
-                    });
-                }
+                this.setState({
+                    game: tutorial(lesson.index),
+                    playQueue: [[], [], [], [], [], []],
+                    lesson: lesson
+                });
 
                 break;
 
                 case Mode.play:
 
-                const gameStep: Game = play(this.state.game, playData);
-                this.setState({
-                    game: gameStep,
-                    lesson: undefined
-                });
+                this.setState({ game: play(this.state.game, playData) });
 
                 break;
             }
@@ -136,7 +116,7 @@ export class Table extends React.Component<{}, IState> {
             case Mode.tutorial:
             leftPanel = <Tutorial
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={this.state.lesson ? this.state.lesson : { index: 0 }}
+                lesson={this.state.lesson!}
                 />;
             break;
 

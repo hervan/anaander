@@ -12,7 +12,6 @@ import {
 import { ITutorialProps } from "./Table";
 
 interface IState {
-    lesson: Lesson;
     step: number;
     autoplay: boolean;
 }
@@ -26,9 +25,8 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
         super(props, state);
 
         this.state = {
-            lesson: { index: -1 },
             step: -1,
-            autoplay: false
+            autoplay: true
         };
 
         clearInterval(this.refresher);
@@ -45,49 +43,47 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
         document.removeEventListener("keypress", this.eventListener);
     }
 
-    componentDidUpdate(): void {
-
-        if (this.props.lesson.index !== this.state.lesson.index) {
-
-            this.setState({
-                lesson: this.props.lesson,
-                step: 0,
-                autoplay: true
-            });
-        } else if (!this.state.autoplay) {
-
-            this.playStep();
-        }
-    }
-
     autoplay(): void {
 
         if (this.state.autoplay) {
 
-            this.playStep();
-
             const nextStep = this.state.step + 1;
 
-            if (nextStep < lessons[this.state.lesson.index][2].length) {
+            if (nextStep < lessons[this.props.lesson.index][2].length) {
 
-                this.setState({
-                    step: nextStep
-                });
+                this.playStep(nextStep);
+
+            } else if (lessons[this.props.lesson.index][2].length > 0) {
+
+                this.loadLesson(this.props.lesson.index);
+
             } else {
 
-                this.props.enqueuePlay({
-                    mode: Mode.tutorial,
-                    team: Team.default,
-                    from: "player",
-                    action: this.state.lesson
-                });
+                this.playStep(nextStep < tutorial(this.props.lesson.index).players.length ? nextStep : 0);
             }
         }
     }
 
-    playStep(): void {
+    loadLesson(index: number, autoplay = true): void {
 
-        const plays = lessons[this.state.lesson.index][2];
+        this.setState({
+            step: -1,
+            autoplay: autoplay
+        });
+
+        this.props.enqueuePlay({
+            mode: Mode.tutorial,
+            team: Team.default,
+            from: "player",
+            action: { index: index }
+        });
+    }
+
+    playStep(step: number): void {
+
+        this.setState({ step: step });
+
+        const plays = lessons[this.props.lesson.index][2];
 
         if (plays.length > 0) {
 
@@ -101,16 +97,23 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
             });
         } else {
 
-            for (let player of tutorial(this.state.lesson.index).players) {
+            this.props.enqueuePlay({
+                mode: Mode.tutorial,
+                team: this.state.step as Team,
+                from: "player",
+                action: [ Action.up, Action.left, Action.down, Action.right ]
+                    [Math.floor(Math.random() * 4)]
+            });
+        }
+    }
 
-                this.props.enqueuePlay({
-                    mode: Mode.tutorial,
-                    team: player.team,
-                    from: "player",
-                    action: [ Action.up, Action.left, Action.down, Action.right ]
-                        [Math.floor(Math.random() * 4)]
-                });
-            }
+    loadStep(step: number): void {
+
+        this.loadLesson(this.props.lesson.index, false);
+
+        for (let i = 0; i <= step; i++) {
+
+            this.playStep(i);
         }
     }
 
@@ -126,89 +129,37 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
         const plays = lessons[lesson.index][2];
 
         switch (event.key) {
-/*
+
             case "w":
 
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: Team.default,
-                from: "player",
-                action: {
-                    index: lesson.index - (lesson.index > 0 ? 1 : 0),
-                    step: 0,
-                    autoplay: true,
-                    reload: true
-                }
-            });
+            this.loadLesson(lesson.index - (lesson.index > 0 ? 1 : 0));
 
             break;
 
             case "a":
 
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: Team.default,
-                from: "player",
-                action: {
-                    index: lesson.index,
-                    step: lesson.step - (lesson.step > 0 ? 1 : 0),
-                    autoplay: false,
-                    reload: true
-                }
-            });
+            if (plays.length > 0) {
+
+                this.loadStep((this.state.step - 1 + plays.length) % plays.length);
+            }
 
             break;
 
             case "s":
 
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: Team.default,
-                from: "player",
-                action: {
-                    index: lesson.index +
-                        (lesson.index < lessons.length - 1 ? 1 : 0),
-                    step: 0,
-                    autoplay: true,
-                    reload: true
-                }
-            });
+            this.loadLesson(lesson.index + (lesson.index < lessons.length - 1 ? 1 : 0));
 
             break;
 
             case "d":
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: Team.default,
-                from: "player",
-                action: {
-                    index: lesson.index,
-                    step: lesson.step +
-                        (lesson.step < plays.length - 1 ? 1 : 0),
-                    autoplay: false,
-                    reload: true
-                }
-            });
+
+            if (plays.length > 0) {
+
+                this.loadStep((this.state.step + 1) % plays.length);
+            }
 
             break;
 
-            case " ":
-
-            const nextStep: number = (lesson.step + 1) % plays.length;
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: Team.default,
-                from: "player",
-                action: {
-                    index: lesson.index + (nextStep === 0 ? 1 : 0),
-                    step: nextStep,
-                    autoplay: false,
-                    reload: true
-                }
-            });
-
-            break;
-*/
             case "/":
             case "?":
 
@@ -244,12 +195,9 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
                                                 key={j}
                                                 className={"button is-small is-"
                                                     + Team[team]
-                                                    + ((this.state.step && (j !== this.state.step)) ?
+                                                    + (j !== this.state.step ?
                                                         " is-outlined" : "")}
-                                                onClick={() => this.setState({
-                                                    step: j,
-                                                    autoplay: false
-                                                })}>
+                                                onClick={() => this.loadStep(j)}>
                                                 <span className="icon is-small">
                                                     <i className={"fa fa-hand-o-" + Action[step]}></i>
                                                 </span>
@@ -258,12 +206,7 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
                                 </p>
                             </div> :
                             <div
-                                onClick={() => this.props.enqueuePlay({
-                                    mode: Mode.tutorial,
-                                    team: Team.default,
-                                    from: "player",
-                                    action: { index: i }
-                                })}>
+                                onClick={() => this.loadLesson(i)}>
                                 {lesson}
                             </div>
                         }

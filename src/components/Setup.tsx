@@ -89,12 +89,6 @@ export default class Setup extends React.Component<IProps, {}> {
         }
     }
 
-    componentDidUpdate(): void {
-
-        document.removeEventListener("keypress", this.eventListener);
-        document.addEventListener("keypress", this.eventListener);
-    }
-
     componentWillUnmount(): void {
 
         document.removeEventListener("keypress", this.eventListener);

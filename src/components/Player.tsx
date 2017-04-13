@@ -19,7 +19,6 @@ export default class Player extends React.Component<IProps, {}> {
         super(props);
         this.eventListener = this.eventListener.bind(this);
         document.removeEventListener("keypress", this.eventListener);
-        document.addEventListener("keypress", this.eventListener);
     }
 
     eventListener(event: KeyboardEvent): void {
@@ -113,7 +112,11 @@ export default class Player extends React.Component<IProps, {}> {
     componentDidUpdate(): void {
 
         document.removeEventListener("keypress", this.eventListener);
-        document.addEventListener("keypress", this.eventListener);
+
+        if (this.props.active) {
+
+            document.addEventListener("keypress", this.eventListener);
+        }
     }
 
     componentWillUnmount(): void {
