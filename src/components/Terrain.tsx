@@ -1,26 +1,31 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
-import * as Game from "../Game";
+import {
+    Geography,
+    Play,
+    Team,
+    Terrain
+} from "../Game";
 
 interface IProps {
-    terrain: Game.Terrain;
-    enqueuePlay: (move: Game.Play) => void;
+    terrain: Terrain;
+    enqueuePlay: (move: Play) => void;
 };
 
-function terrainColor(geography: Game.Geography): string {
+function terrainColor(geography: Geography): string {
     switch (geography) {
-        case Game.Geography.city: return Game.Team[Game.Team.primary];
-        case Game.Geography.island: return Game.Team[Game.Team.info];
-        case Game.Geography.forest: return Game.Team[Game.Team.success];
-        case Game.Geography.swamp: return Game.Team[Game.Team.default];
-        case Game.Geography.mountain: return Game.Team[Game.Team.danger];
-        case Game.Geography.plains: return Game.Team[Game.Team.warning];
+        case Geography.city: return Team[Team.primary];
+        case Geography.island: return Team[Team.info];
+        case Geography.forest: return Team[Team.success];
+        case Geography.swamp: return Team[Team.default];
+        case Geography.mountain: return Team[Team.danger];
+        case Geography.plains: return Team[Team.warning];
     }
 }
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <article
-        title={Game.Geography[props.terrain.geography] + "\nspace for " + props.terrain.spaceLeft + " meeples"}
+        title={Geography[props.terrain.geography] + "\nspace for " + props.terrain.spaceLeft + " meeples"}
         className={"terrain message is-"
             + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>

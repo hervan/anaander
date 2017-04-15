@@ -30,16 +30,16 @@ export interface IProps {
     enqueuePlay: (play: Play) => void;
 };
 
-export interface ITutorialProps {
-    enqueuePlay: (play: Play) => void;
-    lesson: Lesson;
-}
-
 export class Table extends React.Component<{}, IState> {
+
+    refresher: number;
 
     constructor() {
 
         super();
+
+        window.clearInterval(this.refresher);
+        this.refresher = window.setInterval(() => this.dequeue(), 85);
 
         this.state = {
             game: setup(0),
@@ -57,7 +57,10 @@ export class Table extends React.Component<{}, IState> {
 
                 if (playData.action === null) {
 
-                    this.setState({ game: setup(0) });
+                    this.setState({
+                        game: setup(0),
+                        playQueue: [[], [], [], [], [], []]
+                    });
 
                 } else {
 
@@ -97,7 +100,7 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    componentDidUpdate(): void {
+    dequeue(): void {
 
         const queue: Play[][] = this.state.playQueue;
 
@@ -105,6 +108,11 @@ export class Table extends React.Component<{}, IState> {
             const playData: Play = queue[this.state.game.currentPlayer].shift() as Play;
             this.setState({ game: play(this.state.game, playData), playQueue: queue });
         }
+    }
+
+    componentWillUnmount(): void {
+
+        window.clearInterval(this.refresher);
     }
 
     render(): JSX.Element {

@@ -5,22 +5,26 @@ import {
     Action,
     Lesson,
     Mode,
+    Play,
     Team,
     tutorial
 } from "../Game";
 
-import { ITutorialProps } from "./Table";
+interface IProps {
+    enqueuePlay: (play: Play) => void;
+    lesson: Lesson;
+}
 
 interface IState {
     step: number;
     autoplay: boolean;
 }
 
-export default class Tutorial extends React.Component<ITutorialProps, IState> {
+export default class Tutorial extends React.Component<IProps, IState> {
 
     refresher: number;
 
-    constructor(props: ITutorialProps, state: IState) {
+    constructor(props: IProps, state: IState) {
 
         super(props, state);
 
@@ -29,8 +33,9 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
             autoplay: true
         };
 
-        clearInterval(this.refresher);
-        this.refresher = window.setInterval(() => this.autoplay(), 1000);
+        window.clearInterval(this.refresher);
+        this.autoplay = this.autoplay.bind(this);
+        this.refresher = window.setInterval(this.autoplay, 1000);
 
         document.removeEventListener("keypress", this.eventListener);
         this.eventListener = this.eventListener.bind(this);
@@ -39,7 +44,7 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
     componentWillUnmount(): void {
 
-        clearInterval(this.refresher);
+        window.clearInterval(this.refresher);
         document.removeEventListener("keypress", this.eventListener);
     }
 
@@ -136,7 +141,10 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
             case "w":
 
-            this.loadLesson(lesson.index - (lesson.index > 0 ? 1 : 0));
+            if (lesson.index > 0) {
+
+                this.loadLesson(lesson.index - 1);
+            }
 
             break;
 
@@ -151,7 +159,10 @@ export default class Tutorial extends React.Component<ITutorialProps, IState> {
 
             case "s":
 
-            this.loadLesson(lesson.index + (lesson.index < lessons.length - 1 ? 1 : 0));
+            if (lesson.index < lessons.length - 1) {
+
+                this.loadLesson(lesson.index + 1);
+            }
 
             break;
 

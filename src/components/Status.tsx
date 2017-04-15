@@ -20,9 +20,6 @@ export default class Status extends React.Component<IProps, {}> {
 
         super(props);
 
-        clearInterval(this.refresher);
-        this.refresher = window.setInterval(() => this.animateEnding(), 300);
-
         document.removeEventListener("keypress", this.eventListener);
         this.eventListener = this.eventListener.bind(this);
         document.addEventListener("keypress", this.eventListener);
@@ -30,12 +27,84 @@ export default class Status extends React.Component<IProps, {}> {
 
     eventListener(event: KeyboardEvent): void {
 
-        if (this.props.game.mode !== Mode.end) {
-
-            return;
-        }
-
         switch (event.key) {
+
+            case "q":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.hold
+            });
+
+            break;
+
+            case "w":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.up
+            });
+
+            break;
+
+            case "e":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.explore
+            });
+
+            break;
+
+            case "a":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.left
+            });
+
+            break;
+
+            case "s":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.down
+            });
+
+            break;
+
+            case "d":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.right
+            });
+
+            break;
+
+            case " ":
+
+            this.props.enqueuePlay({
+                mode: Mode.play,
+                team: this.props.game.currentPlayer,
+                from: "player",
+                action: Action.skip
+            });
+
+            break;
 
             case "/":
             case "?":
@@ -51,9 +120,19 @@ export default class Status extends React.Component<IProps, {}> {
         }
     }
 
+    componentDidUpdate(prevProps: IProps): void {
+
+        if (prevProps.game.mode !== Mode.end && this.props.game.mode === Mode.end) {
+
+            window.clearTimeout(this.refresher);
+            this.animateEnding = this.animateEnding.bind(this);
+            this.refresher = window.setTimeout(this.animateEnding, 300);
+        }
+    }
+
     componentWillUnmount(): void {
 
-        clearInterval(this.refresher);
+        window.clearTimeout(this.refresher);
         document.removeEventListener("keypress", this.eventListener);
     }
 
@@ -61,13 +140,13 @@ export default class Status extends React.Component<IProps, {}> {
 
         if (this.props.game.mode === Mode.end) {
 
+            let repetitions = 5;
+
             const currentPlayerMeeples: Meeple[] = this.props.game.meeples
                 .filter((meeple) => meeple.key !== -1 &&
                     meeple.team === this.props.game.currentPlayer);
 
             if (currentPlayerMeeples.length > 0) {
-
-                const actions: Action[] = [ Action.up, Action.left, Action.down, Action.right ];
 
                 const weights: number[] = currentPlayerMeeples
                     .map((meeple) => [
@@ -76,24 +155,28 @@ export default class Status extends React.Component<IProps, {}> {
                         (this.props.game.boardSize - meeple.position.row) / (this.props.game.boardSize + 1),
                         (this.props.game.boardSize - meeple.position.col) / (this.props.game.boardSize + 1)
                     ])
-                    .reduce((acc, positions) => [
-                        acc[0] + (positions[0] / currentPlayerMeeples.length),
-                        acc[1] + (positions[1] / currentPlayerMeeples.length),
-                        acc[2] + (positions[2] / currentPlayerMeeples.length),
-                        acc[3] + (positions[3] / currentPlayerMeeples.length)
-                    ], [0, 0, 0, 0]);
+                    .reduce((acc, positions) =>
+                        positions.map((position, i) =>
+                            acc[i] + (position / currentPlayerMeeples.length)),
+                        [0, 0, 0, 0]);
 
-                let rollNumber: number = Math.random() * 2;
+                const probabilities = weights.map((weight, i) =>
+                    weight * Math.max(weight, weights[(i + 2) % 4]) / Math.min(weight, weights[(i + 2) % 4]));
+
+                const weight = (Math.max(weights[0], weights[2]) / Math.min(weights[0], weights[2]))
+                    + (Math.max(weights[1], weights[3]) / Math.min(weights[1], weights[3]));
+
+                let rollNumber: number = Math.random() * weight;
                 let roll: number = 0;
 
                 while (rollNumber > 0) {
 
-                    rollNumber -= weights[roll++];
+                    rollNumber -= probabilities[roll++];
                 }
 
-                const action: Action = actions[roll - 1];
+                const action: Action = roll - 1;
 
-                const repetitions: number = Math.random() * this.props.game.boardSize / 2;
+                repetitions = Math.random() * weights[action] * 16;
 
                 const nextPlay: Play[] = [];
 
@@ -116,6 +199,9 @@ export default class Status extends React.Component<IProps, {}> {
                     action: Action.skip
                 });
             }
+
+            window.clearTimeout(this.refresher);
+            this.refresher = window.setTimeout(this.animateEnding, 85 * repetitions);
         }
     }
 
