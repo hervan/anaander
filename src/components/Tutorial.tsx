@@ -33,6 +33,8 @@ export default class Tutorial extends React.Component<IProps, IState> {
             autoplay: true
         };
 
+        this.loadStep = this.loadStep.bind(this);
+
         window.clearInterval(this.refresher);
         this.autoplay = this.autoplay.bind(this);
         this.refresher = window.setInterval(this.autoplay, 1000);
@@ -96,7 +98,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
 
         if (plays.length > 0) { // scripted play
 
-            const [ team, action ] = plays[this.state.step];
+            const [ team, action ] = plays[step];
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
@@ -108,7 +110,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                team: this.state.step as Team,
+                team: step as Team,
                 from: "player",
                 action: [ Action.up, Action.left, Action.down, Action.right ]
                     [Math.floor(Math.random() * 4)]
