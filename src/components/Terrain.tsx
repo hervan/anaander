@@ -2,6 +2,7 @@
 import * as React from "react";
 import {
     Geography,
+    Items,
     Play,
     Team,
     Terrain
@@ -25,7 +26,8 @@ function terrainColor(geography: Geography): string {
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <article
-        title={Geography[props.terrain.geography] + "\nspace for " + props.terrain.spaceLeft + " meeples"}
+        title={Geography[props.terrain.geography] + "\nspace for " + props.terrain.spaceLeft + " meeples\n"
+            + Items.map(({ type, piece }) => type).filter((type, index) => props.terrain.items[index]).join(", ")}
         className={"terrain message is-"
             + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>

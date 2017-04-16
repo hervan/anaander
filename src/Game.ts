@@ -23,7 +23,7 @@ type Position = {
 };
 
 export enum Geography {
-    swamp = 1,
+    swamp,
     island,
     mountain,
     forest,
@@ -31,22 +31,28 @@ export enum Geography {
     plains
 }
 
-const terrainDistribution: Geography[] = [
-    Geography.city,
-    Geography.island, Geography.island,
-    Geography.forest, Geography.forest,
-    Geography.swamp, Geography.swamp,
-    Geography.mountain, Geography.mountain,
-    Geography.plains, Geography.plains, Geography.plains, Geography.plains
-];
-
-enum Item {
-    relic,
-    technology,
-    mineral,
-    food,
-    water
+type Item = {
+    type:
+    | "energy"
+    | "food"
+    | "ore"
+    | "relic"
+    | "technology";
+    piece:
+    | "i"
+    | "l"
+    | "o"
+    | "s"
+    | "t";
 };
+
+export const Items: Item[] = [
+    { type: "energy", piece: "i" },
+    { type: "food", piece: "l" },
+    { type: "ore", piece: "o" },
+    { type: "relic", piece: "s" },
+    { type: "technology", piece: "t" }
+];
 
 export enum Turn {
     heads,
@@ -78,14 +84,14 @@ export type Terrain = {
     geography: Geography;
     spaceLeft: number;
     topMeeple: number;
-    items: Item[];
+    items: boolean[];
 };
 
 export type Player = {
     team: Team;
     individualActions: number;
     swarmSize: number;
-    items: Item[];
+    items: boolean[];
 };
 
 export type Lesson = {
@@ -111,7 +117,8 @@ const InvalidPlays: IDictionary = {
     NoGameYet: "wait for a game to begin.",
     OutOfBoard: "keep your meeples inside the board.",
     NotYourTurn: "wait for your turn to begin.",
-    TerrainIsCrowded: "move to a terrain with space available."
+    TerrainIsCrowded: "move to a terrain with space available.",
+    NotOnGround: "only meeples on the ground can explore the terrain"
 };
 
 type InvalidPlay = {
@@ -242,6 +249,13 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
             to.row = from.row + 1;
             break;
 
+            case Action.explore:
+            lastAction =
+                gameMeeples[topMeeple].topsMeeple === -1 ?
+                null :
+                { explanation: InvalidPlays.NotOnGround };
+            break;
+
             default:
             lastAction = null;
         }
@@ -269,67 +283,93 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
                 meeple.turn = flipTurn(meeple.turn);
 
-                terrainFrom.topMeeple = meeple.topsMeeple;
-                terrainFrom.spaceLeft++;
-                meeple.topsMeeple = terrainTo.topMeeple;
-                terrainTo.topMeeple = meeple.key;
-                terrainTo.spaceLeft--;
-
-                meeple.position = to;
-
-                gameMeeples[meeple.key] = meeple;
-
                 lastAction = action;
 
-                if (meeple.topsMeeple !== -1
-                    && gameMeeples[meeple.key].team !== gameMeeples[meeple.topsMeeple].team) {
+                switch (action) {
 
-                    const meepleOver: Meeple = gameMeeples[meeple.key];
-                    const meepleUnder: Meeple = gameMeeples[meeple.topsMeeple];
+                    case Action.explore:
 
-                    if (meepleOver.faith > meepleUnder.faith + meepleUnder.strength) {
+                    terrainTo.items.forEach((item, index) => {
 
-                        if (meepleUnder.team < gamePlayers.length) {
+                        if (item && !gamePlayers[gameMeeples[meeple.key].team].items[index]) {
 
-                            gamePlayers[meepleUnder.team].swarmSize--;
+                            terrainTo.items[index] = false;
+                            gamePlayers[gameMeeples[meeple.key].team].items[index] = true;
                         }
+                    });
 
-                        meepleUnder.team = meepleOver.team;
-                        gamePlayers[meepleOver.team].swarmSize++;
-                        meepleOver.resistance += meepleUnder.resistance;
+                    gameTerrains[positionToIndex(to, game.boardSize)] = terrainTo;
 
-                    } else {
+                    break;
 
-                        meepleUnder.resistance -= meepleOver.strength;
-                        meepleOver.resistance -= meepleUnder.strength;
+                    case Action.up:
+                    case Action.left:
+                    case Action.down:
+                    case Action.right:
 
-                        if (meepleUnder.resistance <= 0) {
+                    terrainFrom.topMeeple = meeple.topsMeeple;
+                    terrainFrom.spaceLeft++;
+                    meeple.topsMeeple = terrainTo.topMeeple;
+                    terrainTo.topMeeple = meeple.key;
+                    terrainTo.spaceLeft--;
 
-                            meepleUnder.key = -1;
-                            meepleOver.topsMeeple = meepleUnder.topsMeeple;
-                            meepleOver.faith += meepleUnder.faith;
-                            terrainTo.spaceLeft++;
+                    meeple.position = to;
+
+                    gameMeeples[meeple.key] = meeple;
+
+                    if (meeple.topsMeeple !== -1
+                        && gameMeeples[meeple.key].team !== gameMeeples[meeple.topsMeeple].team) {
+
+                        const meepleOver: Meeple = gameMeeples[meeple.key];
+                        const meepleUnder: Meeple = gameMeeples[meeple.topsMeeple];
+
+                        if (meepleOver.faith > meepleUnder.faith + meepleUnder.strength) {
 
                             if (meepleUnder.team < gamePlayers.length) {
 
                                 gamePlayers[meepleUnder.team].swarmSize--;
                             }
+
+                            meepleUnder.team = meepleOver.team;
+                            gamePlayers[meepleOver.team].swarmSize++;
+                            meepleOver.resistance += meepleUnder.resistance;
+
+                        } else {
+
+                            meepleUnder.resistance -= meepleOver.strength;
+                            meepleOver.resistance -= meepleUnder.strength;
+
+                            if (meepleUnder.resistance <= 0) {
+
+                                meepleUnder.key = -1;
+                                meepleOver.topsMeeple = meepleUnder.topsMeeple;
+                                meepleOver.faith += meepleUnder.faith;
+                                terrainTo.spaceLeft++;
+
+                                if (meepleUnder.team < gamePlayers.length) {
+
+                                    gamePlayers[meepleUnder.team].swarmSize--;
+                                }
+                            }
+
+                            if (meepleOver.resistance <= 0) {
+
+                                meepleOver.key = -1;
+                                terrainTo.topMeeple = meepleOver.topsMeeple;
+                                meepleUnder.faith += meepleOver.faith;
+                                terrainTo.spaceLeft++;
+
+                                gamePlayers[meepleOver.team].swarmSize--;
+                            }
                         }
 
-                        if (meepleOver.resistance <= 0) {
-
-                            meepleOver.key = -1;
-                            terrainTo.topMeeple = meepleOver.topsMeeple;
-                            meepleUnder.faith += meepleOver.faith;
-                            terrainTo.spaceLeft++;
-
-                            gamePlayers[meepleOver.team].swarmSize--;
-                        }
                     }
-                }
 
-                gameTerrains[positionToIndex(from, game.boardSize)] = terrainFrom;
-                gameTerrains[positionToIndex(to, game.boardSize)] = terrainTo;
+                    gameTerrains[positionToIndex(from, game.boardSize)] = terrainFrom;
+                    gameTerrains[positionToIndex(to, game.boardSize)] = terrainTo;
+
+                    break;
+                }
             }
         }
     }
@@ -472,12 +512,13 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 col: j
             };
 
-            const geography: Geography = terrainDistribution[Math.floor(Math.random() * terrainDistribution.length)];
+            const geography: Geography = Math.floor((Math.sqrt(8 * (Math.floor(Math.random() * 21) + 1)) - 1) / 2);
 
             let topMeeple: number = -1;
-            let spaceLeft: number = geography;
+            let spaceLeft: number = geography + 1;
 
-            if (spaceLeft > 1 && Math.random() < 0.12) {
+            if (spaceLeft > 1
+                && Math.random() < 0.12) {
 
                 const meeple: Meeple = {
 
@@ -502,7 +543,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 geography: geography,
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple,
-                items: []
+                items: Items.map((item, index) => index === geography && Math.random() < (1 / 6))
             };
         }
     }
@@ -544,7 +585,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             team: team,
             individualActions: 0,
             swarmSize: 1,
-            items: []
+            items: Items.map(() => false)
         };
     }
 
