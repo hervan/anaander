@@ -11,7 +11,7 @@ import {
 
 interface IProps {
     player: Player;
-    enqueuePlay: (move: Play) => void;
+    enqueuePlay: (play: Play) => void;
     active: boolean;
 }
 

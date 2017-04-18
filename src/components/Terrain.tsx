@@ -10,7 +10,7 @@ import {
 
 interface IProps {
     terrain: Terrain;
-    enqueuePlay: (move: Play) => void;
+    enqueuePlay: (play: Play) => void;
 };
 
 function terrainColor(geography: Geography): string {
@@ -31,6 +31,11 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         className={"terrain message is-"
             + terrainColor(props.terrain.geography)}
         style={{ top: props.terrain.position.row * 44, left: props.terrain.position.col * 44 }}>
+        <span className="fa artifact">
+            {Items.map(({ type, piece }) => piece)
+                .filter((type, index) => props.terrain.items[index])
+                .join("")}
+        </span>
     </article>;
 
 export default Terrain;

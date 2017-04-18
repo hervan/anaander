@@ -82,8 +82,8 @@ export default class Setup extends React.Component<IProps, {}> {
                 mode: Mode.tutorial,
                 team: Team.default,
                 from: "player",
-                action: { index: 0 }
-            });
+                action: null
+            }, { index: 0 });
 
             break;
         }
@@ -147,8 +147,8 @@ export default class Setup extends React.Component<IProps, {}> {
                     mode: Mode.tutorial,
                     team: Team.default,
                     from: "player",
-                    action: { index: 0 }
-                })}>here</a> for a short tutorial.)
+                    action: null
+                }, { index: 0 })}>here</a> for a short tutorial.)
             </p>;
 
         return (

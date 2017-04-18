@@ -1,3 +1,128 @@
+/*
+------x-x-x------
+      basic
+------x-x-x------
+
+meeple
+    strength
+    resistance
+    faith
+movement
+swarm
+tile
+conversion
+combat
+
+abilities
+    solo action
+    fusion
+    fission
+    meeple improvement
+    swarm reach
+    swarm size
+
+variations
+    resource consumption/production
+    special powers
+    patterns
+    artifacts
+    exploration
+    city conquest
+    benefits from neighbours
+    terrains
+    meeple breeding
+*/
+
+/*
+------x-x-x------
+     complex
+------x-x-x------
+
+meeple
+    strength
+    faith
+    resistance
+    reach - how far it propagates actions, benefits and special powers
+    influence - how strongly actions, benefits and special powers are carried onto neighbours
+
+swarm
+    size - constrained by resource production
+    reach - defined by meeple attributes
+    swarm benefits - defined by less than tetramino patterns
+        triminos - I or L
+        neighbour - adjacent or diagonal
+        swarm size - if it makes sense for something that would benefit from collectivity
+            faith
+            technology
+        echoes - cumulative benefits from neighbours
+            combos? would combos yield special modifiers?
+
+tile
+    terrain
+    terrain effects
+    terrain-artifact affinity
+    cities
+    resource production of one kind
+
+solo action
+    a small number of actions guaranteed by some entity (cities?)
+    further actions by stray meeples
+        to compensate the benefit of extra actions
+        implement a hindrance of making harder to feed
+        no changes in combat because it's naturally harder for being alone
+
+special powers
+    fusion - combine stats
+    fission - spread stats
+    meeple breeding
+    remote attack
+
+resources
+    food - for meeple attributes
+    energy - for abilities
+    a meeple exploring a terrain produces resources of the kind produced by the terrain
+    meeple strength may make it produce more
+    consider swarm benefits for better production
+
+patterns
+    tetraminos define artifact activation and should give the best special powers
+    triminos should provide benefits to stimulate larger swarms, and should be inherent to larger swarms as well
+    dominos/diagonals should provide the most basic needs
+    swarm size should be used as a parameter for larger things, related to collectivity
+
+artifacts
+    work on activation
+    work on possession
+    maybe both, each giving a different benefit
+
+exploration
+    acquire artifacts
+    produce resources
+    improve city?
+
+cities
+    defense of n actions, the harder the better the benefits
+    should be defeated by consecutive actions, an action by another player resets defenses
+    its owner may use this as form of locally giving a stronger defense
+    give a permanent benefit to the player, like one extra action
+    give benefits upon visiting by friendly player, like healing
+    after conquest, explore improves city - like a stronger defense
+*/
+
+/*
+------x-x-x------
+     analysis
+------x-x-x------
+
+meeple
+terrain
+city
+resource
+artifact
+action
+power
+*/
+
 export enum Team {
     info,
     warning,
@@ -94,15 +219,11 @@ export type Player = {
     items: boolean[];
 };
 
-export type Lesson = {
-    index: number;
-};
-
 export type Play = {
     mode: Mode;
     team: Team;
     from: Position | "player";
-    action: Action | Lesson | null;
+    action: Action | null;
 };
 
 interface IDictionary {
@@ -476,10 +597,12 @@ export function play(game: Game, play: Play): Game {
 
         let mode: Mode = gameStep.mode;
 
-        if (mode !== Mode.tutorial
-            && gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
+        if (mode !== Mode.tutorial) {
 
-            mode = Mode.end;
+            if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
+
+                mode = Mode.end;
+            }
         }
 
         return {
@@ -494,6 +617,27 @@ export function play(game: Game, play: Play): Game {
             lastAction: gameStep.lastAction
         };
     }
+}
+
+function testWinByArtifact(gameStep: Game): Mode {
+
+    const winner = gameStep.players.filter((aPlayer) => aPlayer.items.every((item) => item));
+
+    if (winner.length > 0) {
+
+        gameStep.players = gameStep.players.map((aPlayer) =>
+            aPlayer.team === winner[0].team ?
+            aPlayer :
+            {
+                ...aPlayer,
+                swarmSize: 0
+            }
+        );
+
+        return Mode.end;
+    }
+
+    return gameStep.mode;
 }
 
 export function setup(playerCount: number = 0, boardSize: number = 16): Game {

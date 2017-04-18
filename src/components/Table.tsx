@@ -3,7 +3,6 @@ import * as React from "react";
 import {
     Action,
     Game,
-    Lesson,
     Meeple,
     Mode,
     Play,
@@ -17,7 +16,7 @@ import Board from "./Board";
 import Controls from "./Controls";
 import Setup from "./Setup";
 import Status from "./Status";
-import Tutorial from "./Tutorial";
+import Tutorial, { Lesson } from "./Tutorial";
 
 interface IState {
     game: Game;
@@ -27,7 +26,7 @@ interface IState {
 
 export interface IProps {
     game: Game;
-    enqueuePlay: (play: Play) => void;
+    enqueuePlay: (play: Play, lesson?: Lesson) => void;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -47,7 +46,7 @@ export class Table extends React.Component<{}, IState> {
         };
     }
 
-    enqueuePlay(playData: Play): void {
+    enqueuePlay(playData: Play, lesson?: Lesson): void {
 
         if (playData.team === Team.default) {
 
@@ -76,10 +75,8 @@ export class Table extends React.Component<{}, IState> {
 
                 case Mode.tutorial:
 
-                const lesson = playData.action as Lesson;
-
                 this.setState({
-                    game: tutorial(lesson.index),
+                    game: tutorial(lesson!.index),
                     playQueue: [[], [], [], [], [], []],
                     lesson: lesson
                 });

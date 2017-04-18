@@ -3,15 +3,18 @@ import * as React from "react";
 
 import {
     Action,
-    Lesson,
     Mode,
     Play,
     Team,
     tutorial
 } from "../Game";
 
+export type Lesson = {
+    index: number;
+};
+
 interface IProps {
-    enqueuePlay: (play: Play) => void;
+    enqueuePlay: (play: Play, lesson?: Lesson) => void;
     lesson: Lesson;
 }
 
@@ -86,8 +89,8 @@ export default class Tutorial extends React.Component<IProps, IState> {
             mode: Mode.tutorial,
             team: Team.default,
             from: "player",
-            action: { index: index }
-        });
+            action: null
+        }, { index: index });
     }
 
     playStep(step: number): void {
