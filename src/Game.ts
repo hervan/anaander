@@ -103,6 +103,7 @@ exploration
 cities
     defense of n actions, the harder the better the benefits
     should be defeated by consecutive actions, an action by another player resets defenses
+    or must be occupied by n meeples
     its owner may use this as form of locally giving a stronger defense
     give a permanent benefit to the player, like one extra action
     give benefits upon visiting by friendly player, like healing
