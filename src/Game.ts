@@ -115,12 +115,12 @@ cities
      analysis
 ------x-x-x------
 
-meeple
-terrain
+meeple      ok
+terrain     ok
 city
 resource
-artifact
-action
+artifact    ok
+action      ok
 power
 */
 
@@ -620,25 +620,67 @@ export function play(game: Game, play: Play): Game {
     }
 }
 
-function testWinByArtifact(gameStep: Game): Mode {
+function playSwarm(game: Game, from: Position, action: Action): Game {
 
-    const winner = gameStep.players.filter((aPlayer) => aPlayer.items.every((item) => item));
+    return game;
+}
 
-    if (winner.length > 0) {
+export function newPlay(game: Game, play: Play): Game {
 
-        gameStep.players = gameStep.players.map((aPlayer) =>
-            aPlayer.team === winner[0].team ?
-            aPlayer :
-            {
-                ...aPlayer,
-                swarmSize: 0
-            }
-        );
+    if (play.mode === Mode.setup) {
 
-        return Mode.end;
+        return {
+            ...game,
+            lastAction: { explanation: InvalidPlays.NoGameYet }
+        };
+    } else if (game.currentPlayer !== play.team) {
+
+        return {
+            ...game,
+            lastAction: { explanation: InvalidPlays.NotYourTurn }
+        };
     }
 
-    return gameStep.mode;
+    switch (play.from) {
+
+        case "player":
+
+        return {
+            ...game,
+            currentPlayer: 0,
+            mode: play.mode,
+            lastAction: Action.skip
+        };
+
+        default:
+
+        return updateGameState(playSwarm(game, play.from, play.action!));
+    }
+}
+
+function updateGameState(game: Game): Game {
+
+    let currentPlayer = game.currentPlayer;
+    let turn = game.turn;
+    let mode = game.mode;
+
+    currentPlayer = nextPlayer(game);
+    turn = nextTurn(game);
+
+    if (mode !== Mode.tutorial) {
+
+        if (game.players.filter((player) => player.swarmSize > 0).length < 2) {
+
+            mode = Mode.end;
+        }
+    }
+
+    return {
+        ...game,
+        turn: turn,
+        currentPlayer: currentPlayer,
+        mode: mode
+    };
 }
 
 export function setup(playerCount: number = 0, boardSize: number = 16): Game {

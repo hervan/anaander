@@ -182,12 +182,23 @@ export default class Status extends React.Component<IProps, {}> {
 
                 for (let i: number = 0; i < repetitions; i++) {
 
-                    this.props.enqueuePlay({
-                        mode: this.props.game.mode,
-                        team: this.props.game.currentPlayer,
-                        from: "player",
-                        action: action
-                    });
+                    if (Math.random() < (1 / repetitions)) {
+
+                        this.props.enqueuePlay({
+                            mode: this.props.game.mode,
+                            team: this.props.game.currentPlayer,
+                            from: "player",
+                            action: Action.explore
+                        });
+                    } else {
+
+                        this.props.enqueuePlay({
+                            mode: this.props.game.mode,
+                            team: this.props.game.currentPlayer,
+                            from: "player",
+                            action: action
+                        });
+                    }
                 }
 
             } else {

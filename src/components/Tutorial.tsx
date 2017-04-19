@@ -5,8 +5,7 @@ import {
     Action,
     Mode,
     Play,
-    Team,
-    tutorial
+    Team
 } from "../Game";
 
 export type Lesson = {
@@ -73,7 +72,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
                 }
             } else { // random play
 
-                this.playStep(nextStep < tutorial(this.props.lesson.index).players.length ? nextStep : 0);
+                this.playStep(nextStep); // < tutorial(this.props.lesson.index).players.length ? nextStep : 0);
             }
         }
     }
@@ -113,10 +112,10 @@ export default class Tutorial extends React.Component<IProps, IState> {
 
             this.props.enqueuePlay({
                 mode: Mode.tutorial,
-                team: step as Team,
+                team: (step % 5) as Team,
                 from: "player",
-                action: [ Action.up, Action.left, Action.down, Action.right ]
-                    [Math.floor(Math.random() * 4)]
+                action: [ Action.up, Action.left, Action.down, Action.right, Action.explore ]
+                    [Math.floor(Math.random() * 5)]
             });
         }
     }
