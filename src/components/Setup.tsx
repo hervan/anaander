@@ -3,11 +3,16 @@ import * as React from "react";
 
 import {
     Action,
+    Game,
     Mode,
+    Play,
     Team
 } from "../Game";
 
-import { IProps } from "./Table";
+interface IProps {
+    game: Game;
+    enqueuePlay: (play: Play, lesson?: { index: number }) => void;
+};
 
 export default class Setup extends React.Component<IProps, {}> {
 

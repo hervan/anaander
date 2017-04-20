@@ -29,7 +29,10 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
+                        selected={props.selection.some((p) =>
+                            p.row === terrain.position.row && p.col === terrain.position.col)}
                         enqueuePlay={props.enqueuePlay}
+                        select={props.select}
                     />
                 )}
             </div>

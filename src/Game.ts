@@ -143,7 +143,7 @@ export enum Action {
     skip
 };
 
-type Position = {
+export type Position = {
     row: number;
     col: number;
 };
@@ -300,7 +300,7 @@ function nextTurn(game: Game): Turn {
         game.turn;
 }
 
-function positionToIndex(position: Position, boardSize: number): number {
+export function positionToIndex(position: Position, boardSize: number): number {
 
     return (position.row * boardSize + position.col);
 }
@@ -317,6 +317,33 @@ export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[]): Me
 
         return [...acc, meeple];
     }
+}
+
+export function neighbours(game: Game, position: Position): Position[] {
+
+    const ns = [];
+
+    if (position.row > 0) {
+
+        ns.push({ row: position.row - 1, col: position.col });
+    }
+
+    if (position.col > 0) {
+
+        ns.push({ row: position.row, col: position.col - 1 });
+    }
+
+    if (position.row < game.boardSize - 1) {
+
+        ns.push({ row: position.row + 1, col: position.col });
+    }
+
+    if (position.col < game.boardSize - 1) {
+
+        ns.push({ row: position.row, col: position.col + 1 });
+    }
+
+    return ns;
 }
 
 function moveMeeple(game: Game, from: Position, action: Action): Game {
