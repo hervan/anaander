@@ -9,7 +9,7 @@ import {
     Play,
     play,
     Position,
-    positionToIndex,
+    selectSwarm,
     setup,
     Team,
     tutorial
@@ -65,6 +65,7 @@ export class Table extends React.Component<{}, IState> {
 
                     this.setState({
                         game: setup(0),
+                        selection: [],
                         playQueue: [[], [], [], [], [], []]
                     });
 
@@ -84,6 +85,7 @@ export class Table extends React.Component<{}, IState> {
 
                 this.setState({
                     game: tutorial(lesson!.index),
+                    selection: [],
                     playQueue: [[], [], [], [], [], []],
                     lesson: lesson
                 });
@@ -93,6 +95,7 @@ export class Table extends React.Component<{}, IState> {
                 case Mode.play:
 
                 this.setState({ game: play(this.state.game, playData) });
+                this.autoSelect();
 
                 break;
             }
@@ -111,32 +114,60 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (this.state.game.players.length > 0 && queue[this.state.game.currentPlayer].length > 0) {
-            const playData: Play = queue[this.state.game.currentPlayer].shift() as Play;
-            this.setState({ game: play(this.state.game, playData), playQueue: queue });
+        if (this.state.game.players.length > 0 && queue[this.state.game.currentTeam].length > 0) {
+
+            const playData: Play = queue[this.state.game.currentTeam].shift() as Play;
+
+            const gameStep = play(this.state.game, playData);
+
+            this.setState({
+                game: gameStep,
+                playQueue: queue,
+                selection: []
+            });
+
+            if (gameStep.mode === Mode.play
+                && queue[this.state.game.currentTeam].length === 0) {
+
+                this.autoSelect();
+            }
         }
     }
 
     select(position: Position): void {
 
-        const meepleIndex = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)].topMeeple;
+        if (this.state.game.currentTeam !== Team.default) {
 
-        if (meepleIndex !== -1
-            && this.state.game.currentPlayer !== Team.default
-            && this.state.game.meeples[meepleIndex].team === this.state.game.currentPlayer) {
+            const swarmPositions = selectSwarm(this.state.game, position);
 
-            const selection: Position[] =
-                this.state.selection.filter((p) => p.row !== position.row || p.col !== position.col);
+            if (swarmPositions.length > 0) {
 
-            if (selection.length < this.state.selection.length) {
+                const deSelection = this.state.selection.filter((pos) =>
+                    !swarmPositions.some((p) => p.row === pos.row && p.col === pos.col));
 
-                this.setState({ selection: selection });
+                this.setState({ selection:
+                    this.state.selection.some((pos) => pos.row === position.row && pos.col === position.col) ?
+                    deSelection :
+                    deSelection.concat(swarmPositions)
+                });
+            }
+        }
+    }
 
-            } else {
+    autoSelect(): void {
 
-                selection.push(position);
+        const availableMeeples = this.state.game.terrains.filter((terrain) =>
+            terrain.topMeeple !== -1
+            && this.state.game.meeples[terrain.topMeeple].team === this.state.game.currentTeam
+            && this.state.game.meeples[terrain.topMeeple].turn === this.state.game.turn);
 
-                this.setState({ selection: selection });
+        if (availableMeeples.length > 0) {
+
+            this.select(availableMeeples[0].position);
+
+            if (availableMeeples.length !== this.state.selection.length) {
+
+                this.select(availableMeeples[0].position);
             }
         }
     }

@@ -253,7 +253,7 @@ export type Game = {
     terrains: Terrain[];
     meeples: Meeple[];
     turn: Turn;
-    currentPlayer: Team;
+    currentTeam: Team;
     mode: Mode;
     lastAction: Action | InvalidPlay;
 };
@@ -278,7 +278,7 @@ export function logBoard(game: Game): void {
 
 function nextPlayer(game: Game): Team {
 
-    let player: Team = game.currentPlayer;
+    let player: Team = game.currentTeam;
     let i: number = game.players.length;
 
     do {
@@ -295,12 +295,12 @@ function flipTurn(turn: Turn): Turn {
 
 function nextTurn(game: Game): Turn {
 
-    return nextPlayer(game) <= game.currentPlayer ?
+    return nextPlayer(game) <= game.currentTeam ?
         flipTurn(game.turn) :
         game.turn;
 }
 
-export function positionToIndex(position: Position, boardSize: number): number {
+function positionToIndex(position: Position, boardSize: number): number {
 
     return (position.row * boardSize + position.col);
 }
@@ -319,7 +319,32 @@ export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[]): Me
     }
 }
 
+export function selectSwarm(game: Game, position: Position, selection?: Position[]): Position[] {
+
+    let resultSelection: Position[] = selection ? selection : [];
+
+    const meepleIndex = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
+
+    if (meepleIndex !== -1
+        && game.meeples[meepleIndex].turn === game.turn
+        && game.meeples[meepleIndex].team === game.currentTeam
+        && !resultSelection.some((pos) => position.row === pos.row && position.col === pos.col)) {
+
+        resultSelection.push(position);
+
+        resultSelection = neighbours(game, position).reduce((acc, pos) => selectSwarm(game, pos, acc), resultSelection);
+    }
+
+    return resultSelection.sort((a, b) => positionToIndex(a, game.boardSize) - positionToIndex(b, game.boardSize));
+}
+
 export function neighbours(game: Game, position: Position): Position[] {
+
+    return adjacent(game, position)
+        .concat(diagonal(game, position));
+}
+
+function adjacent(game: Game, position: Position): Position[] {
 
     const ns = [];
 
@@ -346,6 +371,33 @@ export function neighbours(game: Game, position: Position): Position[] {
     return ns;
 }
 
+function diagonal(game: Game, position: Position): Position[] {
+
+    const ns = [];
+
+    if (position.row > 0 && position.col > 0) {
+
+        ns.push({ row: position.row - 1, col: position.col - 1 });
+    }
+
+    if (position.row > 0 && position.col < game.boardSize - 1) {
+
+        ns.push({ row: position.row - 1, col: position.col + 1 });
+    }
+
+    if (position.row < game.boardSize - 1 && position.col > 0) {
+
+        ns.push({ row: position.row + 1, col: position.col - 1 });
+    }
+
+    if (position.row < game.boardSize - 1 && position.col < game.boardSize - 1) {
+
+        ns.push({ row: position.row + 1, col: position.col + 1 });
+    }
+
+    return ns;
+}
+
 function moveMeeple(game: Game, from: Position, action: Action): Game {
 
     const gameMeeples: Meeple[] = game.meeples.slice();
@@ -367,7 +419,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
         lastAction = { explanation: InvalidPlays.EmptyTerrain };
 
-    } else if ((gameMeeples[topMeeple].team as Team) !== game.currentPlayer) {
+    } else if ((gameMeeples[topMeeple].team as Team) !== game.currentTeam) {
 
         lastAction = { explanation: InvalidPlays.WrongTeam };
 
@@ -480,6 +532,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
                             }
 
                             meepleUnder.team = meepleOver.team;
+                            meepleUnder.turn = flipTurn(meepleOver.turn);
                             gamePlayers[meepleOver.team].swarmSize++;
                             meepleOver.resistance += meepleUnder.resistance;
 
@@ -530,7 +583,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
         terrains: gameTerrains.slice(),
         meeples: gameMeeples.slice(),
         turn: game.turn,
-        currentPlayer: game.currentPlayer,
+        currentTeam: game.currentTeam,
         mode: game.mode,
         lastAction: lastAction
     };
@@ -542,7 +595,7 @@ function moveSwarm(game: Game, action: Action): Game {
         game.terrains.map((terrain) => terrain.topMeeple)
             .filter((topMeeple) =>
                 topMeeple !== -1 &&
-                game.meeples[topMeeple].team === game.currentPlayer &&
+                game.meeples[topMeeple].team === game.currentTeam &&
                 game.meeples[topMeeple].turn === game.turn);
 
     return (action === Action.right || action === Action.down ?
@@ -563,11 +616,11 @@ export function play(game: Game, play: Play): Game {
             terrains: game.terrains.slice(),
             meeples: game.meeples.slice(),
             turn: game.turn,
-            currentPlayer: game.currentPlayer,
+            currentTeam: game.currentTeam,
             mode: game.mode,
             lastAction: { explanation: InvalidPlays.NoGameYet }
         };
-    } else if (game.currentPlayer !== play.team) {
+    } else if (game.currentTeam !== play.team) {
 
         return {
 
@@ -576,7 +629,7 @@ export function play(game: Game, play: Play): Game {
             terrains: game.terrains.slice(),
             meeples: game.meeples.slice(),
             turn: game.turn,
-            currentPlayer: game.currentPlayer,
+            currentTeam: game.currentTeam,
             mode: game.mode,
             lastAction: { explanation: InvalidPlays.NotYourTurn }
         };
@@ -593,7 +646,7 @@ export function play(game: Game, play: Play): Game {
             terrains: game.terrains.slice(),
             meeples: game.meeples.slice(),
             turn: game.turn,
-            currentPlayer: 0,
+            currentTeam: 0,
             mode: play.mode,
             lastAction: Action.skip
         };
@@ -640,7 +693,7 @@ export function play(game: Game, play: Play): Game {
             terrains: gameStep.terrains.slice(),
             meeples: gameStep.meeples.slice(),
             turn: turn,
-            currentPlayer: player,
+            currentTeam: player,
             mode: mode,
             lastAction: gameStep.lastAction
         };
@@ -660,7 +713,7 @@ export function newPlay(game: Game, play: Play): Game {
             ...game,
             lastAction: { explanation: InvalidPlays.NoGameYet }
         };
-    } else if (game.currentPlayer !== play.team) {
+    } else if (game.currentTeam !== play.team) {
 
         return {
             ...game,
@@ -674,7 +727,7 @@ export function newPlay(game: Game, play: Play): Game {
 
         return {
             ...game,
-            currentPlayer: 0,
+            currentTeam: 0,
             mode: play.mode,
             lastAction: Action.skip
         };
@@ -687,7 +740,7 @@ export function newPlay(game: Game, play: Play): Game {
 
 function updateGameState(game: Game): Game {
 
-    let currentPlayer = game.currentPlayer;
+    let currentPlayer = game.currentTeam;
     let turn = game.turn;
     let mode = game.mode;
 
@@ -705,7 +758,7 @@ function updateGameState(game: Game): Game {
     return {
         ...game,
         turn: turn,
-        currentPlayer: currentPlayer,
+        currentTeam: currentPlayer,
         mode: mode
     };
 }
@@ -810,7 +863,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         terrains: terrains,
         meeples: meeples.slice(),
         turn: turns[0],
-        currentPlayer: Team.default,
+        currentTeam: Team.default,
         mode: Mode.setup,
         lastAction: { explanation: InvalidPlays.None }
     };
@@ -848,7 +901,7 @@ export function tutorial(index: number): Game {
                 acc.concat([...Array(16).keys()].map((col) => t(row, col))), [] as Terrain[]),
             meeples: [],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -871,7 +924,7 @@ export function tutorial(index: number): Game {
                 }
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -944,7 +997,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -974,7 +1027,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1019,7 +1072,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1064,7 +1117,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1109,7 +1162,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1154,7 +1207,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1249,7 +1302,7 @@ export function tutorial(index: number): Game {
                 }
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1429,7 +1482,7 @@ export function tutorial(index: number): Game {
                 },
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         },
@@ -1494,7 +1547,7 @@ export function tutorial(index: number): Game {
                 }
             ],
             turn: Turn.heads,
-            currentPlayer: Team.info,
+            currentTeam: Team.info,
             mode: Mode.tutorial,
             lastAction: Action.skip
         }

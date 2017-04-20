@@ -51,6 +51,7 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             meeple={meeple.m}
                             translation={translation[meeple.l - 1][meeple.p]}
                             scale={1.4 - (meeple.l  / 7)}
+                            select={props.select}
                         />
                     )}
             </div>

@@ -12,7 +12,7 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 key={player.team}
                 player={player}
                 enqueuePlay={props.enqueuePlay}
-                active={player.team === props.game.currentPlayer}
+                active={player.team === props.game.currentTeam}
             />
         )}
     </div>;

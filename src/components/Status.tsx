@@ -33,7 +33,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.hold
             });
@@ -44,7 +44,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.up
             });
@@ -55,7 +55,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.explore
             });
@@ -66,7 +66,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.left
             });
@@ -77,7 +77,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.down
             });
@@ -88,7 +88,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.right
             });
@@ -99,7 +99,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             this.props.enqueuePlay({
                 mode: Mode.play,
-                team: this.props.game.currentPlayer,
+                team: this.props.game.currentTeam,
                 from: "player",
                 action: Action.skip
             });
@@ -144,7 +144,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             const currentPlayerMeeples: Meeple[] = this.props.game.meeples
                 .filter((meeple) => meeple.key !== -1 &&
-                    meeple.team === this.props.game.currentPlayer);
+                    meeple.team === this.props.game.currentTeam);
 
             if (currentPlayerMeeples.length > 0) {
 
@@ -186,7 +186,7 @@ export default class Status extends React.Component<IProps, {}> {
 
                         this.props.enqueuePlay({
                             mode: this.props.game.mode,
-                            team: this.props.game.currentPlayer,
+                            team: this.props.game.currentTeam,
                             from: "player",
                             action: Action.explore
                         });
@@ -194,7 +194,7 @@ export default class Status extends React.Component<IProps, {}> {
 
                         this.props.enqueuePlay({
                             mode: this.props.game.mode,
-                            team: this.props.game.currentPlayer,
+                            team: this.props.game.currentTeam,
                             from: "player",
                             action: action
                         });
@@ -205,7 +205,7 @@ export default class Status extends React.Component<IProps, {}> {
 
                 this.props.enqueuePlay({
                     mode: this.props.game.mode,
-                    team: this.props.game.currentPlayer,
+                    team: this.props.game.currentTeam,
                     from: "player",
                     action: Action.skip
                 });
@@ -227,8 +227,8 @@ export default class Status extends React.Component<IProps, {}> {
 
             guide =
                 <p>
-                    general <span className={"is-" + Team[this.props.game.currentPlayer]}>
-                        {Team[this.props.game.currentPlayer]}
+                    general <span className={"is-" + Team[this.props.game.currentTeam]}>
+                        {Team[this.props.game.currentTeam]}
                     </span> won the game!
                 </p>;
 
@@ -248,8 +248,8 @@ export default class Status extends React.Component<IProps, {}> {
 
             guide =
                 <p>
-                    it's general <span className={"is-" + Team[this.props.game.currentPlayer]}>
-                        {Team[this.props.game.currentPlayer]}
+                    it's general <span className={"is-" + Team[this.props.game.currentTeam]}>
+                        {Team[this.props.game.currentTeam]}
                     </span>'s turn.
                 </p>;
 
@@ -268,7 +268,7 @@ export default class Status extends React.Component<IProps, {}> {
                     <span className="icon">
                         <i className={"fa fa-user-circle"
                             + (this.props.game.turn === Turn.heads ? "-o" : "")
-                            + " is-" + Team[this.props.game.currentPlayer]}></i>
+                            + " is-" + Team[this.props.game.currentTeam]}></i>
                     </span>;
                 guideDetail = <p>choose an action for these meeples: {side}</p>;
 
