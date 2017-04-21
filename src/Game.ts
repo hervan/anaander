@@ -187,13 +187,6 @@ export enum Turn {
 
 const turns: Turn[] = [ Turn.heads, Turn.tails ];
 
-export enum Mode {
-    tutorial,
-    setup,
-    play,
-    end
-};
-
 export type Meeple = {
     key: number;
     position: Position;
@@ -221,10 +214,15 @@ export type Player = {
 };
 
 export type Play = {
-    mode: Mode;
     team: Team;
-    from: Position | "player";
-    action: Action | null;
+    from: {
+        selection: "meeple";
+        meeple: Position;
+    } | {
+        selection: "swarm";
+        swarm: Position;
+    };
+    action: Action;
 };
 
 interface IDictionary {
@@ -240,7 +238,8 @@ const InvalidPlays: IDictionary = {
     OutOfBoard: "keep your meeples inside the board.",
     NotYourTurn: "wait for your turn to begin.",
     TerrainIsCrowded: "move to a terrain with space available.",
-    NotOnGround: "only meeples on the ground can explore the terrain"
+    NotOnGround: "only meeples on the ground can explore the terrain",
+    NoSelection: "please select meeples before choosing the action"
 };
 
 type InvalidPlay = {
@@ -589,7 +588,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
     };
 }
 
-function moveSwarm(game: Game, action: Action): Game {
+function moveSwarm(game: Game, from: Position, action: Action): Game {
 
     const availablePlayerMeeples: number[] =
         game.terrains.map((terrain) => terrain.topMeeple)
@@ -657,19 +656,35 @@ export function play(game: Game, play: Play): Game {
         let player: Team;
         let turn: Turn;
 
-        switch (play.from) {
+        if (!play.from) {
 
-            case "player":
+            return {
 
-            gameStep = moveSwarm(game, play.action as Action);
+                boardSize: game.boardSize,
+                players: game.players.slice(),
+                terrains: game.terrains.slice(),
+                meeples: game.meeples.slice(),
+                turn: game.turn,
+                currentTeam: game.currentTeam,
+                mode: game.mode,
+                lastAction: { explanation: InvalidPlays.NoSelection }
+            };
+        }
+
+        switch (play.from.selection) {
+
+            case "swarm":
+
+            gameStep = moveSwarm(game, play.from.swarm, play.action!);
             player = nextPlayer(gameStep);
             turn = nextTurn(gameStep);
 
             break;
 
+            case "meeple":
             default:
 
-            gameStep = moveMeeple(game, play.from as Position, play.action as Action);
+            gameStep = moveMeeple(game, play.from.meeple, play.action!);
             player = nextPlayer(gameStep);
             turn = gameStep.turn;
 
@@ -713,7 +728,7 @@ export function newPlay(game: Game, play: Play): Game {
             ...game,
             lastAction: { explanation: InvalidPlays.NoGameYet }
         };
-    } else if (game.currentTeam !== play.team) {
+    } else if (!play.team || game.currentTeam !== play.team) {
 
         return {
             ...game,
@@ -721,9 +736,9 @@ export function newPlay(game: Game, play: Play): Game {
         };
     }
 
-    switch (play.from) {
+    switch (play.from.selection) {
 
-        case "player":
+        case "meeple":
 
         return {
             ...game,
@@ -732,9 +747,10 @@ export function newPlay(game: Game, play: Play): Game {
             lastAction: Action.skip
         };
 
+        case "swarm":
         default:
 
-        return updateGameState(playSwarm(game, play.from, play.action!));
+        return updateGameState(playSwarm(game, play.from.swarm, play.action!));
     }
 }
 

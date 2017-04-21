@@ -4,14 +4,15 @@ import * as React from "react";
 import {
     Action,
     Game,
-    Mode,
     Play,
     Team
 } from "../Game";
 
+import { Control } from "Table";
+
 interface IProps {
     game: Game;
-    enqueuePlay: (play: Play, lesson?: { index: number }) => void;
+    setup: (control: Control) => void;
 };
 
 export default class Setup extends React.Component<IProps, {}> {
@@ -26,69 +27,48 @@ export default class Setup extends React.Component<IProps, {}> {
 
     eventListener(event: KeyboardEvent): void {
 
-        if (this.props.game.mode !== Mode.setup) {
-
-            return;
-        }
-
         switch (event.key) {
 
             case "a":
 
-            this.props.enqueuePlay({
-                mode: Mode.setup,
-                team: Team.default,
-                from: "player",
-                action: Action.left
-            });
+            this.props.setup("-player");
 
             break;
 
             case "s":
 
-            this.props.enqueuePlay({
-                mode: Mode.setup,
-                team: Team.default,
-                from: "player",
-                action: Action.down
-            });
+            this.props.setup("setup");
 
             break;
 
             case "d":
 
-            this.props.enqueuePlay({
-                mode: Mode.setup,
-                team: Team.default,
-                from: "player",
-                action: Action.right
-            });
+            this.props.setup("+player");
+
+            break;
+
+            case "q":
+
+            this.props.setup("-computer");
+
+            break;
+
+            case "e":
+
+            this.props.setup("+computer");
 
             break;
 
             case " ":
 
-            if (this.props.game.players.length > 0) {
-
-                this.props.enqueuePlay({
-                    mode: Mode.play,
-                    team: Team.default,
-                    from: "player",
-                    action: Action.skip
-                });
-            }
+            this.props.setup("begin");
 
             break;
 
             case "/":
             case "?":
 
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: Team.default,
-                from: "player",
-                action: null
-            }, { index: 0 });
+            this.props.setup("tutorial");
 
             break;
         }
@@ -106,54 +86,70 @@ export default class Setup extends React.Component<IProps, {}> {
 
         guide =
             <p>
-                how many players?
-                &nbsp;
-                <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    mode: Mode.setup,
-                    team: Team.default,
-                    from: "player",
-                    action: Action.left
-                })}>
-                    <span className="icon">
-                        <i className="fa fa-minus"></i>
-                    </span>
-                </a>
-                &nbsp;
-                <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    mode: Mode.setup,
-                    team: Team.default,
-                    from: "player",
-                    action: Action.skip
-                })}>
-                    {this.props.game.players.length}
-                </a>
-                &nbsp;
-                <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    mode: Mode.setup,
-                    team: Team.default,
-                    from: "player",
-                    action: Action.right
-                })}>
-                    <span className="icon">
-                        <i className="fa fa-plus"></i>
-                    </span>
-                </a>
+                <p>
+                    how many players?
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("-player")}>
+                        <span className="icon">
+                            <i className="fa fa-minus"></i>
+                        </span>
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("setup")}>
+                        {this.props.game.players.length}
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("+player")}>
+                        <span className="icon">
+                            <i className="fa fa-plus"></i>
+                        </span>
+                    </a>
+                </p>
+                <p>
+                    how many computers?
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("-computer")}>
+                        <span className="icon">
+                            <i className="fa fa-minus"></i>
+                        </span>
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("setup")}>
+                        {this.props.game.players.length}
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("+computer")}>
+                        <span className="icon">
+                            <i className="fa fa-plus"></i>
+                        </span>
+                    </a>
+                </p>
+                <p>
+                    how large the board?
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("-size")}>
+                        <span className="icon">
+                            <i className="fa fa-minus"></i>
+                        </span>
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("setup")}>
+                        {this.props.game.players.length}
+                    </a>
+                    &nbsp;
+                    <a className="is-link" onClick={() => this.props.setup("+size")}>
+                        <span className="icon">
+                            <i className="fa fa-plus"></i>
+                        </span>
+                    </a>
+                </p>
             </p>;
         guideDetail =
             <p>
-                click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    mode: Mode.play,
-                    team: Team.default,
-                    from: "player",
-                    action: null
-                })}>here</a> to begin.
+                click <a className="is-link" onClick={() => this.props.setup("begin")}>here</a> to begin.
                 <br />
-                (or click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                    mode: Mode.tutorial,
-                    team: Team.default,
-                    from: "player",
-                    action: null
-                }, { index: 0 })}>here</a> for a short tutorial.)
+                (or click <a className="is-link"
+                    onClick={() => this.props.setup("begin")}>here</a> for a short tutorial.)
             </p>;
 
         return (

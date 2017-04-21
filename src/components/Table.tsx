@@ -4,7 +4,6 @@ import {
     Action,
     Game,
     Meeple,
-    Mode,
     neighbours,
     Play,
     play,
@@ -21,8 +20,26 @@ import Setup from "./Setup";
 import Status from "./Status";
 import Tutorial, { Lesson } from "./Tutorial";
 
+enum Mode {
+    tutorial,
+    setup,
+    play,
+    end
+};
+
+export type Control =
+    | "setup"
+    | "-player"   | "+player"
+    | "-computer" | "+computer"
+    | "-size"     | "+size"
+    | "begin"     | "tutorial";
+
 interface IState {
     game: Game;
+    mode: Mode;
+    playerCount: number;
+    computerCount: number;
+    boardSize: number;
     selection: Position[];
     playQueue: Play[][];
     lesson?: Lesson;
@@ -48,57 +65,65 @@ export class Table extends React.Component<{}, IState> {
 
         this.state = {
             game: setup(0),
+            mode: Mode.setup,
+            playerCount: 1,
+            computerCount: 1,
+            boardSize: 16,
             selection: [],
             playQueue: [[], [], [], [], [], []]
         };
     }
 
-    enqueuePlay(playData: Play, lesson?: Lesson): void {
+    setup(control: Control, lesson?: Lesson): void {
 
-        if (playData.team === Team.default) {
+        switch (control) {
 
-            switch (playData.mode) {
+            case "setup":
 
-                case Mode.setup:
-
-                if (playData.action === null) {
-
-                    this.setState({
-                        game: setup(0),
-                        selection: [],
-                        playQueue: [[], [], [], [], [], []]
-                    });
-
-                } else {
-
-                    const change: number =
-                        (playData.action === Action.skip ? 0 : this.state.game.players.length)
-                        + (playData.action === Action.right && this.state.game.players.length < 5 ? 1 : 0)
-                        + (playData.action === Action.left && this.state.game.players.length > 0 ? -1 : 0);
-
-                    this.setState({ game: setup(change) });
-                }
-
-                break;
-
-                case Mode.tutorial:
+            if (playData.play === null) {
 
                 this.setState({
-                    game: tutorial(lesson!.index),
+                    game: setup(0),
                     selection: [],
-                    playQueue: [[], [], [], [], [], []],
-                    lesson: lesson
+                    playQueue: [[], [], [], [], [], []]
                 });
 
-                break;
+            } else {
 
-                case Mode.play:
+                const change: number =
+                    (playData.action === Action.skip ? 0 : this.state.game.players.length)
+                    + (playData.action === Action.right && this.state.game.players.length < 5 ? 1 : 0)
+                    + (playData.action === Action.left && this.state.game.players.length > 0 ? -1 : 0);
 
-                this.setState({ game: play(this.state.game, playData) });
-                this.autoSelect();
-
-                break;
+                this.setState({ game: setup(change) });
             }
+
+            break;
+
+            case Mode.tutorial:
+
+            this.setState({
+                game: tutorial(lesson!.index),
+                selection: [],
+                playQueue: [[], [], [], [], [], []],
+                lesson: lesson
+            });
+
+            break;
+
+            case Mode.play:
+
+            this.setState({ game: play(this.state.game, playData) });
+            this.autoSelect();
+
+            break;
+        }
+    }
+
+    enqueuePlay(playData: Play, lesson?: Lesson): void {
+
+        if (!playData.play) {
+
         } else {
 
             const queue: Play[][] = this.state.playQueue;
@@ -117,7 +142,6 @@ export class Table extends React.Component<{}, IState> {
         if (this.state.game.players.length > 0 && queue[this.state.game.currentTeam].length > 0) {
 
             const playData: Play = queue[this.state.game.currentTeam].shift() as Play;
-
             const gameStep = play(this.state.game, playData);
 
             this.setState({
@@ -147,8 +171,7 @@ export class Table extends React.Component<{}, IState> {
 
                 this.setState({ selection:
                     this.state.selection.some((pos) => pos.row === position.row && pos.col === position.col) ?
-                    deSelection :
-                    deSelection.concat(swarmPositions)
+                    deSelection : deSelection.concat(swarmPositions)
                 });
             }
         }
@@ -192,7 +215,7 @@ export class Table extends React.Component<{}, IState> {
             case Mode.setup:
             leftPanel = <Setup
                 game={this.state.game}
-                enqueuePlay={this.enqueuePlay.bind(this)} />;
+                setup={this.setup.bind(this)} />;
             break;
 
             default:
