@@ -85,10 +85,8 @@ export default class Setup extends React.Component<IProps, {}> {
         let guideDetail: JSX.Element;
 
         guide =
-            <p>
+            <div>
                 <p>
-                    how many players?
-                    &nbsp;
                     <a className="is-link" onClick={() => this.props.setup("-player")}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
@@ -104,10 +102,10 @@ export default class Setup extends React.Component<IProps, {}> {
                             <i className="fa fa-plus"></i>
                         </span>
                     </a>
+                    &nbsp;
+                    number of human players
                 </p>
                 <p>
-                    how many computers?
-                    &nbsp;
                     <a className="is-link" onClick={() => this.props.setup("-computer")}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
@@ -123,10 +121,10 @@ export default class Setup extends React.Component<IProps, {}> {
                             <i className="fa fa-plus"></i>
                         </span>
                     </a>
+                    &nbsp;
+                    number of automatic players
                 </p>
                 <p>
-                    how large the board?
-                    &nbsp;
                     <a className="is-link" onClick={() => this.props.setup("-size")}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
@@ -142,8 +140,10 @@ export default class Setup extends React.Component<IProps, {}> {
                             <i className="fa fa-plus"></i>
                         </span>
                     </a>
+                    &nbsp;
+                    board size
                 </p>
-            </p>;
+            </div>;
         guideDetail =
             <p>
                 click <a className="is-link" onClick={() => this.props.setup("begin")}>here</a> to begin.
@@ -156,7 +156,7 @@ export default class Setup extends React.Component<IProps, {}> {
             <div id="status" className="tile is-3 is-parent">
                 <div className="notification tile is-child">
                     <h1 className="title is-2">anaander</h1>
-                    <h2 className="subtitle is-4">
+                    <h2 className="is-2">
                         {guide}
                     </h2>
                     <span>

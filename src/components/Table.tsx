@@ -2,6 +2,7 @@ import * as React from "react";
 
 import {
     Action,
+    begin,
     Game,
     Meeple,
     neighbours,
@@ -46,10 +47,11 @@ interface IState {
 };
 
 export interface IProps {
+    setup: (control: Control) => void;
+    enqueuePlay: (team: Team, action: Action) => void;
+    select: (position: Position) => void;
     game: Game;
     selection: Position[];
-    enqueuePlay: (play: Play, lesson?: Lesson) => void;
-    select: (position: Position) => void;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -70,40 +72,32 @@ export class Table extends React.Component<{}, IState> {
             computerCount: 1,
             boardSize: 16,
             selection: [],
-            playQueue: [[], [], [], [], [], []]
+            playQueue: [[], [], [], [], []]
         };
     }
 
-    setup(control: Control, lesson?: Lesson): void {
+    setup(control: Control, lesson: Lesson = { index: 0 }): void {
 
         switch (control) {
 
             case "setup":
 
-            if (playData.play === null) {
-
-                this.setState({
-                    game: setup(0),
-                    selection: [],
-                    playQueue: [[], [], [], [], [], []]
-                });
-
-            } else {
-
-                const change: number =
-                    (playData.action === Action.skip ? 0 : this.state.game.players.length)
-                    + (playData.action === Action.right && this.state.game.players.length < 5 ? 1 : 0)
-                    + (playData.action === Action.left && this.state.game.players.length > 0 ? -1 : 0);
-
-                this.setState({ game: setup(change) });
-            }
+            this.setState({
+                game: setup(2),
+                mode: Mode.setup,
+                playerCount: 1,
+                computerCount: 1,
+                boardSize: 16,
+                selection: [],
+                playQueue: [[], [], [], [], [], []]
+            });
 
             break;
 
-            case Mode.tutorial:
+            case "tutorial":
 
             this.setState({
-                game: tutorial(lesson!.index),
+                game: tutorial(lesson.index),
                 selection: [],
                 playQueue: [[], [], [], [], [], []],
                 lesson: lesson
@@ -111,23 +105,28 @@ export class Table extends React.Component<{}, IState> {
 
             break;
 
-            case Mode.play:
+            case "begin":
 
-            this.setState({ game: play(this.state.game, playData) });
+            this.setState({ game: begin(this.state.game) });
             this.autoSelect();
 
             break;
         }
     }
 
-    enqueuePlay(playData: Play, lesson?: Lesson): void {
+    enqueuePlay(team: Team, action: Action): void {
 
-        if (!playData.play) {
-
-        } else {
+        if (this.state.selection.length > 0) {
 
             const queue: Play[][] = this.state.playQueue;
-            queue[playData.team].push(playData);
+            queue[team].push({
+                team: team,
+                action: action,
+                from: {
+                    selection: "swarm",
+                    swarm: this.state.selection[0]
+                }
+            });
             this.setState({
                 playQueue: queue,
                 selection: []
@@ -150,7 +149,7 @@ export class Table extends React.Component<{}, IState> {
                 selection: []
             });
 
-            if (gameStep.mode === Mode.play
+            if (gameStep.currentTeam !== Team.default
                 && queue[this.state.game.currentTeam].length === 0) {
 
                 this.autoSelect();
@@ -162,18 +161,20 @@ export class Table extends React.Component<{}, IState> {
 
         if (this.state.game.currentTeam !== Team.default) {
 
-            const swarmPositions = selectSwarm(this.state.game, position);
+            this.setState({ selection: selectSwarm(this.state.game, position) });
 
-            if (swarmPositions.length > 0) {
+            // const swarmPositions = selectSwarm(this.state.game, position);
 
-                const deSelection = this.state.selection.filter((pos) =>
-                    !swarmPositions.some((p) => p.row === pos.row && p.col === pos.col));
+            // if (swarmPositions.length > 0) {
 
-                this.setState({ selection:
-                    this.state.selection.some((pos) => pos.row === position.row && pos.col === position.col) ?
-                    deSelection : deSelection.concat(swarmPositions)
-                });
-            }
+            //     const deSelection = this.state.selection.filter((pos) =>
+            //         !swarmPositions.some((p) => p.row === pos.row && p.col === pos.col));
+
+            //     this.setState({ selection:
+            //         this.state.selection.some((pos) => pos.row === position.row && pos.col === position.col) ?
+            //         deSelection : deSelection.concat(swarmPositions)
+            //     });
+            // }
         }
     }
 
@@ -204,34 +205,37 @@ export class Table extends React.Component<{}, IState> {
 
         let leftPanel: JSX.Element;
 
-        switch (this.state.game.mode) {
+        switch (this.state.mode) {
 
             case Mode.tutorial:
             leftPanel = <Tutorial
+                setup={this.setup.bind(this)}
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 lesson={this.state.lesson!} />;
             break;
 
             case Mode.setup:
             leftPanel = <Setup
-                game={this.state.game}
-                setup={this.setup.bind(this)} />;
+                setup={this.setup.bind(this)}
+                game={this.state.game} />;
             break;
 
             default:
             leftPanel = <Status
-                game={this.state.game}
-                selection={this.state.selection}
+                setup={this.setup.bind(this)}
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                select={this.select.bind(this)} />;
+                select={this.select.bind(this)}
+                game={this.state.game}
+                selection={this.state.selection} />;
         }
 
-        const rightPanel = this.state.game.mode !== Mode.tutorial ?
+        const rightPanel = this.state.mode !== Mode.tutorial ?
             <Controls
-                game={this.state.game}
-                selection={this.state.selection}
+                setup={this.setup.bind(this)}
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                select={this.select.bind(this)} /> :
+                select={this.select.bind(this)}
+                game={this.state.game}
+                selection={this.state.selection} /> :
             null;
 
         return (
@@ -242,10 +246,11 @@ export class Table extends React.Component<{}, IState> {
                         {leftPanel}
 
                         <Board
-                            game={this.state.game}
-                            selection={this.state.selection}
+                            setup={this.setup.bind(this)}
                             enqueuePlay={this.enqueuePlay.bind(this)}
-                            select={this.select.bind(this)} />
+                            select={this.select.bind(this)}
+                            game={this.state.game}
+                            selection={this.state.selection} />
 
                         {rightPanel}
 

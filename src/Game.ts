@@ -182,7 +182,8 @@ export const Items: Item[] = [
 
 export enum Turn {
     heads,
-    tails
+    tails,
+    end
 };
 
 const turns: Turn[] = [ Turn.heads, Turn.tails ];
@@ -234,7 +235,6 @@ const InvalidPlays: IDictionary = {
     WrongTurnHeads: "move a meeple with heads up.",
     WrongTurnTails: "move a meeple with tails up.",
     EmptyTerrain: "choose a terrain with a meeple in it.",
-    NoGameYet: "wait for a game to begin.",
     OutOfBoard: "keep your meeples inside the board.",
     NotYourTurn: "wait for your turn to begin.",
     TerrainIsCrowded: "move to a terrain with space available.",
@@ -253,7 +253,6 @@ export type Game = {
     meeples: Meeple[];
     turn: Turn;
     currentTeam: Team;
-    mode: Mode;
     lastAction: Action | InvalidPlay;
 };
 
@@ -583,7 +582,6 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
         meeples: gameMeeples.slice(),
         turn: game.turn,
         currentTeam: game.currentTeam,
-        mode: game.mode,
         lastAction: lastAction
     };
 }
@@ -606,7 +604,7 @@ function moveSwarm(game: Game, from: Position, action: Action): Game {
 
 export function play(game: Game, play: Play): Game {
 
-    if (play.mode === Mode.setup) {
+    if (game.currentTeam !== play.team) {
 
         return {
 
@@ -616,20 +614,6 @@ export function play(game: Game, play: Play): Game {
             meeples: game.meeples.slice(),
             turn: game.turn,
             currentTeam: game.currentTeam,
-            mode: game.mode,
-            lastAction: { explanation: InvalidPlays.NoGameYet }
-        };
-    } else if (game.currentTeam !== play.team) {
-
-        return {
-
-            boardSize: game.boardSize,
-            players: game.players.slice(),
-            terrains: game.terrains.slice(),
-            meeples: game.meeples.slice(),
-            turn: game.turn,
-            currentTeam: game.currentTeam,
-            mode: game.mode,
             lastAction: { explanation: InvalidPlays.NotYourTurn }
         };
     }
@@ -646,7 +630,6 @@ export function play(game: Game, play: Play): Game {
             meeples: game.meeples.slice(),
             turn: game.turn,
             currentTeam: 0,
-            mode: play.mode,
             lastAction: Action.skip
         };
 
@@ -666,7 +649,6 @@ export function play(game: Game, play: Play): Game {
                 meeples: game.meeples.slice(),
                 turn: game.turn,
                 currentTeam: game.currentTeam,
-                mode: game.mode,
                 lastAction: { explanation: InvalidPlays.NoSelection }
             };
         }
@@ -691,14 +673,9 @@ export function play(game: Game, play: Play): Game {
             break;
         }
 
-        let mode: Mode = gameStep.mode;
+        if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
 
-        if (mode !== Mode.tutorial) {
-
-            if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
-
-                mode = Mode.end;
-            }
+            turn = Turn.end;
         }
 
         return {
@@ -709,7 +686,6 @@ export function play(game: Game, play: Play): Game {
             meeples: gameStep.meeples.slice(),
             turn: turn,
             currentTeam: player,
-            mode: mode,
             lastAction: gameStep.lastAction
         };
     }
@@ -722,13 +698,7 @@ function playSwarm(game: Game, from: Position, action: Action): Game {
 
 export function newPlay(game: Game, play: Play): Game {
 
-    if (play.mode === Mode.setup) {
-
-        return {
-            ...game,
-            lastAction: { explanation: InvalidPlays.NoGameYet }
-        };
-    } else if (!play.team || game.currentTeam !== play.team) {
+    if (!play.team || game.currentTeam !== play.team) {
 
         return {
             ...game,
@@ -743,7 +713,6 @@ export function newPlay(game: Game, play: Play): Game {
         return {
             ...game,
             currentTeam: 0,
-            mode: play.mode,
             lastAction: Action.skip
         };
 
@@ -756,26 +725,21 @@ export function newPlay(game: Game, play: Play): Game {
 
 function updateGameState(game: Game): Game {
 
-    let currentPlayer = game.currentTeam;
+    let currentTeam = game.currentTeam;
     let turn = game.turn;
-    let mode = game.mode;
 
-    currentPlayer = nextPlayer(game);
+    currentTeam = nextPlayer(game);
     turn = nextTurn(game);
 
-    if (mode !== Mode.tutorial) {
+    if (game.players.filter((player) => player.swarmSize > 0).length < 2) {
 
-        if (game.players.filter((player) => player.swarmSize > 0).length < 2) {
-
-            mode = Mode.end;
-        }
+        turn = Turn.end;
     }
 
     return {
         ...game,
         turn: turn,
-        currentTeam: currentPlayer,
-        mode: mode
+        currentTeam: currentTeam
     };
 }
 
@@ -878,13 +842,25 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         players: players,
         terrains: terrains,
         meeples: meeples.slice(),
-        turn: turns[0],
+        turn: Turn.end,
         currentTeam: Team.default,
-        mode: Mode.setup,
-        lastAction: { explanation: InvalidPlays.None }
+        lastAction: Action.skip
     };
 
     return game;
+}
+
+export function begin(game: Game): Game {
+
+    return {
+
+        ...game,
+        turn: turns[0],
+        currentTeam:
+            game.players.length > 0 ?
+            game.players[0].team :
+            Team.default
+    };
 }
 
 function t(row: number, col: number, topMeeple: number = -1): Terrain {
@@ -904,12 +880,7 @@ export function tutorial(index: number): Game {
 
     const tutorialStepsScenarios: Game[] = [
         // tutorial start
-        play(setup(5), {
-            mode: Mode.tutorial,
-            team: Team.default,
-            from: "player",
-            action: null
-        }),
+        begin(setup(5)),
         { // the board
             boardSize: 16,
             players: [],
@@ -918,7 +889,6 @@ export function tutorial(index: number): Game {
             meeples: [],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // a blue meeple
@@ -941,7 +911,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // the meeple colors
@@ -1014,7 +983,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // the moves
@@ -1044,7 +1012,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // moving over meeples
@@ -1089,7 +1056,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // converting a meeple
@@ -1134,7 +1100,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // battling meeples
@@ -1179,7 +1144,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // dying meeple
@@ -1224,7 +1188,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // the swarm
@@ -1319,7 +1282,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // hi
@@ -1499,7 +1461,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         },
         { // the conflicts
@@ -1564,7 +1525,6 @@ export function tutorial(index: number): Game {
             ],
             turn: Turn.heads,
             currentTeam: Team.info,
-            mode: Mode.tutorial,
             lastAction: Action.skip
         }
     ];

@@ -3,17 +3,19 @@ import * as React from "react";
 
 import {
     Action,
-    Mode,
     Play,
     Team
 } from "../Game";
+
+import { Control } from "Table";
 
 export type Lesson = {
     index: number;
 };
 
 interface IProps {
-    enqueuePlay: (play: Play, lesson?: Lesson) => void;
+    setup: (control: Control, lesson?: Lesson) => void;
+    enqueuePlay: (team: Team, action: Action) => void;
     lesson: Lesson;
 }
 
@@ -84,12 +86,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
             autoplay: autoplay
         });
 
-        this.props.enqueuePlay({
-            mode: Mode.tutorial,
-            team: Team.default,
-            from: "player",
-            action: null
-        }, { index: index });
+        this.props.setup("tutorial", { index: index });
     }
 
     playStep(step: number): void {
@@ -102,21 +99,11 @@ export default class Tutorial extends React.Component<IProps, IState> {
 
             const [ team, action ] = plays[step];
 
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: team,
-                from: "player",
-                action: action
-            });
+            this.props.enqueuePlay(team, action);
         } else { // random play
 
-            this.props.enqueuePlay({
-                mode: Mode.tutorial,
-                team: (step % 5) as Team,
-                from: "player",
-                action: [ Action.up, Action.left, Action.down, Action.right, Action.explore ]
-                    [Math.floor(Math.random() * 5)]
-            });
+            this.props.enqueuePlay((step % 5) as Team,
+                [ Action.up, Action.left, Action.down, Action.right, Action.explore ][Math.floor(Math.random() * 5)]);
         }
     }
 
@@ -182,12 +169,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
             case "/":
             case "?":
 
-            this.props.enqueuePlay({
-                mode: Mode.setup,
-                team: Team.default,
-                from: "player",
-                action: null
-            });
+            this.props.setup("setup");
 
             break;
         }
@@ -238,12 +220,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
                 <div className="notification tile is-child">
                     <h1 className="title is-2">anaander tutorial</h1>
                     <h2 className="subtitle is-4">
-                        (click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                            mode: Mode.setup,
-                            team: Team.default,
-                            from: "player",
-                            action: null
-                        })}>here</a> to go back.)
+                        (click <a className="is-link" onClick={() => this.props.setup("setup")}>here</a> to go back.)
                     </h2>
                     {elTutorial}
                 </div>

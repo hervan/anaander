@@ -1,4 +1,13 @@
-import { Game, logBoard, play, setup } from "../src/Game";
+import {
+    Action,
+    begin,
+    Game,
+    logBoard,
+    play,
+    selectSwarm,
+    setup,
+    Team
+} from "../src/Game";
 
 describe("game setup with 2 players on a 4x4 board", () => {
 
@@ -21,7 +30,7 @@ describe("game setup with 2 players on a 4x4 board", () => {
 
     it("find 2 non-neutral meeples on the table", () => {
         expect(game.meeples.filter((meeple) =>
-            meeple.team !== "default").length)
+            meeple.team !== Team.default).length)
             .toBeGreaterThanOrEqual(game.players.length);
     });
 });
@@ -34,12 +43,7 @@ describe("first player move", () => {
 
         const setupGame: Game = setup(2, 4);
 
-        game = play(setupGame, {
-            mode: "play",
-            player: "default",
-            from: "player",
-            action: null
-        });
+        game = begin(setupGame);
 
         logBoard(game);
     });
@@ -57,66 +61,98 @@ describe("first player move", () => {
     it("find 2 non-neutral meeples on the table", () => {
 
         expect(game.meeples.reduce((acc, meeple) =>
-            meeple.team !== "default" ? acc + 1 : acc, 0))
+            meeple.team !== Team.default ? acc + 1 : acc, 0))
             .toBeGreaterThanOrEqual(2);
     });
 
     it("find 2 non-neutral meeples on the board", () => {
 
         const moveGame1: Game = play(game, {
-            mode: "play",
-            player: game.currentPlayer,
-            from: "player",
-            action: "up"
+            team: game.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: game.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(game, position).length > 0)
+            },
+            action: Action.up
         });
 
         const moveGame2: Game = play(moveGame1, {
-            mode: "play",
-            player: moveGame1.currentPlayer,
-            from: "player",
-            action: "up"
+            team: moveGame1.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame1.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame1, position).length > 0)
+            },
+            action: Action.up
         });
 
         const moveGame3: Game = play(moveGame2, {
-            mode: "play",
-            player: moveGame2.currentPlayer,
-            from: "player",
-            action: "right"
+            team: moveGame2.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame2.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame2, position).length > 0)
+            },
+            action: Action.right
         });
 
         const moveGame4: Game = play(moveGame3, {
-            mode: "play",
-            player: moveGame3.currentPlayer,
-            from: "player",
-            action: "right"
+            team: moveGame3.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame3.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame3, position).length > 0)
+            },
+            action: Action.right
         });
 
         const moveGame5: Game = play(moveGame4, {
-            mode: "play",
-            player: moveGame4.currentPlayer,
-            from: "player",
-            action: "down"
+            team: moveGame4.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame4.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame4, position).length > 0)
+            },
+            action: Action.down
         });
 
         const moveGame6: Game = play(moveGame5, {
-            mode: "play",
-            player: moveGame5.currentPlayer,
-            from: "player",
-            action: "down"
+            team: moveGame5.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame5.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame5, position).length > 0)
+            },
+            action: Action.down
         });
 
         const moveGame7: Game = play(moveGame6, {
-            mode: "play",
-            player: moveGame6.currentPlayer,
-            from: "player",
-            action: "left"
+            team: moveGame6.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame6.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame6, position).length > 0)
+            },
+            action: Action.left
         });
 
         const moveGame8: Game = play(moveGame7, {
-            mode: "play",
-            player: moveGame7.currentPlayer,
-            from: "player",
-            action: "left"
+            team: moveGame7.currentTeam,
+            from: {
+                selection: "swarm",
+                swarm: moveGame7.meeples
+                    .map((meeple) => meeple.position)
+                        .find((position) => selectSwarm(moveGame7, position).length > 0)
+            },
+            action: Action.left
         });
 
         expect(moveGame8.terrains.reduce((acc, terrain) =>

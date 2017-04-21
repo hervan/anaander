@@ -1,6 +1,7 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 import {
+    Action,
     Geography,
     Items,
     Play,
@@ -12,7 +13,7 @@ import {
 interface IProps {
     terrain: Terrain;
     selected: boolean;
-    enqueuePlay: (play: Play) => void;
+    enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
 };
 

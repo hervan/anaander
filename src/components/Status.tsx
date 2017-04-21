@@ -4,7 +4,6 @@ import * as React from "react";
 import {
     Action,
     Meeple,
-    Mode,
     Play,
     Team,
     Turn
@@ -31,90 +30,50 @@ export default class Status extends React.Component<IProps, {}> {
 
             case "q":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.hold
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.hold);
 
             break;
 
             case "w":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.up
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.up);
 
             break;
 
             case "e":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.explore
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.explore);
 
             break;
 
             case "a":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.left
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.left);
 
             break;
 
             case "s":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.down
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.down);
 
             break;
 
             case "d":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.right
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.right);
 
             break;
 
             case " ":
 
-            this.props.enqueuePlay({
-                mode: Mode.play,
-                team: this.props.game.currentTeam,
-                from: "player",
-                action: Action.skip
-            });
+            this.props.enqueuePlay(this.props.game.currentTeam, Action.skip);
 
             break;
 
             case "/":
             case "?":
 
-            this.props.enqueuePlay({
-                mode: Mode.setup,
-                team: Team.default,
-                from: "player",
-                action: null
-            });
+            this.props.setup("setup");
 
             break;
         }
@@ -122,7 +81,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     componentDidUpdate(prevProps: IProps): void {
 
-        if (prevProps.game.mode !== Mode.end && this.props.game.mode === Mode.end) {
+        if (prevProps.game.turn !== Turn.end && this.props.game.turn === Turn.end) {
 
             window.clearTimeout(this.refresher);
             this.animateEnding = this.animateEnding.bind(this);
@@ -138,7 +97,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     animateEnding(): void {
 
-        if (this.props.game.mode === Mode.end) {
+        if (this.props.game.turn === Turn.end) {
 
             let repetitions = 5;
 
@@ -184,31 +143,16 @@ export default class Status extends React.Component<IProps, {}> {
 
                     if (Math.random() < (1 / repetitions)) {
 
-                        this.props.enqueuePlay({
-                            mode: this.props.game.mode,
-                            team: this.props.game.currentTeam,
-                            from: "player",
-                            action: Action.explore
-                        });
+                        this.props.enqueuePlay(this.props.game.currentTeam, Action.explore);
                     } else {
 
-                        this.props.enqueuePlay({
-                            mode: this.props.game.mode,
-                            team: this.props.game.currentTeam,
-                            from: "player",
-                            action: action
-                        });
+                        this.props.enqueuePlay(this.props.game.currentTeam, action);
                     }
                 }
 
             } else {
 
-                this.props.enqueuePlay({
-                    mode: this.props.game.mode,
-                    team: this.props.game.currentTeam,
-                    from: "player",
-                    action: Action.skip
-                });
+                this.props.enqueuePlay(this.props.game.currentTeam, Action.skip);
             }
 
             window.clearTimeout(this.refresher);
@@ -221,9 +165,7 @@ export default class Status extends React.Component<IProps, {}> {
         let guide: JSX.Element;
         let guideDetail: JSX.Element;
 
-        switch (this.props.game.mode) {
-
-            case Mode.end:
+        if (this.props.game.turn === Turn.end) {
 
             guide =
                 <p>
@@ -234,17 +176,10 @@ export default class Status extends React.Component<IProps, {}> {
 
             guideDetail =
                 <p>
-                    click <a className="is-link" onClick={() => this.props.enqueuePlay({
-                        mode: Mode.setup,
-                        team: Team.default,
-                        from: "player",
-                        action: null
-                    })}>here</a> to start a new game.
+                    click <a className="is-link" onClick={() => this.props.setup("begin")}>here</a> to begin a new game.
                 </p>;
 
-            break;
-
-            default:
+        } else {
 
             guide =
                 <p>

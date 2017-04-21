@@ -3,7 +3,6 @@ import * as React from "react";
 import {
     Action,
     Items,
-    Mode,
     Play,
     Player,
     Team
@@ -11,7 +10,7 @@ import {
 
 interface IProps {
     player: Player;
-    enqueuePlay: (play: Play) => void;
+    enqueuePlay: (team: Team, action: Action) => void;
     active: boolean;
 }
 
@@ -34,34 +33,19 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                         <div className="control tile is-child">
                             <p>
                                 <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay({
-                                    mode: Mode.play,
-                                    team: props.player.team,
-                                    from: "player",
-                                    action: Action.hold
-                                })}>
+                                    onClick={() => props.enqueuePlay(props.player.team, Action.hold)}>
                                     <span className="icon is-small">
                                         <i className="fa fa-hand-paper-o"></i>
                                     </span>
                                 </a>
                                 <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay({
-                                    mode: Mode.play,
-                                    team: props.player.team,
-                                    from: "player",
-                                    action: Action.up
-                                })}>
+                                    onClick={() => props.enqueuePlay(props.player.team, Action.up)}>
                                     <span className="icon is-small">
                                         <i className="fa fa-hand-o-up"></i>
                                     </span>
                                 </a>
                                 <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay({
-                                    mode: Mode.play,
-                                    team: props.player.team,
-                                    from: "player",
-                                    action: Action.explore
-                                })}>
+                                    onClick={() => props.enqueuePlay(props.player.team, Action.explore)}>
                                     <span className="icon is-small">
                                         <i className="fa fa-hand-rock-o"></i>
                                     </span>
@@ -69,34 +53,19 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             </p>
                             <p>
                                 <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay({
-                                    mode: Mode.play,
-                                    team: props.player.team,
-                                    from: "player",
-                                    action: Action.left
-                                })}>
+                                    onClick={() => props.enqueuePlay(props.player.team, Action.left)}>
                                     <span className="icon is-small">
                                         <i className="fa fa-hand-o-left"></i>
                                     </span>
                                 </a>
                                 <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay({
-                                    mode: Mode.play,
-                                    team: props.player.team,
-                                    from: "player",
-                                    action: Action.down
-                                })}>
+                                    onClick={() => props.enqueuePlay(props.player.team, Action.down)}>
                                     <span className="icon is-small">
                                         <i className="fa fa-hand-o-down"></i>
                                     </span>
                                 </a>
                                 <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay({
-                                    mode: Mode.play,
-                                    team: props.player.team,
-                                    from: "player",
-                                    action: Action.right
-                                })}>
+                                    onClick={() => props.enqueuePlay(props.player.team, Action.right)}>
                                     <span className="icon is-small">
                                         <i className="fa fa-hand-o-right"></i>
                                     </span>
