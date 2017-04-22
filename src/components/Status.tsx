@@ -3,13 +3,27 @@ import * as React from "react";
 
 import {
     Action,
+    Game,
     Meeple,
     Play,
+    Position,
     Team,
     Turn
 } from "../Game";
 
-import { IProps } from "./Table";
+import {
+    Control,
+    Mode
+} from "./Table";
+
+interface IProps {
+    setup: (control: Control) => void;
+    enqueuePlay: (team: Team, action: Action) => void;
+    select: (position: Position) => void;
+    game: Game;
+    mode: Mode;
+    selection: Position[];
+};
 
 export default class Status extends React.Component<IProps, {}> {
 
@@ -81,7 +95,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     componentDidUpdate(prevProps: IProps): void {
 
-        if (prevProps.game.turn !== Turn.end && this.props.game.turn === Turn.end) {
+        if (prevProps.mode !== Mode.end && this.props.mode === Mode.end) {
 
             window.clearTimeout(this.refresher);
             this.animateEnding = this.animateEnding.bind(this);
@@ -97,7 +111,7 @@ export default class Status extends React.Component<IProps, {}> {
 
     animateEnding(): void {
 
-        if (this.props.game.turn === Turn.end) {
+        if (this.props.mode === Mode.end) {
 
             let repetitions = 5;
 
@@ -165,7 +179,7 @@ export default class Status extends React.Component<IProps, {}> {
         let guide: JSX.Element;
         let guideDetail: JSX.Element;
 
-        if (this.props.game.turn === Turn.end) {
+        if (this.props.mode === Mode.end) {
 
             guide =
                 <p>
@@ -176,7 +190,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             guideDetail =
                 <p>
-                    click <a className="is-link" onClick={() => this.props.setup("begin")}>here</a> to begin a new game.
+                    click <a className="is-link" onClick={() => this.props.setup("setup")}>here</a> to play a new game.
                 </p>;
 
         } else {

@@ -157,6 +157,6 @@ describe("first player move", () => {
 
         expect(moveGame8.terrains.reduce((acc, terrain) =>
             terrain.topMeeple > -1 ? acc + 1 : acc, 0))
-        .toBeGreaterThanOrEqual(2);
+        .toBeGreaterThanOrEqual(3);
     });
 });

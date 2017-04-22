@@ -1,17 +1,27 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
+
 import {
     Action,
+    Item,
     Items,
     Play,
     Player,
     Team
 } from "../Game";
 
+import {
+    Control,
+    SelectMode
+} from "./Table";
+
 interface IProps {
     player: Player;
+    setup: (control: Control, item?: Item) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     active: boolean;
+    selectMode: SelectMode;
+    item: Item;
 }
 
 const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -74,20 +84,27 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                         </div>
                         <div className="tile is-child">
                             <p title="if you lose\nall your meeples\nyou're dead.">
-                                <a className={"button is-outlined is-" + Team[props.player.team]}
-                                    style={{ textDecoration: "none" }}>
+                                <a className={"button is-" + Team[props.player.team]
+                                    + (props.active && props.selectMode === "swarm" ?
+                                    " is-active" : " is-outlined")}
+                                    style={{ textDecoration: "none" }}
+                                    onClick={() => props.setup("swarm")}>
                                     <span className="icon is-small">
                                         <i className="fa fa-users fa-fw"></i>
                                     </span>
                                     <span>{props.player.swarmSize}</span>
                                 </a>
                             </p>
-                            <p title={"individual actions to be performed\n"
-                                    + "before or after your swarm action\n"
-                                    + "on available meeples."}>
-                                <a className={"button is-outlined is-" + Team[props.player.team]}
+                            <p title={"actions to be assigned to individual\n"
+                                    + "meeples whenever they're available.\n"
+                                    + "every turn you can do it a number of times\n"
+                                    + "equal to the number of cities you control."}>
+                                <a className={"button is-" + Team[props.player.team]
+                                    + (props.active && props.selectMode === "individual" ?
+                                    " is-active" : " is-outlined")}
                                     disabled={props.player.individualActions <= 0}
-                                    style={{ textDecoration: "none" }}>
+                                    style={{ textDecoration: "none" }}
+                                    onClick={() => props.setup("individual")}>
                                     <span className="icon is-small">
                                         <i className="fa fa-user fa-fw"></i>
                                     </span>
@@ -101,9 +118,12 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             <p>
                                 {Items.map(({ type, piece }, i) =>
                                     <a key={i}
-                                        className={"button is-outlined is-" + Team[props.player.team]}
+                                        className={"button is-" + Team[props.player.team]
+                                        + (props.active && props.selectMode === "pattern" && props.item
+                                        && props.item.piece === piece ? " is-active" : " is-outlined")}
                                         title={type}
-                                        disabled={!props.player.items[i]}>
+                                        disabled={!props.player.items[i]}
+                                        onClick={() => props.setup("pattern", Items[i])}>
                                         <span className="icon">
                                             <span className="fa artifact">{piece}</span>
                                         </span>

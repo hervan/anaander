@@ -12,6 +12,9 @@ import { Control } from "Table";
 
 interface IProps {
     game: Game;
+    playerCount: number;
+    computerCount: number;
+    boardSize: number;
     setup: (control: Control) => void;
 };
 
@@ -29,33 +32,57 @@ export default class Setup extends React.Component<IProps, {}> {
 
         switch (event.key) {
 
-            case "a":
+            case "q":
 
             this.props.setup("-player");
 
             break;
 
-            case "s":
+            case "w":
 
-            this.props.setup("setup");
-
-            break;
-
-            case "d":
-
-            this.props.setup("+player");
-
-            break;
-
-            case "q":
-
-            this.props.setup("-computer");
+            this.props.setup("rearrange");
 
             break;
 
             case "e":
 
+            this.props.setup("+player");
+
+            break;
+
+            case "a":
+
+            this.props.setup("-computer");
+
+            break;
+
+            case "s":
+
+            this.props.setup("rearrange");
+
+            break;
+
+            case "d":
+
             this.props.setup("+computer");
+
+            break;
+
+            case "z":
+
+            this.props.setup("-size");
+
+            break;
+
+            case "x":
+
+            this.props.setup("rearrange");
+
+            break;
+
+            case "c":
+
+            this.props.setup("+size");
 
             break;
 
@@ -93,8 +120,8 @@ export default class Setup extends React.Component<IProps, {}> {
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("setup")}>
-                        {this.props.game.players.length}
+                    <a className="is-link" onClick={() => this.props.setup("rearrange")}>
+                        {this.props.playerCount}
                     </a>
                     &nbsp;
                     <a className="is-link" onClick={() => this.props.setup("+player")}>
@@ -103,7 +130,7 @@ export default class Setup extends React.Component<IProps, {}> {
                         </span>
                     </a>
                     &nbsp;
-                    number of human players
+                    human players
                 </p>
                 <p>
                     <a className="is-link" onClick={() => this.props.setup("-computer")}>
@@ -112,8 +139,8 @@ export default class Setup extends React.Component<IProps, {}> {
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("setup")}>
-                        {this.props.game.players.length}
+                    <a className="is-link" onClick={() => this.props.setup("rearrange")}>
+                        {this.props.computerCount}
                     </a>
                     &nbsp;
                     <a className="is-link" onClick={() => this.props.setup("+computer")}>
@@ -122,7 +149,7 @@ export default class Setup extends React.Component<IProps, {}> {
                         </span>
                     </a>
                     &nbsp;
-                    number of automatic players
+                    automatic players
                 </p>
                 <p>
                     <a className="is-link" onClick={() => this.props.setup("-size")}>
@@ -131,8 +158,8 @@ export default class Setup extends React.Component<IProps, {}> {
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("setup")}>
-                        {this.props.game.players.length}
+                    <a className="is-link" onClick={() => this.props.setup("rearrange")}>
+                        {this.props.boardSize}
                     </a>
                     &nbsp;
                     <a className="is-link" onClick={() => this.props.setup("+size")}>
@@ -149,7 +176,7 @@ export default class Setup extends React.Component<IProps, {}> {
                 click <a className="is-link" onClick={() => this.props.setup("begin")}>here</a> to begin.
                 <br />
                 (or click <a className="is-link"
-                    onClick={() => this.props.setup("begin")}>here</a> for a short tutorial.)
+                    onClick={() => this.props.setup("tutorial")}>here</a> for a short tutorial.)
             </p>;
 
         return (

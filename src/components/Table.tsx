@@ -2,16 +2,21 @@ import * as React from "react";
 
 import {
     Action,
+    availableMeeples,
     begin,
     Game,
+    isMeepleAvailable,
+    Item,
     Meeple,
     neighbours,
     Play,
     play,
     Position,
+    positionToIndex,
     selectSwarm,
     setup,
     Team,
+    Turn,
     tutorial
 } from "../Game";
 
@@ -21,37 +26,36 @@ import Setup from "./Setup";
 import Status from "./Status";
 import Tutorial, { Lesson } from "./Tutorial";
 
-enum Mode {
+export enum Mode {
     tutorial,
     setup,
     play,
     end
 };
 
+export type SelectMode =
+| "swarm"
+| "pattern"
+| "individual";
+
 export type Control =
-    | "setup"
-    | "-player"   | "+player"
-    | "-computer" | "+computer"
-    | "-size"     | "+size"
-    | "begin"     | "tutorial";
+| "setup"     | "rearrange"
+| "-player"   | "+player"
+| "-computer" | "+computer"
+| "-size"     | "+size"
+| "begin"     | "tutorial"
+| SelectMode;
 
 interface IState {
     game: Game;
     mode: Mode;
+    selectMode: SelectMode;
     playerCount: number;
     computerCount: number;
     boardSize: number;
     selection: Position[];
     playQueue: Play[][];
-    lesson?: Lesson;
-};
-
-export interface IProps {
-    setup: (control: Control) => void;
-    enqueuePlay: (team: Team, action: Action) => void;
-    select: (position: Position) => void;
-    game: Game;
-    selection: Position[];
+    param?: Lesson | Item;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -65,50 +69,151 @@ export class Table extends React.Component<{}, IState> {
         window.clearInterval(this.refresher);
         this.refresher = window.setInterval(() => this.dequeue(), 85);
 
+        const defaultPlayerCount = 1;
+        const defaultComputerCount = 1;
+        const defaultBoardSize = 16;
+
         this.state = {
-            game: setup(0),
+            game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
             mode: Mode.setup,
-            playerCount: 1,
-            computerCount: 1,
-            boardSize: 16,
+            selectMode: "swarm",
+            playerCount: defaultPlayerCount,
+            computerCount: defaultComputerCount,
+            boardSize: defaultBoardSize,
             selection: [],
-            playQueue: [[], [], [], [], []]
+            playQueue: [[], [], [], [], [], []]
         };
     }
 
-    setup(control: Control, lesson: Lesson = { index: 0 }): void {
+    setup(control: Control, param?: Lesson | Item): void {
 
         switch (control) {
 
             case "setup":
 
+            const defaultPlayerCount = 1;
+            const defaultComputerCount = 1;
+            const defaultBoardSize = 16;
+
             this.setState({
-                game: setup(2),
+                game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
-                playerCount: 1,
-                computerCount: 1,
-                boardSize: 16,
+                playerCount: defaultPlayerCount,
+                computerCount: defaultComputerCount,
+                boardSize: defaultBoardSize,
                 selection: [],
                 playQueue: [[], [], [], [], [], []]
             });
 
             break;
 
-            case "tutorial":
+            case "rearrange":
 
             this.setState({
-                game: tutorial(lesson.index),
-                selection: [],
-                playQueue: [[], [], [], [], [], []],
-                lesson: lesson
+                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize),
+            });
+
+            break;
+
+            case "-player":
+
+            if (this.state.playerCount > 0 && this.state.playerCount + this.state.computerCount > 1) {
+
+                this.setState({
+                    game: setup((this.state.playerCount - 1) + this.state.computerCount, this.state.boardSize),
+                    playerCount: this.state.playerCount - 1,
+                });
+            }
+
+            break;
+
+            case "+player":
+
+            if (this.state.playerCount + this.state.computerCount < 5) {
+
+                this.setState({
+                    game: setup((this.state.playerCount + 1) + this.state.computerCount, this.state.boardSize),
+                    playerCount: this.state.playerCount + 1,
+                });
+            }
+
+            break;
+
+            case "-computer":
+
+            if (this.state.computerCount > 0 && this.state.playerCount + this.state.computerCount > 1) {
+
+                this.setState({
+                    game: setup(this.state.playerCount + (this.state.computerCount - 1), this.state.boardSize),
+                    computerCount: this.state.computerCount - 1,
+                });
+            }
+
+            break;
+
+            case "+computer":
+
+            if (this.state.playerCount + this.state.computerCount < 5) {
+
+                this.setState({
+                    game: setup(this.state.playerCount + (this.state.computerCount + 1), this.state.boardSize),
+                    computerCount: this.state.computerCount + 1,
+                });
+            }
+
+            break;
+
+            case "-size":
+
+            if (this.state.boardSize > this.state.playerCount + this.state.computerCount + 3) {
+
+                this.setState({
+                    game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 1),
+                    boardSize: this.state.boardSize - 1,
+                });
+            }
+
+            break;
+
+            case "+size":
+
+            this.setState({
+                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 1),
+                boardSize: this.state.boardSize + 1,
             });
 
             break;
 
             case "begin":
 
-            this.setState({ game: begin(this.state.game) });
+            this.setState({
+                game: begin(this.state.game),
+                mode: Mode.play
+            });
             this.autoSelect();
+
+            break;
+
+            case "tutorial":
+
+            const p = param ? param as Lesson : { index: 0 };
+
+            this.setState({
+                game: tutorial(p.index),
+                mode: Mode.tutorial,
+                param: p
+            });
+
+            break;
+
+            case "swarm":
+            case "pattern":
+            case "individual":
+
+            this.setState({
+                selectMode: control,
+                param: param
+            });
 
             break;
         }
@@ -116,22 +221,33 @@ export class Table extends React.Component<{}, IState> {
 
     enqueuePlay(team: Team, action: Action): void {
 
-        if (this.state.selection.length > 0) {
+        const queue: Play[][] = this.state.playQueue;
 
-            const queue: Play[][] = this.state.playQueue;
+        if (action === Action.skip) {
+
             queue[team].push({
                 team: team,
-                action: action,
-                from: {
-                    selection: "swarm",
+                play: {
+                    type: "skip",
+                    action: action
+                }
+            });
+        } else if (this.state.selection.length > 0) {
+
+            queue[team].push({
+                team: team,
+                play: {
+                    action: action,
+                    type: "swarm",
                     swarm: this.state.selection[0]
                 }
             });
-            this.setState({
-                playQueue: queue,
-                selection: []
-            });
         }
+
+        this.setState({
+            playQueue: queue,
+            selection: []
+        });
     }
 
     dequeue(): void {
@@ -143,8 +259,14 @@ export class Table extends React.Component<{}, IState> {
             const playData: Play = queue[this.state.game.currentTeam].shift() as Play;
             const gameStep = play(this.state.game, playData);
 
+            const mode =
+                gameStep.turn === Turn.none ?
+                Mode.end :
+                this.state.mode;
+
             this.setState({
                 game: gameStep,
+                mode: mode,
                 playQueue: queue,
                 selection: []
             });
@@ -159,39 +281,52 @@ export class Table extends React.Component<{}, IState> {
 
     select(position: Position): void {
 
-        if (this.state.game.currentTeam !== Team.default) {
+        switch (this.state.selectMode) {
 
-            this.setState({ selection: selectSwarm(this.state.game, position) });
+            case "swarm":
 
-            // const swarmPositions = selectSwarm(this.state.game, position);
+            if (this.state.game.currentTeam !== Team.default) {
 
-            // if (swarmPositions.length > 0) {
+                this.setState({ selection: selectSwarm(this.state.game, position) });
+            }
 
-            //     const deSelection = this.state.selection.filter((pos) =>
-            //         !swarmPositions.some((p) => p.row === pos.row && p.col === pos.col));
+            break;
 
-            //     this.setState({ selection:
-            //         this.state.selection.some((pos) => pos.row === position.row && pos.col === position.col) ?
-            //         deSelection : deSelection.concat(swarmPositions)
-            //     });
-            // }
+            case "individual":
+
+            if (isMeepleAvailable(this.state.game, position)) {
+
+                this.setState({ selection: [position] });
+            }
+
+            break;
+
+            case "pattern":
+
+            break;
         }
     }
 
     autoSelect(): void {
 
-        const availableMeeples = this.state.game.terrains.filter((terrain) =>
-            terrain.topMeeple !== -1
-            && this.state.game.meeples[terrain.topMeeple].team === this.state.game.currentTeam
-            && this.state.game.meeples[terrain.topMeeple].turn === this.state.game.turn);
+        const meeples = availableMeeples(this.state.game);
 
-        if (availableMeeples.length > 0) {
+        if (meeples.length > 0) {
 
-            this.select(availableMeeples[0].position);
+            const selection = selectSwarm(this.state.game, meeples[0].position);
 
-            if (availableMeeples.length !== this.state.selection.length) {
+            if (meeples.length === selection.length) {
 
-                this.select(availableMeeples[0].position);
+                this.setState({
+                    selectMode: "swarm",
+                    selection: selection
+                });
+            } else {
+
+                this.setState({
+                    selectMode: "swarm",
+                    selection: []
+                });
             }
         }
     }
@@ -211,13 +346,16 @@ export class Table extends React.Component<{}, IState> {
             leftPanel = <Tutorial
                 setup={this.setup.bind(this)}
                 enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={this.state.lesson!} />;
+                lesson={this.state.param as Lesson} />;
             break;
 
             case Mode.setup:
             leftPanel = <Setup
-                setup={this.setup.bind(this)}
-                game={this.state.game} />;
+                game={this.state.game}
+                playerCount={this.state.playerCount}
+                computerCount={this.state.computerCount}
+                boardSize={this.state.boardSize}
+                setup={this.setup.bind(this)} />;
             break;
 
             default:
@@ -226,6 +364,7 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 select={this.select.bind(this)}
                 game={this.state.game}
+                mode={this.state.mode}
                 selection={this.state.selection} />;
         }
 
@@ -235,7 +374,9 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 select={this.select.bind(this)}
                 game={this.state.game}
-                selection={this.state.selection} /> :
+                selection={this.state.selection}
+                selectMode={this.state.selectMode}
+                item={this.state.param as Item} /> :
             null;
 
         return (

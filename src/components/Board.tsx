@@ -2,13 +2,26 @@
 import * as React from "react";
 
 import {
+    Action,
+    Game,
     Meeple as MeepleType,
-    meeplesBelow
+    meeplesBelow,
+    Position,
+    Team
 } from "../Game";
+
 import Meeple from "./Meeple";
 import Terrain from "./Terrain";
 
-import { IProps } from "./Table";
+import { Control } from "Table";
+
+interface IProps {
+    setup: (control: Control) => void;
+    enqueuePlay: (team: Team, action: Action) => void;
+    select: (position: Position) => void;
+    game: Game;
+    selection: Position[];
+};
 
 const translation: Array<Array<{ row: number, col: number }>> =
 [
@@ -39,7 +52,7 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
             <div key="meeples" className="board">
                 {props.game.terrains
                     .filter((terrain) => terrain.topMeeple !== -1)
-                    .map((terrain) => meeplesBelow(props.game, terrain.topMeeple, []))
+                    .map((terrain) => meeplesBelow(props.game, terrain.topMeeple))
                     .reduce((acc, meeples) => [
                         ...acc,
                         ...meeples.map((meeple, index) => ({ m: meeple, p: index, l: meeples.length }))

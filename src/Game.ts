@@ -157,20 +157,12 @@ export enum Geography {
     plains
 }
 
-type Item = {
-    type:
-    | "energy"
-    | "food"
-    | "ore"
-    | "relic"
-    | "technology";
-    piece:
-    | "i"
-    | "l"
-    | "o"
-    | "s"
-    | "t";
-};
+export type Item =
+| { type: "energy"; piece: "i" }
+| { type: "food"; piece: "l" }
+| { type: "ore"; piece: "o" }
+| { type: "relic"; piece: "s" }
+| { type: "technology"; piece: "t" };
 
 export const Items: Item[] = [
     { type: "energy", piece: "i" },
@@ -183,7 +175,7 @@ export const Items: Item[] = [
 export enum Turn {
     heads,
     tails,
-    end
+    none
 };
 
 const turns: Turn[] = [ Turn.heads, Turn.tails ];
@@ -216,14 +208,18 @@ export type Player = {
 
 export type Play = {
     team: Team;
-    from: {
-        selection: "meeple";
+    play: {
+        type: "meeple";
+        action: Action;
         meeple: Position;
     } | {
-        selection: "swarm";
+        type: "swarm";
+        action: Action;
         swarm: Position;
-    };
-    action: Action;
+    } | {
+        type: "skip";
+        action: Action.skip;
+    }
 };
 
 interface IDictionary {
@@ -298,12 +294,12 @@ function nextTurn(game: Game): Turn {
         game.turn;
 }
 
-function positionToIndex(position: Position, boardSize: number): number {
+export function positionToIndex(position: Position, boardSize: number): number {
 
     return (position.row * boardSize + position.col);
 }
 
-export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[]): Meeple[] {
+export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[] = []): Meeple[] {
 
     const meeple: Meeple = game.meeples[meepleIndex];
 
@@ -315,6 +311,21 @@ export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[]): Me
 
         return [...acc, meeple];
     }
+}
+
+export function availableMeeples(game: Game): Meeple[] {
+
+    return game.terrains.filter((terrain) => isMeepleAvailable(game, terrain.position))
+        .map((terrain) => game.meeples[terrain.topMeeple]);
+}
+
+export function isMeepleAvailable(game: Game, position: Position): boolean {
+
+    const meepleIndex = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
+
+    return meepleIndex !== -1
+        && game.meeples[meepleIndex].team === game.currentTeam
+        && game.meeples[meepleIndex].turn === game.turn;
 }
 
 export function selectSwarm(game: Game, position: Position, selection?: Position[]): Position[] {
@@ -417,7 +428,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
         lastAction = { explanation: InvalidPlays.EmptyTerrain };
 
-    } else if ((gameMeeples[topMeeple].team as Team) !== game.currentTeam) {
+    } else if (gameMeeples[topMeeple].team !== game.currentTeam) {
 
         lastAction = { explanation: InvalidPlays.WrongTeam };
 
@@ -449,10 +460,9 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
             break;
 
             case Action.explore:
-            lastAction =
-                gameMeeples[topMeeple].topsMeeple === -1 ?
-                null :
-                { explanation: InvalidPlays.NotOnGround };
+            lastAction = gameMeeples[topMeeple].topsMeeple === -1
+                || meeplesBelow(game, topMeeple).every((meeple) => meeple.team === game.currentTeam) ?
+                null : { explanation: InvalidPlays.NotOnGround };
             break;
 
             default:
@@ -491,6 +501,8 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
                     terrainTo.items.forEach((item, index) => {
 
                         if (item && !gamePlayers[gameMeeples[meeple.key].team].items[index]) {
+
+                            gamePlayers[gameMeeples[meeple.key].team].individualActions++;
 
                             terrainTo.items[index] = false;
                             gamePlayers[gameMeeples[meeple.key].team].items[index] = true;
@@ -588,17 +600,10 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
 function moveSwarm(game: Game, from: Position, action: Action): Game {
 
-    const availablePlayerMeeples: number[] =
-        game.terrains.map((terrain) => terrain.topMeeple)
-            .filter((topMeeple) =>
-                topMeeple !== -1 &&
-                game.meeples[topMeeple].team === game.currentTeam &&
-                game.meeples[topMeeple].turn === game.turn);
+    const meeples: Meeple[] = availableMeeples(game);
 
     return (action === Action.right || action === Action.down ?
-        availablePlayerMeeples.reverse() :
-        availablePlayerMeeples)
-        .map((meepleIndex) => game.meeples[meepleIndex])
+        meeples.reverse() : meeples)
         .reduce((acc, meeple) => moveMeeple(acc, meeple.position, action), game);
 }
 
@@ -636,29 +641,25 @@ export function play(game: Game, play: Play): Game {
         default:
 
         let gameStep: Game;
-        let player: Team;
+        let team: Team;
         let turn: Turn;
 
-        if (!play.from) {
+        switch (play.play.type) {
+
+            case "skip":
 
             return {
 
-                boardSize: game.boardSize,
-                players: game.players.slice(),
-                terrains: game.terrains.slice(),
-                meeples: game.meeples.slice(),
-                turn: game.turn,
-                currentTeam: game.currentTeam,
-                lastAction: { explanation: InvalidPlays.NoSelection }
+                ...game,
+                currentTeam: nextPlayer(game),
+                turn: nextTurn(game),
+                lastAction: play.play.action
             };
-        }
-
-        switch (play.from.selection) {
 
             case "swarm":
 
-            gameStep = moveSwarm(game, play.from.swarm, play.action!);
-            player = nextPlayer(gameStep);
+            gameStep = moveSwarm(game, play.play.swarm, play.play.action);
+            team = nextPlayer(gameStep);
             turn = nextTurn(gameStep);
 
             break;
@@ -666,8 +667,8 @@ export function play(game: Game, play: Play): Game {
             case "meeple":
             default:
 
-            gameStep = moveMeeple(game, play.from.meeple, play.action!);
-            player = nextPlayer(gameStep);
+            gameStep = moveMeeple(game, play.play.meeple, play.play.action);
+            team = nextPlayer(gameStep);
             turn = gameStep.turn;
 
             break;
@@ -675,7 +676,7 @@ export function play(game: Game, play: Play): Game {
 
         if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
 
-            turn = Turn.end;
+            turn = Turn.none;
         }
 
         return {
@@ -685,7 +686,7 @@ export function play(game: Game, play: Play): Game {
             terrains: gameStep.terrains.slice(),
             meeples: gameStep.meeples.slice(),
             turn: turn,
-            currentTeam: player,
+            currentTeam: team,
             lastAction: gameStep.lastAction
         };
     }
@@ -706,20 +707,24 @@ export function newPlay(game: Game, play: Play): Game {
         };
     }
 
-    switch (play.from.selection) {
+    switch (play.play.type) {
 
-        case "meeple":
+        case "swarm":
+
+        return updateGameState(playSwarm(game, play.play.swarm, play.play.action));
+
+        case "swarm":
+
+        return updateGameState(playSwarm(game, play.play.swarm, play.play.action));
+
+        default:
+        case "skip":
 
         return {
             ...game,
             currentTeam: 0,
             lastAction: Action.skip
         };
-
-        case "swarm":
-        default:
-
-        return updateGameState(playSwarm(game, play.from.swarm, play.action!));
     }
 }
 
@@ -733,7 +738,7 @@ function updateGameState(game: Game): Game {
 
     if (game.players.filter((player) => player.swarmSize > 0).length < 2) {
 
-        turn = Turn.end;
+        turn = Turn.none;
     }
 
     return {
@@ -842,7 +847,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         players: players,
         terrains: terrains,
         meeples: meeples.slice(),
-        turn: Turn.end,
+        turn: Turn.none,
         currentTeam: Team.default,
         lastAction: Action.skip
     };

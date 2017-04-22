@@ -46,14 +46,14 @@
     "webpack-dev-server": "^2.4.1"
   },
   "jest": {
+    "transform": {
+      "^.+\\.(ts|tsx)$": "./preprocessor.js"
+    },
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js"
     ],
-    "transform": {
-      "^.+\\.(ts|tsx)$": "<rootDir>/preprocessor.js"
-    },
     "testMatch": [
       "<rootDir>/tests/*.(ts|tsx|js)"
     ]
