@@ -46,6 +46,14 @@ export type Control =
 | "begin"     | "tutorial"
 | SelectMode;
 
+export type Zoom = {
+    scale: number;
+    origin: {
+        x: number;
+        y: number;
+    };
+};
+
 interface IState {
     game: Game;
     mode: Mode;
@@ -54,6 +62,7 @@ interface IState {
     computerCount: number;
     boardSize: number;
     selection: Position[];
+    zoom: Zoom;
     playQueue: Play[][];
     param?: Lesson | Item;
 };
@@ -81,8 +90,16 @@ export class Table extends React.Component<{}, IState> {
             computerCount: defaultComputerCount,
             boardSize: defaultBoardSize,
             selection: [],
+            zoom: {
+                scale: 1,
+                origin: { x: 0, y: 0 }
+            },
             playQueue: [[], [], [], [], [], []]
         };
+
+        this.wheel = this.wheel.bind(this);
+        window.removeEventListener("mousewheel", this.wheel);
+        window.addEventListener("mousewheel", this.wheel);
     }
 
     setup(control: Control, param?: Lesson | Item): void {
@@ -98,10 +115,15 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
+                selectMode: "swarm",
                 playerCount: defaultPlayerCount,
                 computerCount: defaultComputerCount,
                 boardSize: defaultBoardSize,
                 selection: [],
+                zoom: {
+                    scale: 1,
+                    origin: { x: 0, y: 0 }
+                },
                 playQueue: [[], [], [], [], [], []]
             });
 
@@ -111,6 +133,10 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize),
+                zoom: {
+                    scale: 1,
+                    origin: { x: 0, y: 0 }
+                }
             });
 
             break;
@@ -170,6 +196,10 @@ export class Table extends React.Component<{}, IState> {
                 this.setState({
                     game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 1),
                     boardSize: this.state.boardSize - 1,
+                    zoom: {
+                        scale: 1,
+                        origin: { x: 0, y: 0 }
+                    }
                 });
             }
 
@@ -180,6 +210,10 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 1),
                 boardSize: this.state.boardSize + 1,
+                zoom: {
+                    scale: 1,
+                    origin: { x: 0, y: 0 }
+                }
             });
 
             break;
@@ -188,7 +222,11 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 game: begin(this.state.game),
-                mode: Mode.play
+                mode: Mode.play,
+                zoom: {
+                    scale: 1,
+                    origin: { x: 0, y: 0 }
+                }
             });
             this.autoSelect();
 
@@ -201,6 +239,10 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: tutorial(p.index),
                 mode: Mode.tutorial,
+                zoom: {
+                    scale: 1,
+                    origin: { x: 0, y: 0 }
+                },
                 param: p
             });
 
@@ -331,6 +373,30 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
+    wheel(e: WheelEvent): void {
+
+        const board = document.getElementById("board");
+
+        if (board) {
+
+            if ((e.currentTarget as Element).id === board.id) {
+
+                const zoom: Zoom = {
+                    scale: Math.max(1, this.state.zoom.scale * (e.wheelDelta > 0 ? 1.1 : 0.9)),
+                    origin: { x: e.x, y: e.y }
+                };
+
+                this.setState({
+                    zoom: zoom
+                });
+            } else {
+
+                window.removeEventListener("mousewheel", this.wheel);
+                board.addEventListener("mousewheel", this.wheel);
+            }
+        }
+    }
+
     componentWillUnmount(): void {
 
         window.clearInterval(this.refresher);
@@ -368,36 +434,42 @@ export class Table extends React.Component<{}, IState> {
                 selection={this.state.selection} />;
         }
 
-        const rightPanel = this.state.mode !== Mode.tutorial ?
-            <Controls
-                setup={this.setup.bind(this)}
-                enqueuePlay={this.enqueuePlay.bind(this)}
-                select={this.select.bind(this)}
-                game={this.state.game}
-                selection={this.state.selection}
-                selectMode={this.state.selectMode}
-                item={this.state.param as Item} /> :
+        const panelStyle = {
+            display: "inline-block",
+            margin: "2vmin",
+            width: "47.5vmin",
+            height: "95vmin",
+            overflow: "hidden"
+        };
+
+        const rightPanel = this.state.mode === Mode.play || this.state.mode === Mode.end ?
+            <div style={panelStyle}>
+                <Controls
+                    setup={this.setup.bind(this)}
+                    enqueuePlay={this.enqueuePlay.bind(this)}
+                    select={this.select.bind(this)}
+                    game={this.state.game}
+                    selection={this.state.selection}
+                    selectMode={this.state.selectMode}
+                    item={this.state.param as Item} />
+            </div> :
             null;
 
         return (
-            <section className="section">
-                <div className="container is-fluid">
-                    <div id="table" className="tile is-ancestor">
-
-                        {leftPanel}
-
-                        <Board
-                            setup={this.setup.bind(this)}
-                            enqueuePlay={this.enqueuePlay.bind(this)}
-                            select={this.select.bind(this)}
-                            game={this.state.game}
-                            selection={this.state.selection} />
-
-                        {rightPanel}
-
-                    </div>
+            <div>
+                <Board
+                    setup={this.setup.bind(this)}
+                    enqueuePlay={this.enqueuePlay.bind(this)}
+                    game={this.state.game}
+                    select={this.select.bind(this)}
+                    selection={this.state.selection}
+                    zoom={this.state.zoom}
+                />
+                <div style={panelStyle}>
+                    {leftPanel}
                 </div>
-            </section>
+                {rightPanel}
+            </div>
         );
     }
 }

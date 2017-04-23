@@ -216,14 +216,12 @@ export default class Tutorial extends React.Component<IProps, IState> {
             </div>;
 
         return (
-            <div id="status" className="tile is-4 is-parent">
-                <div className="notification tile is-child">
-                    <h1 className="title is-2">anaander tutorial</h1>
-                    <h2 className="subtitle is-4">
-                        (click <a className="is-link" onClick={() => this.props.setup("setup")}>here</a> to go back.)
-                    </h2>
-                    {elTutorial}
-                </div>
+            <div className="notification">
+                <h1 className="title is-2">anaander tutorial</h1>
+                <h2 className="subtitle is-4">
+                    (click <a className="is-link" onClick={() => this.props.setup("setup")}>here</a> to go back.)
+                </h2>
+                {elTutorial}
             </div>
         );
     };

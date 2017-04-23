@@ -180,16 +180,14 @@ export default class Setup extends React.Component<IProps, {}> {
             </p>;
 
         return (
-            <div id="status" className="tile is-3 is-parent">
-                <div className="notification tile is-child">
-                    <h1 className="title is-2">anaander</h1>
-                    <h2 className="is-2">
-                        {guide}
-                    </h2>
-                    <span>
-                        {guideDetail}
-                    </span>
-                </div>
+            <div className="notification">
+                <h1 className="title is-2">anaander</h1>
+                <h2 className="is-2">
+                    {guide}
+                </h2>
+                <span>
+                    {guideDetail}
+                </span>
             </div>
         );
     }

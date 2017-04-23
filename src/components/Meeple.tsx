@@ -21,8 +21,8 @@ const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <div onClick={() => props.select(props.meeple.position)}>
         <span className={"icon is-medium meeple is-" + Team[props.meeple.team]}
             style={{
-                top: props.meeple.position.row * 44 + 7 + props.translation.row,
-                left: props.meeple.position.col * 44 + 7 + props.translation.col,
+                top: props.meeple.position.row * 45 + 7 + props.translation.row,
+                left: props.meeple.position.col * 45 + 7 + props.translation.col,
                 transform: "scale(" + props.scale + ")",
                 opacity: 0.5 + (props.meeple.resistance / 20)
             }}>

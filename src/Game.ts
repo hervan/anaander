@@ -149,11 +149,11 @@ export type Position = {
 };
 
 export enum Geography {
+    city,
     swamp,
     island,
     mountain,
     forest,
-    city,
     plains
 }
 
@@ -795,7 +795,10 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 geography: geography,
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple,
-                items: Items.map((item, index) => index === geography && Math.random() < (1 / 6))
+                items: Items.map((item, index) =>
+                    geography !== Geography.city
+                    && index === geography - 1
+                    && Math.random() < (1 / 6))
             };
         }
     }

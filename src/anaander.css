@@ -31,17 +31,6 @@
     }
 }
 
-@keyframes flip-in-hor-bottom {
-  0% {
-    transform: rotateX(80deg);
-    opacity: 0;
-  }
-  100% {
-    transform: rotateX(0);
-    opacity: 1;
-  }
-}
-
 @keyframes jello-vertical {
   0% {
     transform: scale(1, 1);
@@ -94,8 +83,18 @@
 }
 
 .board {
-    position: relative;
+    position: fixed;
     box-sizing: border-box;
+    width: 95vmin;
+    height: 95vmin;
+}
+
+#board {
+    width: 95vmin;
+    height: 95vmin;
+    transition-property: top, left, color, opacity, transform;
+    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+    transition-timing-function: ease-out;
 }
 
 .terrain {
@@ -124,7 +123,10 @@
 }
 
 .player {
-    animation: flip-in-hor-bottom 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    transform: scale(0.93, 0.93);
+    transition-property: top, left, color, opacity, transform;
+    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
+    transition-timing-function: ease-in;
 }
 
 .current-player {

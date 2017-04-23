@@ -13,14 +13,18 @@ import {
 import Meeple from "./Meeple";
 import Terrain from "./Terrain";
 
-import { Control } from "Table";
+import {
+    Control,
+    Zoom
+} from "Table";
 
 interface IProps {
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
-    select: (position: Position) => void;
     game: Game;
+    select: (position: Position) => void;
     selection: Position[];
+    zoom: Zoom;
 };
 
 const translation: Array<Array<{ row: number, col: number }>> =
@@ -35,8 +39,16 @@ const translation: Array<Array<{ row: number, col: number }>> =
 ];
 
 const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div id="board" className="tile is-parent">
-        <div className="tile is-child">
+    <div style={{
+        display: "inline-block",
+        margin: "2vmin",
+        width: "95vmin",
+        height: "95vmin",
+        overflow: "hidden"
+    }}>
+        <div id="board" style={{ transformOrigin: `${props.zoom.origin.x}px ${props.zoom.origin.y}px`,
+            transform: `scale(${16 * props.zoom.scale / props.game.boardSize}, `
+                + `${16 * props.zoom.scale / props.game.boardSize})` }}>
             <div key="terrains" className="board">
                 {props.game.terrains.map((terrain) =>
                     <Terrain

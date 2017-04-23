@@ -29,8 +29,12 @@ interface IProps {
 };
 
 const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div id="players" className="tile is-2 is-vertical">
-        {props.game.players.map((player) =>
+    <div className="tile is-ancestor is-vertical">
+        {props.game.players
+            .sort((a, b) =>
+                ((a.team < props.game.currentTeam ? 100 : 1) * (a.team + 1))
+                - ((b.team < props.game.currentTeam ? 100 : 1) * (b.team + 1)))
+            .map((player) =>
             <Player
                 key={player.team}
                 player={player}
