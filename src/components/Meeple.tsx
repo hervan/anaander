@@ -3,8 +3,8 @@ import * as React from "react";
 import {
     Meeple,
     Position,
-    Team,
-    Turn
+    Side,
+    Team
 } from "../Game";
 
 interface IProps {
@@ -18,7 +18,7 @@ interface IProps {
 };
 
 const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div onClick={() => props.select(props.meeple.position)}>
+    <div style={{ pointerEvents: "none" }}>
         <span className={"icon is-medium meeple is-" + Team[props.meeple.team]}
             style={{
                 top: props.meeple.position.row * 45 + 7 + props.translation.row,
@@ -26,11 +26,7 @@ const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 transform: "scale(" + props.scale + ")",
                 opacity: 0.5 + (props.meeple.resistance / 20)
             }}>
-            <i
-                title={"strength: " + props.meeple.strength
-                    + "\nresistance: " + props.meeple.resistance
-                    + "\nfaith: " + props.meeple.faith}
-                className={"fa fa-user-circle" + (props.meeple.turn === Turn.heads ? "-o" : "")}>
+            <i className={"fa fa-user-circle" + (props.meeple.side === Side.heads ? "-o" : "")}>
             </i>
         </span>
     </div>;

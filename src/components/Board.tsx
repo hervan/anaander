@@ -4,6 +4,7 @@ import * as React from "react";
 import {
     Action,
     Game,
+    Items,
     Meeple as MeepleType,
     meeplesBelow,
     Position,
@@ -54,6 +55,16 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
+                        title={terrain.geography + "\nspace for " + terrain.spaceLeft + " meeples\n"
+                            + Items.map(({ type, piece }) => type)
+                                .filter((type, index) => terrain.items[index])
+                                .map((item) => item + "\n")
+                                .join("")
+                            + meeplesBelow(props.game, terrain.topMeeple)
+                                .map((meeple) => "\n" + Team[meeple.team] + " meeple"
+                                + "\nstrength: " + meeple.strength
+                                + "\nresistance: " + meeple.resistance
+                                + "\nfaith: " + meeple.faith).join("\n")}
                         selected={props.selection.some((p) =>
                             p.row === terrain.position.row && p.col === terrain.position.col)}
                         enqueuePlay={props.enqueuePlay}

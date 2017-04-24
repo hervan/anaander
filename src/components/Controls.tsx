@@ -6,15 +6,13 @@ import {
     Game,
     Item,
     Play,
+    PlayType,
     Position,
-    Team,
-    Turn
+    Side,
+    Team
 } from "../Game";
 
-import {
-    Control,
-    SelectMode
-} from "Table";
+import { Control } from "Table";
 
 import Player from "./Player";
 
@@ -24,24 +22,22 @@ interface IProps {
     select: (position: Position, item?: Item) => void;
     game: Game;
     selection: Position[];
-    selectMode: SelectMode;
+    playType: PlayType;
     item: Item;
 };
 
 const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <div className="tile is-ancestor is-vertical">
-        {props.game.players
-            .sort((a, b) =>
-                ((a.team < props.game.currentTeam ? 100 : 1) * (a.team + 1))
-                - ((b.team < props.game.currentTeam ? 100 : 1) * (b.team + 1)))
+        {props.game.players.filter((player) => player.team >= props.game.turn.team)
+            .concat(props.game.players.filter((player) => player.team < props.game.turn.team))
             .map((player) =>
             <Player
                 key={player.team}
                 player={player}
                 setup={props.setup}
                 enqueuePlay={props.enqueuePlay}
-                active={player.team === props.game.currentTeam}
-                selectMode={props.selectMode}
+                active={player.team === props.game.turn.team}
+                playType={props.playType}
                 item={props.item}
             />
         )}

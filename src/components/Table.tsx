@@ -11,12 +11,13 @@ import {
     neighbours,
     Play,
     play,
+    PlayType,
     Position,
     positionToIndex,
     selectSwarm,
     setup,
+    Side,
     Team,
-    Turn,
     tutorial
 } from "../Game";
 
@@ -33,18 +34,13 @@ export enum Mode {
     end
 };
 
-export type SelectMode =
-| "swarm"
-| "pattern"
-| "individual";
-
 export type Control =
 | "setup"     | "rearrange"
 | "-player"   | "+player"
 | "-computer" | "+computer"
 | "-size"     | "+size"
 | "begin"     | "tutorial"
-| SelectMode;
+| PlayType;
 
 export type Zoom = {
     scale: number;
@@ -57,7 +53,7 @@ export type Zoom = {
 interface IState {
     game: Game;
     mode: Mode;
-    selectMode: SelectMode;
+    playType: PlayType;
     playerCount: number;
     computerCount: number;
     boardSize: number;
@@ -85,7 +81,7 @@ export class Table extends React.Component<{}, IState> {
         this.state = {
             game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
             mode: Mode.setup,
-            selectMode: "swarm",
+            playType: "swarm",
             playerCount: defaultPlayerCount,
             computerCount: defaultComputerCount,
             boardSize: defaultBoardSize,
@@ -115,7 +111,7 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
-                selectMode: "swarm",
+                playType: "swarm",
                 playerCount: defaultPlayerCount,
                 computerCount: defaultComputerCount,
                 boardSize: defaultBoardSize,
@@ -253,7 +249,7 @@ export class Table extends React.Component<{}, IState> {
             case "individual":
 
             this.setState({
-                selectMode: control,
+                playType: control,
                 param: param
             });
 
@@ -271,19 +267,61 @@ export class Table extends React.Component<{}, IState> {
                 team: team,
                 play: {
                     type: "skip",
-                    action: action
+                    action: Action.skip
                 }
             });
-        } else if (this.state.selection.length > 0) {
+        } else {
 
-            queue[team].push({
-                team: team,
-                play: {
-                    action: action,
-                    type: "swarm",
-                    swarm: this.state.selection[0]
+            switch (this.state.playType) {
+
+                case "swarm":
+
+                if (this.state.selection.length > 0) {
+
+                    queue[team].push({
+                        team: team,
+                        play: {
+                            type: this.state.playType,
+                            action: action,
+                            swarm: this.state.selection
+                        }
+                    });
                 }
-            });
+
+                break;
+
+                case "pattern":
+
+                if (this.state.selection.length === 5) {
+
+                    queue[team].push({
+                        team: team,
+                        play: {
+                            type: this.state.playType,
+                            pattern: this.state.selection.slice(0, 4),
+                            meeple: this.state.selection[4]
+                        }
+                    });
+                }
+
+                break;
+
+                case "individual":
+
+                if (this.state.selection.length === 1) {
+
+                    queue[team].push({
+                        team: team,
+                        play: {
+                            type: this.state.playType,
+                            action: action,
+                            meeple: this.state.selection[0]
+                        }
+                    });
+                }
+
+                break;
+            }
         }
 
         this.setState({
@@ -296,13 +334,13 @@ export class Table extends React.Component<{}, IState> {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (this.state.game.players.length > 0 && queue[this.state.game.currentTeam].length > 0) {
+        if (this.state.game.players.length > 0 && queue[this.state.game.turn.team].length > 0) {
 
-            const playData: Play = queue[this.state.game.currentTeam].shift() as Play;
+            const playData: Play = queue[this.state.game.turn.team].shift() as Play;
             const gameStep = play(this.state.game, playData);
 
             const mode =
-                gameStep.turn === Turn.none ?
+                gameStep.turn.side === Side.none ?
                 Mode.end :
                 this.state.mode;
 
@@ -313,8 +351,8 @@ export class Table extends React.Component<{}, IState> {
                 selection: []
             });
 
-            if (gameStep.currentTeam !== Team.default
-                && queue[this.state.game.currentTeam].length === 0) {
+            if (gameStep.turn.team !== Team.default
+                && queue[this.state.game.turn.team].length === 0) {
 
                 this.autoSelect();
             }
@@ -323,11 +361,11 @@ export class Table extends React.Component<{}, IState> {
 
     select(position: Position): void {
 
-        switch (this.state.selectMode) {
+        switch (this.state.playType) {
 
             case "swarm":
 
-            if (this.state.game.currentTeam !== Team.default) {
+            if (this.state.game.turn.team !== Team.default) {
 
                 this.setState({ selection: selectSwarm(this.state.game, position) });
             }
@@ -360,16 +398,19 @@ export class Table extends React.Component<{}, IState> {
             if (meeples.length === selection.length) {
 
                 this.setState({
-                    selectMode: "swarm",
+                    playType: "swarm",
                     selection: selection
                 });
             } else {
 
                 this.setState({
-                    selectMode: "swarm",
+                    playType: "swarm",
                     selection: []
                 });
             }
+        } else {
+
+            this.enqueuePlay(this.state.game.turn.team, Action.skip);
         }
     }
 
@@ -382,7 +423,7 @@ export class Table extends React.Component<{}, IState> {
             if ((e.currentTarget as Element).id === board.id) {
 
                 const zoom: Zoom = {
-                    scale: Math.max(1, this.state.zoom.scale * (e.wheelDelta > 0 ? 1.1 : 0.9)),
+                    scale: Math.max(1, this.state.zoom.scale * (e.wheelDelta > 0 ? 1.15 : 0.85)),
                     origin: { x: e.x, y: e.y }
                 };
 
@@ -450,7 +491,7 @@ export class Table extends React.Component<{}, IState> {
                     select={this.select.bind(this)}
                     game={this.state.game}
                     selection={this.state.selection}
-                    selectMode={this.state.selectMode}
+                    playType={this.state.playType}
                     item={this.state.param as Item} />
             </div> :
             null;

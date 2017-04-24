@@ -7,20 +7,18 @@ import {
     Items,
     Play,
     Player,
+    PlayType,
     Team
 } from "../Game";
 
-import {
-    Control,
-    SelectMode
-} from "./Table";
+import { Control } from "./Table";
 
 interface IProps {
     player: Player;
     setup: (control: Control, item?: Item) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     active: boolean;
-    selectMode: SelectMode;
+    playType: PlayType;
     item: Item;
 }
 
@@ -85,7 +83,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                         <div className="tile is-child">
                             <p title="if you lose\nall your meeples\nyou're dead.">
                                 <a className={"button is-" + Team[props.player.team]
-                                    + (props.active && props.selectMode === "swarm" ?
+                                    + (props.active && props.playType === "swarm" ?
                                     " is-active" : " is-outlined")}
                                     style={{ textDecoration: "none" }}
                                     onClick={() => props.setup("swarm")}>
@@ -100,7 +98,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     + "every turn you can do it a number of times\n"
                                     + "equal to the number of cities you control."}>
                                 <a className={"button is-" + Team[props.player.team]
-                                    + (props.active && props.selectMode === "individual" ?
+                                    + (props.active && props.playType === "individual" ?
                                     " is-active" : " is-outlined")}
                                     disabled={props.player.individualActions <= 0}
                                     style={{ textDecoration: "none" }}
@@ -119,7 +117,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 {Items.map(({ type, piece }, i) =>
                                     <a key={i}
                                         className={"button is-" + Team[props.player.team]
-                                        + (props.active && props.selectMode === "pattern" && props.item
+                                        + (props.active && props.playType === "pattern" && props.item
                                         && props.item.piece === piece ? " is-active" : " is-outlined")}
                                         title={type}
                                         disabled={!props.player.items[i]}

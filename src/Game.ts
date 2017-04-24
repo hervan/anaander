@@ -148,14 +148,22 @@ export type Position = {
     col: number;
 };
 
-export enum Geography {
-    city,
-    swamp,
-    island,
-    mountain,
-    forest,
-    plains
-}
+export type Geography =
+| "city"
+| "swamp"
+| "island"
+| "mountain"
+| "forest"
+| "plains";
+
+export const Geographies: Geography[] = [
+    "city",
+    "swamp",
+    "island",
+    "mountain",
+    "forest",
+    "plains"
+];
 
 export type Item =
 | { type: "energy"; piece: "i" }
@@ -172,19 +180,17 @@ export const Items: Item[] = [
     { type: "technology", piece: "t" }
 ];
 
-export enum Turn {
+export enum Side {
     heads,
     tails,
     none
 };
 
-const turns: Turn[] = [ Turn.heads, Turn.tails ];
-
 export type Meeple = {
     key: number;
     position: Position;
     team: Team;
-    turn: Turn;
+    side: Side;
     strength: number;
     resistance: number;
     faith: number;
@@ -206,16 +212,26 @@ export type Player = {
     items: boolean[];
 };
 
+export type PlayType =
+| "skip"
+| "swarm"
+| "pattern"
+| "individual";
+
 export type Play = {
     team: Team;
     play: {
-        type: "meeple";
+        type: "individual";
         action: Action;
+        meeple: Position;
+    } | {
+        type: "pattern";
+        pattern: Position[];
         meeple: Position;
     } | {
         type: "swarm";
         action: Action;
-        swarm: Position;
+        swarm: Position[];
     } | {
         type: "skip";
         action: Action.skip;
@@ -228,18 +244,26 @@ interface IDictionary {
 
 const InvalidPlays: IDictionary = {
     WrongTeam: "move a meeple of your own team.",
-    WrongTurnHeads: "move a meeple with heads up.",
-    WrongTurnTails: "move a meeple with tails up.",
+    WrongSideHeads: "move a meeple with heads up.",
+    WrongSideTails: "move a meeple with tails up.",
     EmptyTerrain: "choose a terrain with a meeple in it.",
     OutOfBoard: "keep your meeples inside the board.",
     NotYourTurn: "wait for your turn to begin.",
     TerrainIsCrowded: "move to a terrain with space available.",
     NotOnGround: "only meeples on the ground can explore the terrain",
-    NoSelection: "please select meeples before choosing the action"
+    NoSelection: "please select meeples before choosing the action",
+    NoExtraActions: "the amount of extra actions per turn is equal to the amount of cities you control",
+    NoSwarm: "you must play a whole swarm, or spend extra actions"
 };
 
 type InvalidPlay = {
     explanation: string;
+};
+
+type Turn = {
+    count: number;
+    team: Team;
+    side: Side;
 };
 
 export type Game = {
@@ -248,7 +272,7 @@ export type Game = {
     terrains: Terrain[];
     meeples: Meeple[];
     turn: Turn;
-    currentTeam: Team;
+    skips: number;
     lastAction: Action | InvalidPlay;
 };
 
@@ -270,28 +294,53 @@ export function logBoard(game: Game): void {
     console.log(board);
 }
 
-function nextPlayer(game: Game): Team {
+function rotatePlayer(game: Game): Team {
 
-    let player: Team = game.currentTeam;
+    let team: Team = game.turn.team;
     let i: number = game.players.length;
 
     do {
-        player = (player + 1) % game.players.length;
-    } while (game.players.length > 0 && game.players[player].swarmSize === 0 && i-- > 0);
+        team = (team + 1) % game.players.length;
+    } while (game.players.length > 0 && game.players[team].swarmSize === 0 && i-- > 0);
 
-    return player;
+    return team;
 }
 
-function flipTurn(turn: Turn): Turn {
+function flipSide(side: Side): Side {
 
-    return (turns[(turns.indexOf(turn) + 1) % turns.length]);
+    return (side + 1) % 2;
 }
 
 function nextTurn(game: Game): Turn {
 
-    return nextPlayer(game) <= game.currentTeam ?
-        flipTurn(game.turn) :
-        game.turn;
+    let team: Team = game.turn.team;
+    let i: number = game.players.length;
+
+    do {
+        team = rotatePlayer(game);
+    } while (availableMeeples({...game, turn: {...game.turn, team: team}}).length === 0 && i-- > 0);
+
+    if (i < 0) {
+
+        return {
+            count: game.turn.count + 1,
+            team: 0,
+            side: flipSide(game.turn.side)
+        };
+    } else if (game.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
+
+        return {
+            ...game.turn,
+            count: game.turn.count + 1,
+            side: Side.none
+        };
+    } else {
+
+        return {
+            ...game.turn,
+            team: team
+        };
+    }
 }
 
 export function positionToIndex(position: Position, boardSize: number): number {
@@ -303,7 +352,11 @@ export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[] = []
 
     const meeple: Meeple = game.meeples[meepleIndex];
 
-    if (meeple.topsMeeple !== -1) {
+    if (!meeple) {
+
+        return acc;
+
+    } else if (meeple.topsMeeple !== -1) {
 
         return meeplesBelow(game, meeple.topsMeeple, [...acc, meeple]);
 
@@ -324,8 +377,8 @@ export function isMeepleAvailable(game: Game, position: Position): boolean {
     const meepleIndex = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
 
     return meepleIndex !== -1
-        && game.meeples[meepleIndex].team === game.currentTeam
-        && game.meeples[meepleIndex].turn === game.turn;
+        && game.meeples[meepleIndex].team === game.turn.team
+        && game.meeples[meepleIndex].side === game.turn.side;
 }
 
 export function selectSwarm(game: Game, position: Position, selection?: Position[]): Position[] {
@@ -335,8 +388,8 @@ export function selectSwarm(game: Game, position: Position, selection?: Position
     const meepleIndex = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
 
     if (meepleIndex !== -1
-        && game.meeples[meepleIndex].turn === game.turn
-        && game.meeples[meepleIndex].team === game.currentTeam
+        && game.meeples[meepleIndex].side === game.turn.side
+        && game.meeples[meepleIndex].team === game.turn.team
         && !resultSelection.some((pos) => position.row === pos.row && position.col === pos.col)) {
 
         resultSelection.push(position);
@@ -428,16 +481,16 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
         lastAction = { explanation: InvalidPlays.EmptyTerrain };
 
-    } else if (gameMeeples[topMeeple].team !== game.currentTeam) {
+    } else if (gameMeeples[topMeeple].team !== game.turn.team) {
 
         lastAction = { explanation: InvalidPlays.WrongTeam };
 
-    } else if (gameMeeples[topMeeple].turn !== game.turn) {
+    } else if (gameMeeples[topMeeple].side !== game.turn.side) {
 
         lastAction = { explanation:
-            (game.turn === turns[0] ?
-                InvalidPlays.WrongTurnHeads :
-                InvalidPlays.WrongTurnTails) };
+            (game.turn.side === 0 ?
+                InvalidPlays.WrongSideHeads :
+                InvalidPlays.WrongSideTails) };
 
     } else {
 
@@ -461,7 +514,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
             case Action.explore:
             lastAction = gameMeeples[topMeeple].topsMeeple === -1
-                || meeplesBelow(game, topMeeple).every((meeple) => meeple.team === game.currentTeam) ?
+                || meeplesBelow(game, topMeeple).every((meeple) => meeple.team === game.turn.team) ?
                 null : { explanation: InvalidPlays.NotOnGround };
             break;
 
@@ -490,7 +543,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
                 const meeple: Meeple = gameMeeples[topMeeple];
 
-                meeple.turn = flipTurn(meeple.turn);
+                meeple.side = flipSide(meeple.side);
 
                 lastAction = action;
 
@@ -542,7 +595,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
                             }
 
                             meepleUnder.team = meepleOver.team;
-                            meepleUnder.turn = flipTurn(meepleOver.turn);
+                            meepleUnder.side = flipSide(meepleOver.side);
                             gamePlayers[meepleOver.team].swarmSize++;
                             meepleOver.resistance += meepleUnder.resistance;
 
@@ -593,32 +646,43 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
         terrains: gameTerrains.slice(),
         meeples: gameMeeples.slice(),
         turn: game.turn,
-        currentTeam: game.currentTeam,
+        skips: game.skips,
         lastAction: lastAction
     };
 }
 
-function moveSwarm(game: Game, from: Position, action: Action): Game {
+function moveSwarm(game: Game, swarm: Position[], action: Action): Game {
 
-    const meeples: Meeple[] = availableMeeples(game);
+    const selection = selectSwarm(game, swarm[0]);
 
-    return (action === Action.right || action === Action.down ?
-        meeples.reverse() : meeples)
-        .reduce((acc, meeple) => moveMeeple(acc, meeple.position, action), game);
+    if (selection.every((position, i) => swarm[i].row === position.row && swarm[i].col === position.col)) {
+
+        const meeples = swarm.map((position) => game.meeples[positionToIndex(position, game.boardSize)]);
+
+        return (action === Action.right || action === Action.down ?
+            meeples.reverse() : meeples)
+            .reduce((acc, meeple) => moveMeeple(acc, meeple.position, action), game);
+
+    } else {
+
+        return {
+            ...game,
+            lastAction: { explanation: InvalidPlays.NoSwarm }
+        };
+    }
+}
+
+function playPattern(game: Game, pattern: Position[], meeple?: Position): Game {
+
+    return game;
 }
 
 export function play(game: Game, play: Play): Game {
 
-    if (game.currentTeam !== play.team) {
+    if (game.turn.team !== play.team) {
 
         return {
-
-            boardSize: game.boardSize,
-            players: game.players.slice(),
-            terrains: game.terrains.slice(),
-            meeples: game.meeples.slice(),
-            turn: game.turn,
-            currentTeam: game.currentTeam,
+            ...game,
             lastAction: { explanation: InvalidPlays.NotYourTurn }
         };
     }
@@ -628,78 +692,76 @@ export function play(game: Game, play: Play): Game {
         case Team.default:
 
         return {
-
-            boardSize: game.boardSize,
-            players: game.players.slice(),
-            terrains: game.terrains.slice(),
-            meeples: game.meeples.slice(),
-            turn: game.turn,
-            currentTeam: 0,
+            ...game,
+            turn: {...game.turn, team: Team.info, side: Side.heads},
             lastAction: Action.skip
         };
 
         default:
 
         let gameStep: Game;
-        let team: Team;
         let turn: Turn;
 
         switch (play.play.type) {
 
-            case "skip":
+            case "individual":
 
-            return {
+            if (game.players[game.turn.team].individualActions > 0) {
 
-                ...game,
-                currentTeam: nextPlayer(game),
-                turn: nextTurn(game),
-                lastAction: play.play.action
-            };
+                gameStep = moveMeeple(game, play.play.meeple, play.play.action);
+                gameStep.players[gameStep.turn.team].individualActions--;
+                turn = nextTurn(gameStep);
 
-            case "swarm":
+            } else {
 
-            gameStep = moveSwarm(game, play.play.swarm, play.play.action);
-            team = nextPlayer(gameStep);
+                return {
+                    ...game,
+                    lastAction: { explanation: InvalidPlays.NoExtraActions }
+                };
+            }
+
+            break;
+
+            case "pattern":
+
+            gameStep = playPattern(game, play.play.pattern, play.play.meeple);
             turn = nextTurn(gameStep);
 
             break;
 
-            case "meeple":
-            default:
+            case "swarm":
 
-            gameStep = moveMeeple(game, play.play.meeple, play.play.action);
-            team = nextPlayer(gameStep);
-            turn = gameStep.turn;
+            gameStep = moveSwarm(game, play.play.swarm, play.play.action);
+            turn = nextTurn(gameStep);
 
             break;
-        }
 
-        if (gameStep.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
+            case "skip":
+            default:
 
-            turn = Turn.none;
+            return {
+                ...game,
+                turn: turn = nextTurn(game),
+                skips: game.skips + 1,
+                lastAction: play.play.action
+            };
         }
 
         return {
-
-            boardSize: gameStep.boardSize,
-            players: gameStep.players.slice(),
-            terrains: gameStep.terrains.slice(),
-            meeples: gameStep.meeples.slice(),
-            turn: turn,
-            currentTeam: team,
-            lastAction: gameStep.lastAction
+            ...gameStep,
+            turn: turn
         };
     }
 }
 
-function playSwarm(game: Game, from: Position, action: Action): Game {
+function playSwarm(game: Game, swarm: Position[], action: Action): Game {
 
     return game;
 }
 
 export function newPlay(game: Game, play: Play): Game {
 
-    if (!play.team || game.currentTeam !== play.team) {
+    if (!play.team || game.turn.team !== play.team) {
 
         return {
             ...game,
@@ -713,16 +775,16 @@ export function newPlay(game: Game, play: Play): Game {
 
         return updateGameState(playSwarm(game, play.play.swarm, play.play.action));
 
-        case "swarm":
-
-        return updateGameState(playSwarm(game, play.play.swarm, play.play.action));
-
         default:
         case "skip":
 
         return {
             ...game,
-            currentTeam: 0,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
             lastAction: Action.skip
         };
     }
@@ -730,21 +792,9 @@ export function newPlay(game: Game, play: Play): Game {
 
 function updateGameState(game: Game): Game {
 
-    let currentTeam = game.currentTeam;
-    let turn = game.turn;
-
-    currentTeam = nextPlayer(game);
-    turn = nextTurn(game);
-
-    if (game.players.filter((player) => player.swarmSize > 0).length < 2) {
-
-        turn = Turn.none;
-    }
-
     return {
         ...game,
-        turn: turn,
-        currentTeam: currentTeam
+        turn: nextTurn(game)
     };
 }
 
@@ -764,10 +814,10 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 col: j
             };
 
-            const geography: Geography = Math.floor((Math.sqrt(8 * (Math.floor(Math.random() * 21) + 1)) - 1) / 2);
+            const geographyIndex = Math.floor((Math.sqrt(8 * (Math.floor(Math.random() * 21) + 1)) - 1) / 2);
 
             let topMeeple: number = -1;
-            let spaceLeft: number = geography + 1;
+            let spaceLeft: number = geographyIndex + 1;
 
             if (spaceLeft > 1
                 && Math.random() < 0.12) {
@@ -777,7 +827,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     key: meepleKey++,
                     position: position,
                     team: Team.default,
-                    turn: turns[0],
+                    side: Side.heads,
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
                     faith: Math.ceil(Math.random() * 15),
@@ -792,12 +842,12 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             terrains[positionToIndex(position, boardSize)] = {
 
                 position: position,
-                geography: geography,
+                geography: Geographies[geographyIndex],
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple,
                 items: Items.map((item, index) =>
-                    geography !== Geography.city
-                    && index === geography - 1
+                    Geographies[geographyIndex] !== "city"
+                    && index === geographyIndex - 1
                     && Math.random() < (1 / 6))
             };
         }
@@ -825,7 +875,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             key: meepleKey++,
             position: position,
             team: team,
-            turn: turns[0],
+            side: Side.heads,
             strength: 10 + Math.ceil(Math.random() * 5),
             resistance: 20 + Math.ceil(Math.random() * 10),
             faith: 20 + Math.ceil(Math.random() * 10),
@@ -850,8 +900,12 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         players: players,
         terrains: terrains,
         meeples: meeples.slice(),
-        turn: Turn.none,
-        currentTeam: Team.default,
+        turn: {
+            count: 0,
+            team: Team.default,
+            side: Side.none
+        },
+        skips: 0,
         lastAction: Action.skip
     };
 
@@ -863,22 +917,25 @@ export function begin(game: Game): Game {
     return {
 
         ...game,
-        turn: turns[0],
-        currentTeam:
-            game.players.length > 0 ?
-            game.players[0].team :
-            Team.default
+        turn: {
+            count: 0,
+            side: Side.heads,
+            team:
+                game.players.length > 0 ?
+                game.players[0].team :
+                Team.default
+        }
     };
 }
 
 function t(row: number, col: number, topMeeple: number = -1): Terrain {
 
-    const geography: Geography = (row + col) % 6 + 1;
+    const geographyIndex = (row + col) % 6 + 1;
 
     return {
         position: { row: row, col: col },
-        geography: geography,
-        spaceLeft: geography,
+        geography: Geographies[geographyIndex],
+        spaceLeft: geographyIndex,
         topMeeple: topMeeple,
         items: []
     };
@@ -895,8 +952,12 @@ export function tutorial(index: number): Game {
             terrains: [...Array(16).keys()].reduce((acc, row) =>
                 acc.concat([...Array(16).keys()].map((col) => t(row, col))), [] as Terrain[]),
             meeples: [],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // a blue meeple
@@ -910,15 +971,19 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 1, col: 1 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
                     topsMeeple: -1
                 }
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // the meeple colors
@@ -932,7 +997,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 0, col: 0 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -942,7 +1007,7 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 1, col: 1 },
                     team: Team.warning,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -952,7 +1017,7 @@ export function tutorial(index: number): Game {
                     key: 2,
                     position: { row: 2, col: 2 },
                     team: Team.success,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -962,7 +1027,7 @@ export function tutorial(index: number): Game {
                     key: 3,
                     position: { row: 3, col: 3 },
                     team: Team.danger,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -972,7 +1037,7 @@ export function tutorial(index: number): Game {
                     key: 4,
                     position: { row: 4, col: 4 },
                     team: Team.primary,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -982,15 +1047,19 @@ export function tutorial(index: number): Game {
                     key: 5,
                     position: { row: 5, col: 5 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // the moves
@@ -1011,15 +1080,19 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 1, col: 1 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // moving over meeples
@@ -1045,7 +1118,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 1, col: 2 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1055,15 +1128,19 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 1, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // converting a meeple
@@ -1089,7 +1166,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 3, col: 2 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1099,15 +1176,19 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 1, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // battling meeples
@@ -1133,7 +1214,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 3, col: 2 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1143,15 +1224,19 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 1, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 20,
                     faith: 20,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // dying meeple
@@ -1177,7 +1262,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 3, col: 2 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1187,15 +1272,19 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 1, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 10,
                     faith: 20,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // the swarm
@@ -1221,7 +1310,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 1, col: 2 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1231,7 +1320,7 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 2, col: 3 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1241,7 +1330,7 @@ export function tutorial(index: number): Game {
                     key: 2,
                     position: { row: 3, col: 3 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1251,7 +1340,7 @@ export function tutorial(index: number): Game {
                     key: 3,
                     position: { row: 3, col: 2 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1261,7 +1350,7 @@ export function tutorial(index: number): Game {
                     key: 4,
                     position: { row: 3, col: 1 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1271,7 +1360,7 @@ export function tutorial(index: number): Game {
                     key: 5,
                     position: { row: 0, col: 4 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1281,15 +1370,19 @@ export function tutorial(index: number): Game {
                     key: 6,
                     position: { row: 1, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
                     topsMeeple: -1
                 }
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // hi
@@ -1310,7 +1403,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 1, col: 6 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1320,7 +1413,7 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 3, col: 6 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1330,7 +1423,7 @@ export function tutorial(index: number): Game {
                     key: 2,
                     position: { row: 4, col: 6 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1340,7 +1433,7 @@ export function tutorial(index: number): Game {
                     key: 3,
                     position: { row: 5, col: 6 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1350,7 +1443,7 @@ export function tutorial(index: number): Game {
                     key: 4,
                     position: { row: 6, col: 6 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1360,7 +1453,7 @@ export function tutorial(index: number): Game {
                     key: 5,
                     position: { row: 1, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1370,7 +1463,7 @@ export function tutorial(index: number): Game {
                     key: 6,
                     position: { row: 2, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1380,7 +1473,7 @@ export function tutorial(index: number): Game {
                     key: 7,
                     position: { row: 3, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1390,7 +1483,7 @@ export function tutorial(index: number): Game {
                     key: 8,
                     position: { row: 4, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1400,7 +1493,7 @@ export function tutorial(index: number): Game {
                     key: 9,
                     position: { row: 5, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1410,7 +1503,7 @@ export function tutorial(index: number): Game {
                     key: 10,
                     position: { row: 6, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1420,7 +1513,7 @@ export function tutorial(index: number): Game {
                     key: 11,
                     position: { row: 3, col: 2 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1430,7 +1523,7 @@ export function tutorial(index: number): Game {
                     key: 12,
                     position: { row: 3, col: 3 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1440,7 +1533,7 @@ export function tutorial(index: number): Game {
                     key: 13,
                     position: { row: 4, col: 4 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1450,7 +1543,7 @@ export function tutorial(index: number): Game {
                     key: 14,
                     position: { row: 5, col: 4 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1460,15 +1553,19 @@ export function tutorial(index: number): Game {
                     key: 15,
                     position: { row: 6, col: 4 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
                     topsMeeple: -1
                 },
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         },
         { // the conflicts
@@ -1494,7 +1591,7 @@ export function tutorial(index: number): Game {
                     key: 0,
                     position: { row: 2, col: 3 },
                     team: Team.info,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 10,
                     resistance: 30,
                     faith: 30,
@@ -1504,7 +1601,7 @@ export function tutorial(index: number): Game {
                     key: 1,
                     position: { row: 2, col: 2 },
                     team: Team.warning,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 10,
                     faith: 30,
@@ -1514,7 +1611,7 @@ export function tutorial(index: number): Game {
                     key: 2,
                     position: { row: 3, col: 3 },
                     team: Team.success,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
@@ -1524,15 +1621,19 @@ export function tutorial(index: number): Game {
                     key: 3,
                     position: { row: 4, col: 1 },
                     team: Team.default,
-                    turn: Turn.heads,
+                    side: Side.heads,
                     strength: 5,
                     resistance: 15,
                     faith: 15,
                     topsMeeple: -1
                 }
             ],
-            turn: Turn.heads,
-            currentTeam: Team.info,
+            turn: {
+                count: 0,
+                team: Team.info,
+                side: Side.heads
+            },
+            skips: 0,
             lastAction: Action.skip
         }
     ];

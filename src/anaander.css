@@ -85,13 +85,9 @@
 .board {
     position: fixed;
     box-sizing: border-box;
-    width: 95vmin;
-    height: 95vmin;
 }
 
 #board {
-    width: 95vmin;
-    height: 95vmin;
     transition-property: top, left, color, opacity, transform;
     transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
     transition-timing-function: ease-out;
@@ -123,6 +119,7 @@
 }
 
 .player {
+    position: relative;
     transform: scale(0.93, 0.93);
     transition-property: top, left, color, opacity, transform;
     transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;

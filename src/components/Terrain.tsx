@@ -13,25 +13,25 @@ import {
 interface IProps {
     terrain: Terrain;
     selected: boolean;
+    title: string;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
 };
 
 function terrainColor(geography: Geography): string {
     switch (geography) {
-        case Geography.city: return ""; // Team[Team.primary];
-        case Geography.island: return Team[Team.info];
-        case Geography.forest: return Team[Team.success];
-        case Geography.swamp: return Team[Team.default];
-        case Geography.mountain: return Team[Team.danger];
-        case Geography.plains: return Team[Team.warning];
+        case "city": return "";
+        case "island": return Team[Team.info];
+        case "forest": return Team[Team.success];
+        case "swamp": return Team[Team.default];
+        case "mountain": return Team[Team.danger];
+        case "plains": return Team[Team.warning];
     }
 }
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <article
-        title={Geography[props.terrain.geography] + "\nspace for " + props.terrain.spaceLeft + " meeples\n"
-            + Items.map(({ type, piece }) => type).filter((type, index) => props.terrain.items[index]).join(", ")}
+        title={props.title}
         className={"terrain message is-"
             + terrainColor(props.terrain.geography)
             + (props.selected ? " selected" : "")}
@@ -40,7 +40,7 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
             left: props.terrain.position.col * 45
         }}
         onClick={() => props.select(props.terrain.position)}>
-        {props.terrain.geography === Geography.city ?
+        {props.terrain.geography === "city" ?
         <span className="fa-stack fa-lg">
             <i className="fa fa-building-o fa-stack-2x" style={{ left: "10px" }}></i>
             <i className="fa fa-university fa-stack-1x"></i>
