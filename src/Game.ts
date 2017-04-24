@@ -315,10 +315,12 @@ function nextTurn(game: Game): Turn {
 
     let team: Team = game.turn.team;
     let i: number = game.players.length;
+    let gameStep = game;
 
     do {
-        team = rotatePlayer(game);
-    } while (availableMeeples({...game, turn: {...game.turn, team: team}}).length === 0 && i-- > 0);
+        team = rotatePlayer(gameStep);
+        gameStep = {...game, turn: {...game.turn, team: team}};
+    } while (availableMeeples(gameStep).length === 0 && i-- > 0);
 
     if (i < 0) {
 
@@ -657,7 +659,8 @@ function moveSwarm(game: Game, swarm: Position[], action: Action): Game {
 
     if (selection.every((position, i) => swarm[i].row === position.row && swarm[i].col === position.col)) {
 
-        const meeples = swarm.map((position) => game.meeples[positionToIndex(position, game.boardSize)]);
+        const meeples = swarm.map((position) =>
+            game.meeples[game.terrains[positionToIndex(position, game.boardSize)].topMeeple]);
 
         return (action === Action.right || action === Action.down ?
             meeples.reverse() : meeples)
