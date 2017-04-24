@@ -24,7 +24,7 @@ interface IProps {
     enqueuePlay: (team: Team, action: Action) => void;
     game: Game;
     select: (position: Position) => void;
-    selection: Position[];
+    selection: number[];
     zoom: Zoom;
 };
 
@@ -65,8 +65,7 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 + "\nstrength: " + meeple.strength
                                 + "\nresistance: " + meeple.resistance
                                 + "\nfaith: " + meeple.faith).join("\n")}
-                        selected={props.selection.some((p) =>
-                            p.row === terrain.position.row && p.col === terrain.position.col)}
+                        selected={props.selection.some((mi) => mi === terrain.topMeeple)}
                         enqueuePlay={props.enqueuePlay}
                         select={props.select}
                     />

@@ -22,7 +22,6 @@ interface IProps {
     select: (position: Position) => void;
     game: Game;
     mode: Mode;
-    selection: Position[];
 };
 
 export default class Status extends React.Component<IProps, {}> {
@@ -157,9 +156,13 @@ export default class Status extends React.Component<IProps, {}> {
 
                     if (Math.random() < (1 / repetitions)) {
 
+                        this.props.select(this.props.game.meeples
+                            .find((meeple) => meeple.team === this.props.game.turn.team)!.position);
                         this.props.enqueuePlay(this.props.game.turn.team, Action.explore);
                     } else {
 
+                        this.props.select(this.props.game.meeples
+                            .find((meeple) => meeple.team === this.props.game.turn.team)!.position);
                         this.props.enqueuePlay(this.props.game.turn.team, action);
                     }
                 }

@@ -21,7 +21,6 @@ interface IProps {
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position, item?: Item) => void;
     game: Game;
-    selection: Position[];
     playType: PlayType;
     item: Item;
 };

@@ -57,7 +57,7 @@ interface IState {
     playerCount: number;
     computerCount: number;
     boardSize: number;
-    selection: Position[];
+    selection: number[];
     zoom: Zoom;
     playQueue: Play[][];
     param?: Lesson | Item;
@@ -299,7 +299,7 @@ export class Table extends React.Component<{}, IState> {
                         play: {
                             type: this.state.playType,
                             pattern: this.state.selection.slice(0, 4),
-                            meeple: this.state.selection[4]
+                            meepleIndex: this.state.selection[4]
                         }
                     });
                 }
@@ -315,7 +315,7 @@ export class Table extends React.Component<{}, IState> {
                         play: {
                             type: this.state.playType,
                             action: action,
-                            meeple: this.state.selection[0]
+                            meepleIndex: this.state.selection[0]
                         }
                     });
                 }
@@ -376,7 +376,10 @@ export class Table extends React.Component<{}, IState> {
 
             if (isMeepleAvailable(this.state.game, position)) {
 
-                this.setState({ selection: [position] });
+                this.setState({
+                    selection:
+                        [this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)].topMeeple]
+                });
             }
 
             break;
@@ -471,8 +474,7 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 select={this.select.bind(this)}
                 game={this.state.game}
-                mode={this.state.mode}
-                selection={this.state.selection} />;
+                mode={this.state.mode} />;
         }
 
         const panelStyle = {
@@ -490,7 +492,6 @@ export class Table extends React.Component<{}, IState> {
                     enqueuePlay={this.enqueuePlay.bind(this)}
                     select={this.select.bind(this)}
                     game={this.state.game}
-                    selection={this.state.selection}
                     playType={this.state.playType}
                     item={this.state.param as Item} />
             </div> :

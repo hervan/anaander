@@ -223,15 +223,15 @@ export type Play = {
     play: {
         type: "individual";
         action: Action;
-        meeple: Position;
+        meepleIndex: number;
     } | {
         type: "pattern";
-        pattern: Position[];
-        meeple: Position;
+        pattern: number[];
+        meepleIndex: number;
     } | {
         type: "swarm";
         action: Action;
-        swarm: Position[];
+        swarm: number[];
     } | {
         type: "skip";
         action: Action.skip;
@@ -383,23 +383,26 @@ export function isMeepleAvailable(game: Game, position: Position): boolean {
         && game.meeples[meepleIndex].side === game.turn.side;
 }
 
-export function selectSwarm(game: Game, position: Position, selection?: Position[]): Position[] {
+export function selectSwarm(game: Game, position: Position, selection?: number[]): number[] {
 
-    let resultSelection: Position[] = selection ? selection : [];
+    let resultSelection: number[] = selection ? selection : [];
 
     const meepleIndex = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
 
     if (meepleIndex !== -1
         && game.meeples[meepleIndex].side === game.turn.side
         && game.meeples[meepleIndex].team === game.turn.team
-        && !resultSelection.some((pos) => position.row === pos.row && position.col === pos.col)) {
+        && !resultSelection.some((mIndex) =>
+            position.row === game.meeples[mIndex].position.row && position.col === game.meeples[mIndex].position.col)) {
 
-        resultSelection.push(position);
+        resultSelection.push(meepleIndex);
 
         resultSelection = neighbours(game, position).reduce((acc, pos) => selectSwarm(game, pos, acc), resultSelection);
     }
 
-    return resultSelection.sort((a, b) => positionToIndex(a, game.boardSize) - positionToIndex(b, game.boardSize));
+    return resultSelection.sort((a, b) =>
+        positionToIndex(game.meeples[a].position, game.boardSize)
+        - positionToIndex(game.meeples[b].position, game.boardSize));
 }
 
 export function neighbours(game: Game, position: Position): Position[] {
@@ -629,7 +632,6 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
                                 gamePlayers[meepleOver.team].swarmSize--;
                             }
                         }
-
                     }
 
                     gameTerrains[positionToIndex(from, game.boardSize)] = terrainFrom;
@@ -653,14 +655,13 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
     };
 }
 
-function moveSwarm(game: Game, swarm: Position[], action: Action): Game {
+function moveSwarm(game: Game, swarm: number[], action: Action): Game {
 
-    const selection = selectSwarm(game, swarm[0]);
+    const selection = selectSwarm(game, game.meeples[swarm[0]].position);
 
-    if (selection.every((position, i) => swarm[i].row === position.row && swarm[i].col === position.col)) {
+    if (selection.every((meepleIndex, i) => swarm[i] === meepleIndex)) {
 
-        const meeples = swarm.map((position) =>
-            game.meeples[game.terrains[positionToIndex(position, game.boardSize)].topMeeple]);
+        const meeples = swarm.map((meepleIndex) => game.meeples[meepleIndex]);
 
         return (action === Action.right || action === Action.down ?
             meeples.reverse() : meeples)
@@ -675,7 +676,7 @@ function moveSwarm(game: Game, swarm: Position[], action: Action): Game {
     }
 }
 
-function playPattern(game: Game, pattern: Position[], meeple?: Position): Game {
+function playPattern(game: Game, pattern: number[], meeple?: number): Game {
 
     return game;
 }
@@ -711,7 +712,7 @@ export function play(game: Game, play: Play): Game {
 
             if (game.players[game.turn.team].individualActions > 0) {
 
-                gameStep = moveMeeple(game, play.play.meeple, play.play.action);
+                gameStep = moveMeeple(game, game.meeples[play.play.meepleIndex].position, play.play.action);
                 gameStep.players[gameStep.turn.team].individualActions--;
                 turn = nextTurn(gameStep);
 
@@ -727,7 +728,7 @@ export function play(game: Game, play: Play): Game {
 
             case "pattern":
 
-            gameStep = playPattern(game, play.play.pattern, play.play.meeple);
+            gameStep = playPattern(game, play.play.pattern, play.play.meepleIndex);
             turn = nextTurn(gameStep);
 
             break;
@@ -757,7 +758,7 @@ export function play(game: Game, play: Play): Game {
     }
 }
 
-function playSwarm(game: Game, swarm: Position[], action: Action): Game {
+function playSwarm(game: Game, swarm: number[], action: Action): Game {
 
     return game;
 }
