@@ -6,7 +6,7 @@ function buildConfig(env) {
     return {
         entry: "./src/index.tsx",
         output: {
-            filename: "bundle.[hash].js",
+            filename: env === "prod" ? "bundle.js" : "bundle.[hash].js",
             path: __dirname + "/dist"
         },
 
