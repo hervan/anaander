@@ -44,6 +44,7 @@ meeple
     resistance
     reach - how far it propagates actions, benefits and special powers
     influence - how strongly actions, benefits and special powers are carried onto neighbours
+    profiles - stats will follow a curve better suited for a specific role
 
 swarm
     size - constrained by resource production
@@ -55,6 +56,7 @@ swarm
             faith
             technology
         echoes - cumulative benefits from neighbours
+            with reach gone, it's the only place where reach still makes sense (maybe a building improves reach)
             combos? would combos yield special modifiers?
 
 tile
@@ -86,6 +88,13 @@ resources
 
 patterns
     tetraminos define artifact activation and should give the best special powers
+    tetraminos are blueprints for buildings (found upon exploration)
+    the player position the meeples, pay resources and place the buildinds
+    the buildings give the benefits upon visiting, or maybe just for existing (for permanent benefits)
+    exploration still makes sense? patterns will become harder if they are buildings, requiring:
+        spending an action
+        spending resources
+        moving to the location
     triminos should provide benefits to stimulate larger swarms, and should be inherent to larger swarms as well
     dominos/diagonals should provide the most basic needs
     swarm size should be used as a parameter for larger things, related to collectivity
@@ -101,10 +110,11 @@ exploration
     improve city?
 
 cities
-    defense of n actions, the harder the better the benefits
-    should be defeated by consecutive actions, an action by another player resets defenses
-    or must be occupied by n meeples
-    its owner may use this as form of locally giving a stronger defense
+    one meeple from your team can enter a city you own, and only one.
+    no one else can enter it, so that meeple is protected (like a garrison).
+    your meeples can enter a city you don't own to conquer it, but they'll leave only after finishing the conquest.
+    the conquest is over when their total stregth is greater than the city's defense, or you moved four meeples there.
+    while the conquest is not over, the city owner (and only him) can enter the city and battle the top meeple.
     give a permanent benefit to the player, like one extra action
     give benefits upon visiting by friendly player, like healing
     after conquest, explore improves city - like a stronger defense
