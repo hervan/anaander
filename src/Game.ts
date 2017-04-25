@@ -578,6 +578,18 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
                     terrainFrom.topMeeple = meeple.topsMeeple;
                     terrainFrom.spaceLeft++;
+
+                    if (terrainFrom.topMeeple !== -1) {
+
+                        const freedMeeple = gameMeeples[terrainFrom.topMeeple];
+
+                        if (freedMeeple.team < game.players.length) {
+
+                            freedMeeple.side = freedMeeple.team > meeple.team ? game.turn.side : meeple.side;
+                            gameMeeples[terrainFrom.topMeeple] = freedMeeple;
+                        }
+                    }
+
                     meeple.topsMeeple = terrainTo.topMeeple;
                     terrainTo.topMeeple = meeple.key;
                     terrainTo.spaceLeft--;
@@ -600,7 +612,6 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
                             }
 
                             meepleUnder.team = meepleOver.team;
-                            meepleUnder.side = flipSide(meepleOver.side);
                             gamePlayers[meepleOver.team].swarmSize++;
                             meepleOver.resistance += meepleUnder.resistance;
 
