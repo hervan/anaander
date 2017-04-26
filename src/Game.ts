@@ -159,20 +159,22 @@ export type Position = {
 };
 
 export type Geography =
-| "city"
 | "swamp"
 | "island"
 | "mountain"
 | "forest"
-| "plains";
+| "plains"
+| "city"
+| "desert"
+| "valley";
 
 export const Geographies: Geography[] = [
-    "city",
     "swamp",
     "island",
     "mountain",
     "forest",
-    "plains"
+    "plains",
+    "city"
 ];
 
 export type Item =
@@ -842,10 +844,9 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             const geographyIndex = Math.floor((Math.sqrt(8 * (Math.floor(Math.random() * 21) + 1)) - 1) / 2);
 
             let topMeeple: number = -1;
-            let spaceLeft: number = geographyIndex + 1;
+            let spaceLeft: number = geographyIndex;
 
-            if (spaceLeft > 1
-                && Math.random() < 0.12) {
+            if (spaceLeft > 1 && Math.random() < 0.12) {
 
                 const meeple: Meeple = {
 
@@ -886,14 +887,11 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
         let position: Position;
 
-        do {
-
+        do { // find a random empty tile
             position = {
-
                 row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                 col: Math.floor(Math.random() * (boardSize - 2)) + 1
             };
-
         } while (terrains[positionToIndex(position, boardSize)].topMeeple > -1);
 
         const meeple: Meeple = {
@@ -940,7 +938,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 export function begin(game: Game): Game {
 
     return {
-
         ...game,
         turn: {
             count: 0,
@@ -953,20 +950,20 @@ export function begin(game: Game): Game {
     };
 }
 
-function t(row: number, col: number, topMeeple: number = -1): Terrain {
-
-    const geographyIndex = (row + col) % 6 + 1;
-
-    return {
-        position: { row: row, col: col },
-        geography: Geographies[geographyIndex],
-        spaceLeft: geographyIndex,
-        topMeeple: topMeeple,
-        items: []
-    };
-}
-
 export function tutorial(index: number): Game {
+
+    const t = (row: number, col: number, topMeeple: number = -1): Terrain => {
+
+        const geographyIndex = (row + col) % 6 + 1;
+
+        return {
+            position: { row: row, col: col },
+            geography: Geographies[geographyIndex],
+            spaceLeft: geographyIndex,
+            topMeeple: topMeeple,
+            items: []
+        };
+    };
 
     const tutorialStepsScenarios: Game[] = [
         // tutorial start
