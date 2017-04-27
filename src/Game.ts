@@ -154,12 +154,12 @@ export enum Action {
 };
 
 export enum Geography {
+    desert,
     swamp,
     mountain,
     forest,
     valley,
-    plains,
-    desert
+    plains
 };
 
 export enum Item {
@@ -171,12 +171,12 @@ export enum Item {
 };
 
 export const GeographyItem = [
+    { type: "desert", item: null, piece: null },
     { type: "swamp", item: Item.energy, piece: "i" },
     { type: "mountain", item: Item.food, piece: "l" },
     { type: "forest", item: Item.ore, piece: "o" },
     { type: "valley", item: Item.relic, piece: "s" },
-    { type: "plains", item: Item.technology, piece: "t" },
-    { type: "desert", item: null, piece: null }
+    { type: "plains", item: Item.technology, piece: "t" }
 ];
 
 export enum Side {
@@ -863,7 +863,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 geography: geographyIndex,
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple,
-                item: Math.random() < (1 / 6)
+                item: Math.random() < geographyIndex / 12
             };
         }
     }
@@ -902,7 +902,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             team: team,
             individualActions: 0,
             swarmSize: 1,
-            items: Array(5).map((_, index) => false)
+            items: Array(5).map((o, index) => false)
         };
     }
 
@@ -943,7 +943,7 @@ export function tutorial(index: number): Game {
 
     const t = (row: number, col: number, topMeeple: number = -1): Terrain => {
 
-        const geographyIndex = (row + col) % 6 + 1;
+        const geographyIndex = ((row + col) % 5) + 1;
 
         return {
             position: { row: row, col: col },
@@ -1080,7 +1080,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 1,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1113,7 +1113,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 1,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1161,7 +1161,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 1,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1209,7 +1209,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 1,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1257,7 +1257,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 1,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1305,7 +1305,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 5,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [
@@ -1586,7 +1586,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     individualActions: 0,
                     swarmSize: 2,
-                    items: []
+                    items: Array(5).map((o, i) => false)
                 },
             ],
             terrains: [

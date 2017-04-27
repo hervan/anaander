@@ -56,10 +56,10 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
-                        title={terrain.geography + "\nspace for " + terrain.spaceLeft + " meeples\n"
+                        title={Geography[terrain.geography] + "\nspace for " + terrain.spaceLeft + " meeples\n"
                             + GeographyItem.map(({ type, item, piece }) => type)
-                                .filter((type) => type = Geography[terrain.geography])
-                                .map((item) => item + "\n").join("")
+                                .filter((type) => terrain.item && type === Geography[terrain.geography])
+                                .map((type) => type + "\n").join("")
                             + meeplesBelow(props.game, terrain.topMeeple)
                                 .map((meeple) => "\n" + Team[meeple.team] + " meeple"
                                 + "\nstrength: " + meeple.strength
