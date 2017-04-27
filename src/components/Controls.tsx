@@ -22,7 +22,7 @@ interface IProps {
     select: (position: Position, item?: Item) => void;
     game: Game;
     playType: PlayType;
-    item: Item;
+    selectedItem: Item;
 };
 
 const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -37,7 +37,7 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 enqueuePlay={props.enqueuePlay}
                 active={player.team === props.game.turn.team}
                 playType={props.playType}
-                item={props.item}
+                selectedItem={props.selectedItem}
             />
         )}
     </div>;

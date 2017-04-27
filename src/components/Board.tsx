@@ -4,7 +4,8 @@ import * as React from "react";
 import {
     Action,
     Game,
-    Items,
+    Geography,
+    GeographyItem,
     Meeple as MeepleType,
     meeplesBelow,
     Position,
@@ -56,10 +57,9 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
                         title={terrain.geography + "\nspace for " + terrain.spaceLeft + " meeples\n"
-                            + Items.map(({ type, piece }) => type)
-                                .filter((type, index) => terrain.items[index])
-                                .map((item) => item + "\n")
-                                .join("")
+                            + GeographyItem.map(({ type, item, piece }) => type)
+                                .filter((type) => type = Geography[terrain.geography])
+                                .map((item) => item + "\n").join("")
                             + meeplesBelow(props.game, terrain.topMeeple)
                                 .map((meeple) => "\n" + Team[meeple.team] + " meeple"
                                 + "\nstrength: " + meeple.strength

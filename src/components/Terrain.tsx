@@ -3,7 +3,8 @@ import * as React from "react";
 import {
     Action,
     Geography,
-    Items,
+    GeographyItem,
+    Item,
     Play,
     Position,
     Team,
@@ -20,12 +21,12 @@ interface IProps {
 
 function terrainColor(geography: Geography): string {
     switch (geography) {
-        case "city": return "";
-        case "island": return Team[Team.info];
-        case "forest": return Team[Team.success];
-        case "swamp": return Team[Team.default];
-        case "mountain": return Team[Team.danger];
-        case "plains": return Team[Team.warning];
+        case Geography.desert: return "warning";
+        case Geography.swamp: return "default";
+        case Geography.mountain: return "danger";
+        case Geography.forest: return "success";
+        case Geography.valley: return "info";
+        case Geography.plains: return "";
     }
 }
 
@@ -40,16 +41,14 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
             left: props.terrain.position.col * 45
         }}
         onClick={() => props.select(props.terrain.position)}>
-        {props.terrain.geography === "city" ?
+        {props.terrain.city ?
         <span className="fa-stack fa-lg">
             <i className="fa fa-building-o fa-stack-2x" style={{ left: "10px" }}></i>
             <i className="fa fa-university fa-stack-1x"></i>
         </span>
         : null }
         <span className="artifact">
-            {Items.map(({ type, piece }) => piece)
-                .filter((type, index) => props.terrain.items[index])
-                .join("")}
+            {GeographyItem[props.terrain.geography].piece}
         </span>
     </article>;
 

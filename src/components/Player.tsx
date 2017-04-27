@@ -3,8 +3,8 @@ import * as React from "react";
 
 import {
     Action,
+    GeographyItem,
     Item,
-    Items,
     Play,
     Player,
     PlayType,
@@ -19,7 +19,7 @@ interface IProps {
     enqueuePlay: (team: Team, action: Action) => void;
     active: boolean;
     playType: PlayType;
-    item: Item;
+    selectedItem: Item;
 }
 
 const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -114,14 +114,15 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <div className="field has-addons tile is-parent">
                         <div className="control tile is-child">
                             <p>
-                                {Items.map(({ type, piece }, i) =>
+                                {GeographyItem.map(({ type, item, piece }, i) =>
                                     <a key={i}
                                         className={"button is-" + Team[props.player.team]
-                                        + (props.active && props.playType === "pattern" && props.item
-                                        && props.item.piece === piece ? " is-active" : " is-outlined")}
+                                        + (props.active && props.playType === "pattern"
+                                        && props.selectedItem
+                                        && props.selectedItem === item ? " is-active" : " is-outlined")}
                                         title={type}
                                         disabled={!props.player.items[i]}
-                                        onClick={() => props.setup("pattern", Items[i])}>
+                                        onClick={() => props.setup("pattern", item!)}>
                                         <span className="icon">
                                             <span className="fa artifact">{piece}</span>
                                         </span>

@@ -493,7 +493,7 @@ export class Table extends React.Component<{}, IState> {
                     select={this.select.bind(this)}
                     game={this.state.game}
                     playType={this.state.playType}
-                    item={this.state.param as Item} />
+                    selectedItem={this.state.param as Item} />
             </div> :
             null;
 

@@ -141,7 +141,7 @@ export enum Team {
     danger,
     primary,
     default
-}
+};
 
 export enum Action {
     up,
@@ -153,49 +153,41 @@ export enum Action {
     skip
 };
 
-export type Position = {
-    row: number;
-    col: number;
+export enum Geography {
+    swamp,
+    mountain,
+    forest,
+    valley,
+    plains,
+    desert
 };
 
-export type Geography =
-| "swamp"
-| "island"
-| "mountain"
-| "forest"
-| "plains"
-| "city"
-| "desert"
-| "valley";
+export enum Item {
+    energy,
+    food,
+    ore,
+    relic,
+    technology
+};
 
-export const Geographies: Geography[] = [
-    "swamp",
-    "island",
-    "mountain",
-    "forest",
-    "plains",
-    "city"
-];
-
-export type Item =
-| { type: "energy"; piece: "i" }
-| { type: "food"; piece: "l" }
-| { type: "ore"; piece: "o" }
-| { type: "relic"; piece: "s" }
-| { type: "technology"; piece: "t" };
-
-export const Items: Item[] = [
-    { type: "energy", piece: "i" },
-    { type: "food", piece: "l" },
-    { type: "ore", piece: "o" },
-    { type: "relic", piece: "s" },
-    { type: "technology", piece: "t" }
+export const GeographyItem = [
+    { type: "swamp", item: Item.energy, piece: "i" },
+    { type: "mountain", item: Item.food, piece: "l" },
+    { type: "forest", item: Item.ore, piece: "o" },
+    { type: "valley", item: Item.relic, piece: "s" },
+    { type: "plains", item: Item.technology, piece: "t" },
+    { type: "desert", item: null, piece: null }
 ];
 
 export enum Side {
     heads,
     tails,
     none
+};
+
+export type Position = {
+    row: number;
+    col: number;
 };
 
 export type Meeple = {
@@ -209,12 +201,18 @@ export type Meeple = {
     topsMeeple: number;
 };
 
+export type City = {
+    name: string;
+    resistance: number;
+};
+
 export type Terrain = {
     position: Position;
     geography: Geography;
     spaceLeft: number;
     topMeeple: number;
-    items: boolean[];
+    item: boolean;
+    city?: City;
 };
 
 export type Player = {
@@ -250,11 +248,7 @@ export type Play = {
     }
 };
 
-interface IDictionary {
-    [key: string]: string;
-};
-
-const InvalidPlays: IDictionary = {
+const InvalidPlays: { [key: string]: string } = {
     WrongTeam: "move a meeple of your own team.",
     WrongSideHeads: "move a meeple with heads up.",
     WrongSideTails: "move a meeple with tails up.",
@@ -290,7 +284,7 @@ export type Game = {
 
 export function logBoard(game: Game): void {
 
-    const teamSymbol: IDictionary = {
+    const teamSymbol: { [key: string]: string } = {
         info: "1",
         warning: "2",
         success: "3",
@@ -306,7 +300,7 @@ export function logBoard(game: Game): void {
     console.log(board);
 }
 
-function rotatePlayer(game: Game): Team {
+function rotateTeam(game: Game): Team {
 
     let team: Team = game.turn.team;
     let i: number = game.players.length;
@@ -330,7 +324,7 @@ function nextTurn(game: Game): Turn {
     let gameStep = game;
 
     do {
-        team = rotatePlayer(gameStep);
+        team = rotateTeam(gameStep);
         gameStep = {...game, turn: {...game.turn, team: team}};
     } while (availableMeeples(gameStep).length === 0 && i-- > 0);
 
@@ -338,7 +332,7 @@ function nextTurn(game: Game): Turn {
 
         return {
             count: game.turn.count + 1,
-            team: 0,
+            team: Team.info,
             side: flipSide(game.turn.side)
         };
     } else if (game.players.filter((aPlayer) => aPlayer.swarmSize > 0).length < 2) {
@@ -505,7 +499,7 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
     } else if (gameMeeples[topMeeple].side !== game.turn.side) {
 
         lastAction = { explanation:
-            (game.turn.side === 0 ?
+            (game.turn.side === Side.heads ?
                 InvalidPlays.WrongSideHeads :
                 InvalidPlays.WrongSideTails) };
 
@@ -568,16 +562,13 @@ function moveMeeple(game: Game, from: Position, action: Action): Game {
 
                     case Action.explore:
 
-                    terrainTo.items.forEach((item, index) => {
+                    if (terrainTo.item && !gamePlayers[meeple.team].items[terrainTo.geography]) {
 
-                        if (item && !gamePlayers[gameMeeples[meeple.key].team].items[index]) {
+                            gamePlayers[meeple.team].individualActions++;
 
-                            gamePlayers[gameMeeples[meeple.key].team].individualActions++;
-
-                            terrainTo.items[index] = false;
-                            gamePlayers[gameMeeples[meeple.key].team].items[index] = true;
-                        }
-                    });
+                            terrainTo.item = false;
+                            gamePlayers[meeple.team].items[terrainTo.geography] = true;
+                    }
 
                     gameTerrains[positionToIndex(to, game.boardSize)] = terrainTo;
 
@@ -770,7 +761,7 @@ export function play(game: Game, play: Play): Game {
                 ...game,
                 turn: turn = nextTurn(game),
                 skips: game.skips + 1,
-                lastAction: play.play.action
+                lastAction: Action.skip
             };
         }
 
@@ -841,7 +832,8 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 col: j
             };
 
-            const geographyIndex = Math.floor((Math.sqrt(8 * (Math.floor(Math.random() * 21) + 1)) - 1) / 2);
+            // solution to x = (1 + y) * y / 2, the fundamental arithmetic series
+            const geographyIndex = Math.floor((Math.sqrt((Math.random() * 168) + 1) - 1) / 2);
 
             let topMeeple: number = -1;
             let spaceLeft: number = geographyIndex;
@@ -868,13 +860,10 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             terrains[positionToIndex(position, boardSize)] = {
 
                 position: position,
-                geography: Geographies[geographyIndex],
+                geography: geographyIndex,
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple,
-                items: Items.map((item, index) =>
-                    Geographies[geographyIndex] !== "city"
-                    && index === geographyIndex - 1
-                    && Math.random() < (1 / 6))
+                item: Math.random() < (1 / 6)
             };
         }
     }
@@ -883,7 +872,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
     let i: number = 0;
     meepleKey = 0;
 
-    for (let team = 0; team < playerCount; team++) {
+    for (let team = Team.info; team < playerCount; team++) {
 
         let position: Position;
 
@@ -913,7 +902,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             team: team,
             individualActions: 0,
             swarmSize: 1,
-            items: Items.map(() => false)
+            items: Array(5).map((_, index) => false)
         };
     }
 
@@ -958,10 +947,10 @@ export function tutorial(index: number): Game {
 
         return {
             position: { row: row, col: col },
-            geography: Geographies[geographyIndex],
+            geography: geographyIndex,
             spaceLeft: geographyIndex,
             topMeeple: topMeeple,
-            items: []
+            item: false
         };
     };
 
