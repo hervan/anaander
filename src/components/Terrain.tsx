@@ -21,12 +21,12 @@ interface IProps {
 
 function terrainColor(geography: Geography): string {
     switch (geography) {
-        case Geography.desert: return "warning";
+        case Geography.desert: return "nocolor";
         case Geography.swamp: return "default";
         case Geography.mountain: return "danger";
         case Geography.forest: return "success";
         case Geography.valley: return "info";
-        case Geography.plains: return "";
+        case Geography.plains: return "warning";
     }
 }
 
@@ -42,7 +42,7 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         }}
         onClick={() => props.select(props.terrain.position)}>
         {props.terrain.city ?
-        <span className="fa-stack fa-lg">
+        <span className={"fa-stack fa-lg is-" + Team[props.terrain.city.team]}>
             <i className="fa fa-building-o fa-stack-2x" style={{ left: "10px" }}></i>
             <i className="fa fa-university fa-stack-1x"></i>
         </span>

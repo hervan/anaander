@@ -115,8 +115,9 @@ export default class Status extends React.Component<IProps, {}> {
             let repetitions = 5;
 
             const currentPlayerMeeples: Meeple[] = this.props.game.meeples
-                .filter((meeple) => meeple.key !== -1 &&
-                    meeple.team === this.props.game.turn.team);
+                .filter((meeple) => meeple.key !== -1
+                    && meeple.team === this.props.game.turn.team
+                    && meeple.side === this.props.game.turn.side);
 
             if (currentPlayerMeeples.length > 0) {
 
@@ -157,12 +158,14 @@ export default class Status extends React.Component<IProps, {}> {
                     if (Math.random() < (1 / repetitions)) {
 
                         this.props.select(this.props.game.meeples
-                            .find((meeple) => meeple.team === this.props.game.turn.team)!.position);
+                            .find((meeple) => meeple.team === this.props.game.turn.team
+                                && meeple.side === this.props.game.turn.side)!.position);
                         this.props.enqueuePlay(this.props.game.turn.team, Action.explore);
                     } else {
 
                         this.props.select(this.props.game.meeples
-                            .find((meeple) => meeple.team === this.props.game.turn.team)!.position);
+                            .find((meeple) => meeple.team === this.props.game.turn.team
+                                && meeple.side === this.props.game.turn.side)!.position);
                         this.props.enqueuePlay(this.props.game.turn.team, action);
                     }
                 }

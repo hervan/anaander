@@ -395,24 +395,18 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    autoSelect(control?: Control): void {
+    autoSelect(control: Control = "swarm"): void {
 
         const meeples = availableMeeples(this.state.game);
 
         if (meeples.length > 0) {
 
-            const ctrl = control ? control :
-                (this.state.game.players[this.state.game.turn.team].usedActions <
-                    this.state.game.players[this.state.game.turn.team].cities ?
-                    "individual" :
-                    "swarm");
-
-            switch (ctrl) {
+            switch (control) {
 
                 case "individual":
 
                 this.setState({
-                    playType: ctrl,
+                    playType: control,
                     selection: [meeples[0].key]
                 });
 
@@ -430,7 +424,7 @@ export class Table extends React.Component<{}, IState> {
                 if (pattern.length === 4) {
 
                     this.setState({
-                        playType: ctrl,
+                        playType: control,
                         selection: pattern
                     });
                 } else {
@@ -445,7 +439,7 @@ export class Table extends React.Component<{}, IState> {
                 const selection = selectSwarm(this.state.game, meeples[0].position);
 
                 this.setState({
-                    playType: ctrl,
+                    playType: control,
                     selection: selection
                 });
 

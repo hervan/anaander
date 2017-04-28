@@ -57,7 +57,10 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
-                        title={Geography[terrain.geography] + "\nspace for " + terrain.spaceLeft + " meeples\n"
+                        title={(terrain.city ? `City of ${terrain.city.name}\n`
+                            + (terrain.city.team === Team.default ? "" : `team ${Team[terrain.city.team]}\n`)
+                            + `defense ${terrain.city.defense}\n\n` : "")
+                            + Geography[terrain.geography] + "\nspace for " + terrain.spaceLeft + " meeples\n"
                             + (terrain.item ? GeographyItem
                                 .filter(({ type, item, piece }) => item !== null
                                     && type === Geography[terrain.geography])

@@ -5,6 +5,7 @@
     --warning-color: hsl(48, 100%, 67%);
     --danger-color: hsl(348, 100%, 61%);
     --default-color: hsl(0, 0%, 4%);
+    --no-color: #fff;
 }
 
 
@@ -80,6 +81,10 @@
 
 .is-default {
     color: var(--default-color);
+}
+
+.is-nocolor {
+    background-color: var(--no-color);
 }
 
 .board {
