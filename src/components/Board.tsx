@@ -6,6 +6,7 @@ import {
     Game,
     Geography,
     GeographyItem,
+    Item,
     Meeple as MeepleType,
     meeplesBelow,
     Position,
@@ -57,9 +58,10 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
                         title={Geography[terrain.geography] + "\nspace for " + terrain.spaceLeft + " meeples\n"
-                            + GeographyItem.map(({ type, item, piece }) => type)
-                                .filter((type) => terrain.item && type === Geography[terrain.geography])
-                                .map((type) => type + "\n").join("")
+                            + (terrain.item ? GeographyItem
+                                .filter(({ type, item, piece }) => item !== null
+                                    && type === Geography[terrain.geography])
+                                .map(({ type, item, piece }) => Item[item!] + "\n").join("") : "")
                             + meeplesBelow(props.game, terrain.topMeeple)
                                 .map((meeple) => "\n" + Team[meeple.team] + " meeple"
                                 + "\nstrength: " + meeple.strength

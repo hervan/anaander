@@ -79,7 +79,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             case " ":
 
-            this.props.enqueuePlay(this.props.game.turn.team, Action.skip);
+            this.props.setup("begin");
 
             break;
 
@@ -166,10 +166,6 @@ export default class Status extends React.Component<IProps, {}> {
                         this.props.enqueuePlay(this.props.game.turn.team, action);
                     }
                 }
-
-            } else {
-
-                this.props.enqueuePlay(this.props.game.turn.team, Action.skip);
             }
 
             window.clearTimeout(this.refresher);
@@ -205,16 +201,17 @@ export default class Status extends React.Component<IProps, {}> {
                     </span>'s turn.
                 </p>;
 
-            switch (this.props.game.lastAction) {
+            switch (this.props.game.outcome.type) {
 
-                case Action.up:
-                case Action.down:
-                case Action.left:
-                case Action.right:
-                case Action.hold:
-                case Action.explore:
-                case Action.skip:
-                case null:
+                case "invalid":
+
+                guideDetail = <p>{this.props.game.outcome.explanation}</p>;
+
+                break;
+
+                case "action":
+                case "none":
+                default:
 
                 const side: JSX.Element =
                     <span className="icon">
@@ -223,12 +220,6 @@ export default class Status extends React.Component<IProps, {}> {
                             + " is-" + Team[this.props.game.turn.team]}></i>
                     </span>;
                 guideDetail = <p>choose an action for these meeples: {side}</p>;
-
-                break;
-
-                default:
-
-                guideDetail = <p>{this.props.game.lastAction.explanation}</p>;
 
                 break;
             }

@@ -48,7 +48,7 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         </span>
         : null }
         <span className="artifact">
-            {GeographyItem[props.terrain.geography].piece}
+            {props.terrain.item ? GeographyItem[props.terrain.geography].piece : null}
         </span>
     </article>;
 

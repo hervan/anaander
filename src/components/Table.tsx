@@ -250,25 +250,25 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 playType: control,
+                selection: [],
                 param: param
             });
+
+            this.autoSelect(control);
 
             break;
         }
     }
 
-    enqueuePlay(team: Team, action: Action): void {
+    enqueuePlay(team: Team, action: Action | "skip"): void {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (action === Action.skip) {
+        if (action === "skip") {
 
             queue[team].push({
                 team: team,
-                play: {
-                    type: "skip",
-                    action: Action.skip
-                }
+                play: { type: "skip" }
             });
         } else {
 
@@ -340,7 +340,7 @@ export class Table extends React.Component<{}, IState> {
             const gameStep = play(this.state.game, playData);
 
             const mode =
-                gameStep.turn.side === Side.none ?
+                gameStep.outcome.type === "gameover" ?
                 Mode.end :
                 this.state.mode;
 
@@ -380,6 +380,11 @@ export class Table extends React.Component<{}, IState> {
                     selection:
                         [this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)].topMeeple]
                 });
+            } else {
+
+                this.setState({
+                    selection: []
+                });
             }
 
             break;
@@ -390,30 +395,65 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    autoSelect(): void {
+    autoSelect(control?: Control): void {
 
         const meeples = availableMeeples(this.state.game);
 
         if (meeples.length > 0) {
 
-            const selection = selectSwarm(this.state.game, meeples[0].position);
+            const ctrl = control ? control :
+                (this.state.game.players[this.state.game.turn.team].usedActions <
+                    this.state.game.players[this.state.game.turn.team].cities ?
+                    "individual" :
+                    "swarm");
 
-            if (meeples.length === selection.length) {
+            switch (ctrl) {
+
+                case "individual":
 
                 this.setState({
-                    playType: "swarm",
+                    playType: ctrl,
+                    selection: [meeples[0].key]
+                });
+
+                break;
+
+                case "pattern":
+
+                let i = 0;
+                let pattern;
+
+                do {
+                    pattern = selectSwarm(this.state.game, meeples[i++].position);
+                } while (pattern.length !== 4 || i < meeples.length);
+
+                if (pattern.length === 4) {
+
+                    this.setState({
+                        playType: ctrl,
+                        selection: pattern
+                    });
+                } else {
+
+                    this.autoSelect();
+                }
+
+                break;
+
+                case "swarm":
+
+                const selection = selectSwarm(this.state.game, meeples[0].position);
+
+                this.setState({
+                    playType: ctrl,
                     selection: selection
                 });
-            } else {
 
-                this.setState({
-                    playType: "swarm",
-                    selection: []
-                });
+                break;
             }
         } else {
 
-            this.enqueuePlay(this.state.game.turn.team, Action.skip);
+            this.enqueuePlay(this.state.game.turn.team, "skip");
         }
     }
 
