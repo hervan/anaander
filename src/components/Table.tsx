@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { CSSProperties } from "react";
+
 import {
     Action,
     availableMeeples,
@@ -511,7 +513,7 @@ export class Table extends React.Component<{}, IState> {
                 mode={this.state.mode} />;
         }
 
-        const panelStyle = {
+        const panelStyle: CSSProperties = {
             display: "inline-block",
             margin: "2vmin",
             width: "47.5vmin",
