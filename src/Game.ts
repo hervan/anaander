@@ -153,12 +153,13 @@ export enum Action {
 };
 
 export enum Geography {
-    desert,
+    sea,
     swamp,
     mountain,
     forest,
     valley,
-    plains
+    plains,
+    desert
 };
 
 export enum Item {
@@ -170,13 +171,22 @@ export enum Item {
 };
 
 export const GeographyItem = [
-    { type: "desert", item: null, piece: null },
+    { type: "sea", item: null, piece: null },
     { type: "swamp", item: Item.energy, piece: "i" },
     { type: "mountain", item: Item.food, piece: "l" },
     { type: "forest", item: Item.ore, piece: "o" },
     { type: "valley", item: Item.relic, piece: "s" },
-    { type: "plains", item: Item.technology, piece: "t" }
+    { type: "plains", item: Item.technology, piece: "t" },
+    { type: "desert", item: null, piece: null }
 ];
+
+const PieceShape: { [key: string]: Position[] } = {
+    "i": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}],
+    "l": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}],
+    "o": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 0, col: 1}],
+    "s": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}],
+    "t": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}]
+};
 
 export enum Side {
     heads,
@@ -212,6 +222,7 @@ export type Terrain = {
     spaceLeft: number;
     topMeeple: number;
     item: boolean;
+    patch?: number;
     city?: City;
 };
 
@@ -416,7 +427,7 @@ export function selectSwarm(game: Game, position: Position, selection?: number[]
 
         resultSelection.push(meepleIndex);
 
-        resultSelection = neighbours(game, position).reduce((acc, pos) => selectSwarm(game, pos, acc), resultSelection);
+        resultSelection = neighbours(position, game.boardSize).reduce((acc, pos) => selectSwarm(game, pos, acc), resultSelection);
     }
 
     return resultSelection.sort((a, b) =>
@@ -424,15 +435,28 @@ export function selectSwarm(game: Game, position: Position, selection?: number[]
         - positionToIndex(game.meeples[b].position, game.boardSize));
 }
 
-export function neighbours(game: Game, position: Position): Position[] {
+export function neighbours(position: Position, boardSize: number): Position[] {
 
-    return adjacent(game, position)
-        .concat(diagonal(game, position));
+    return adjacent(position, boardSize)
+        .concat(diagonal(position, boardSize));
 }
 
-function adjacent(game: Game, position: Position): Position[] {
+function insideBoard(position: Position, boardSize: number) {
 
-    const ns = [];
+    return position.row >= 0
+        && position.col >= 0
+        && position.row < boardSize
+        && position.col < boardSize;
+}
+
+function adjacent(position: Position, boardSize: number): Position[] {
+
+    const ns: Position[] = [];
+
+    if (!insideBoard(position, boardSize)) {
+
+        return ns;
+    }
 
     if (position.row > 0) {
 
@@ -444,12 +468,12 @@ function adjacent(game: Game, position: Position): Position[] {
         ns.push({ row: position.row, col: position.col - 1 });
     }
 
-    if (position.row < game.boardSize - 1) {
+    if (position.row < boardSize - 1) {
 
         ns.push({ row: position.row + 1, col: position.col });
     }
 
-    if (position.col < game.boardSize - 1) {
+    if (position.col < boardSize - 1) {
 
         ns.push({ row: position.row, col: position.col + 1 });
     }
@@ -457,26 +481,31 @@ function adjacent(game: Game, position: Position): Position[] {
     return ns;
 }
 
-function diagonal(game: Game, position: Position): Position[] {
+function diagonal(position: Position, boardSize: number): Position[] {
 
-    const ns = [];
+    const ns: Position[] = [];
+
+    if (!insideBoard(position, boardSize)) {
+
+        return ns;
+    }
 
     if (position.row > 0 && position.col > 0) {
 
         ns.push({ row: position.row - 1, col: position.col - 1 });
     }
 
-    if (position.row > 0 && position.col < game.boardSize - 1) {
+    if (position.row > 0 && position.col < boardSize - 1) {
 
         ns.push({ row: position.row - 1, col: position.col + 1 });
     }
 
-    if (position.row < game.boardSize - 1 && position.col > 0) {
+    if (position.row < boardSize - 1 && position.col > 0) {
 
         ns.push({ row: position.row + 1, col: position.col - 1 });
     }
 
-    if (position.row < game.boardSize - 1 && position.col < game.boardSize - 1) {
+    if (position.row < boardSize - 1 && position.col < boardSize - 1) {
 
         ns.push({ row: position.row + 1, col: position.col + 1 });
     }
@@ -837,7 +866,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         break;
     }
 
-    if (!adjacent(game, from).some((pos) => pos.row === to.row && pos.col === to.col)) {
+    if (!adjacent(from, game.boardSize).some((pos) => pos.row === to.row && pos.col === to.col)) {
 
         return {
             ...game,
@@ -990,6 +1019,16 @@ export function begin(game: Game): Game {
     };
 }
 
+function flipShape(position: Position[]): Position[] {
+
+    return position.map(({row, col}) => ({row: row, col: -1 * col}));
+}
+
+function rotateShape(position: Position[]): Position[] {
+
+    return position.map(({row, col}) => ({row: -1 * col, col: row}));
+}
+
 export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
     let meepleKey: number = playerCount;
@@ -1043,6 +1082,91 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         "Mytilene"
     ];
 
+    let terrainCount = 0;
+    let patchCount = 0;
+
+    let position =  {
+        row: Math.floor(Math.random() * boardSize),
+        col: Math.floor(Math.random() * boardSize)
+    };
+
+    while (terrainCount < boardSize ** 2) {
+
+        if (!terrains[positionToIndex(position, boardSize)]) {
+
+            if (patchCount < 5 * playerCount) {
+
+                const geographyIndex = Math.ceil(Math.random() * 5);
+                let shape: Position[] = PieceShape[GeographyItem[geographyIndex].piece!];
+
+                for (let i = 0; i < Math.floor(Math.random() * 2); i++) {
+                    shape = flipShape(shape);
+                }
+
+                for (let i = 0; i < Math.floor(Math.random() * 4); i++) {
+                    shape = rotateShape(shape);
+                }
+
+                if (shape.every((pos) =>
+                    insideBoard({
+                        row: pos.row + position.row,
+                        col: pos.col + position.col
+                    }, boardSize)
+                    && !terrains[positionToIndex({
+                        row: position.row + pos.row,
+                        col: position.col + pos.col
+                    }, boardSize)])) {
+
+                    shape.forEach((pos) => {
+                        terrains[positionToIndex({
+                            row: position.row + pos.row,
+                            col: position.col + pos.col
+                        }, boardSize)] = {
+                            geography: geographyIndex,
+                            item: false,
+                            position: {
+                                row: position.row + pos.row,
+                                col: position.col + pos.col
+                            },
+                            spaceLeft: geographyIndex,
+                            topMeeple: -1
+                        }
+                    });
+
+                    terrainCount += 4;
+                    patchCount++;
+                }
+
+                position =  {
+                    row: Math.floor(Math.random() * boardSize),
+                    col: Math.floor(Math.random() * boardSize)
+                };
+            } else {
+
+                terrains[positionToIndex(position, boardSize)] = {
+                    geography: Geography.desert,
+                    item: false,
+                    position: position,
+                    spaceLeft: Geography.desert,
+                    topMeeple: -1
+                };
+
+                terrainCount++;
+
+                const nextRow = (position.row + 1) % boardSize;
+                const nextCol = nextRow === 0 ? (position.col + 1) % boardSize : position.col;
+
+                position =  { row: nextRow, col: nextCol };
+            }
+        } else {
+
+            const nextRow = (position.row + 1) % boardSize;
+            const nextCol = nextRow === 0 ? (position.col + 1) % boardSize : position.col;
+
+            position =  { row: nextRow, col: nextCol };
+        }
+    }
+
     for (let i: number = 0; i < boardSize; i++) {
 
         for (let j: number = 0; j < boardSize; j++) {
@@ -1052,9 +1176,12 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 col: j
             };
 
-            // solution to x = (1 + y) * y / 2, the fundamental arithmetic series
-            const geographyIndex = Math.floor((Math.sqrt((Math.random() * 168) + 1) - 1) / 2);
+            const terrain = terrains[positionToIndex(position, boardSize)];
 
+            // solution to x = (1 + y) * y / 2, the fundamental arithmetic series
+            //const geographyIndex = Math.floor((Math.sqrt((Math.random() * 168) + 1) - 1) / 2);
+
+            const geographyIndex = terrain.geography;
             let topMeeple: number = -1;
             let spaceLeft: number = geographyIndex;
 
@@ -1092,8 +1219,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             }
 
             terrains[positionToIndex(position, boardSize)] = {
-                position: position,
-                geography: geographyIndex,
+                ...terrain,
                 spaceLeft: spaceLeft,
                 topMeeple: topMeeple,
                 item: itemProbability,

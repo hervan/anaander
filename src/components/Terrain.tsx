@@ -21,12 +21,13 @@ interface IProps {
 
 function terrainColor(geography: Geography): string {
     switch (geography) {
-        case Geography.desert: return "nocolor";
+        case Geography.sea: return "info";
         case Geography.swamp: return "default";
         case Geography.mountain: return "danger";
         case Geography.forest: return "success";
-        case Geography.valley: return "info";
+        case Geography.valley: return "primary";
         case Geography.plains: return "warning";
+        case Geography.desert: return "nocolor";
     }
 }
 
