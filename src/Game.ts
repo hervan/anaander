@@ -181,11 +181,11 @@ export const GeographyItem = [
 ];
 
 const PieceShape: { [key: string]: Position[] } = {
-    "i": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}],
-    "l": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}],
-    "o": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 0, col: 1}],
-    "s": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}],
-    "t": [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}]
+    i: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}],
+    l: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}],
+    o: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 0, col: 1}],
+    s: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}],
+    t: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}]
 };
 
 export enum Side {
@@ -427,7 +427,8 @@ export function selectSwarm(game: Game, position: Position, selection?: number[]
 
         resultSelection.push(meepleIndex);
 
-        resultSelection = neighbours(position, game.boardSize).reduce((acc, pos) => selectSwarm(game, pos, acc), resultSelection);
+        resultSelection = neighbours(position, game.boardSize)
+            .reduce((acc, pos) => selectSwarm(game, pos, acc), resultSelection);
     }
 
     return resultSelection.sort((a, b) =>
@@ -1210,9 +1211,9 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
             const geographyIndex = terrain.geography;
             let topMeeple: number = -1;
-            let spaceLeft: number = geographyIndex;
+            let spaceLeft: number = terrain.spaceLeft;
 
-            if (spaceLeft > 1 && Math.random() < 0.12) {
+            if (!terrain.city && Math.random() < 0.1 * (spaceLeft % 6)) {
 
                 const meeple: Meeple = {
 
@@ -1244,8 +1245,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
     meepleKey = 0;
 
     for (let team = Team.info; team < playerCount; team++) {
-
-        let position: Position;
 
         do { // find a random empty tile
             position = {
