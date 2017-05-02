@@ -1085,101 +1085,128 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
     let terrainCount = 0;
     let patchCount = 0;
 
-    let position =  {
+    let position = {
         row: Math.floor(Math.random() * boardSize),
         col: Math.floor(Math.random() * boardSize)
     };
 
-    while (terrainCount < boardSize ** 2) {
+    while (terrainCount < boardSize ** 2 && patchCount < 5 * playerCount) {
 
         if (!terrains[positionToIndex(position, boardSize)]) {
 
-            if (patchCount < 5 * playerCount) {
+            const geographyIndex = Math.ceil(Math.random() * 5);
+            let shape: Position[] = PieceShape[GeographyItem[geographyIndex].piece!];
 
-                const geographyIndex = Math.ceil(Math.random() * 5);
-                let shape: Position[] = PieceShape[GeographyItem[geographyIndex].piece!];
-
-                for (let i = 0; i < Math.floor(Math.random() * 2); i++) {
-                    shape = flipShape(shape);
-                }
-
-                for (let i = 0; i < Math.floor(Math.random() * 4); i++) {
-                    shape = rotateShape(shape);
-                }
-
-                if (shape.every((pos) =>
-                    insideBoard({
-                        row: pos.row + position.row,
-                        col: pos.col + position.col
-                    }, boardSize)
-                    && !terrains[positionToIndex({
-                        row: position.row + pos.row,
-                        col: position.col + pos.col
-                    }, boardSize)])) {
-
-                    shape.forEach((pos) => {
-                        terrains[positionToIndex({
-                            row: position.row + pos.row,
-                            col: position.col + pos.col
-                        }, boardSize)] = {
-                            geography: geographyIndex,
-                            item: false,
-                            position: {
-                                row: position.row + pos.row,
-                                col: position.col + pos.col
-                            },
-                            spaceLeft: geographyIndex,
-                            topMeeple: -1
-                        }
-                    });
-
-                    terrainCount += 4;
-                    patchCount++;
-                }
-
-                position =  {
-                    row: Math.floor(Math.random() * boardSize),
-                    col: Math.floor(Math.random() * boardSize)
-                };
-            } else {
-
-                terrains[positionToIndex(position, boardSize)] = {
-                    geography: Geography.desert,
-                    item: false,
-                    position: position,
-                    spaceLeft: Geography.desert,
-                    topMeeple: -1
-                };
-
-                terrainCount++;
-
-                const nextRow = (position.row + 1) % boardSize;
-                const nextCol = nextRow === 0 ? (position.col + 1) % boardSize : position.col;
-
-                position =  { row: nextRow, col: nextCol };
+            for (let i = 0; i < Math.floor(Math.random() * 2); i++) {
+                shape = flipShape(shape);
             }
-        } else {
 
-            const nextRow = (position.row + 1) % boardSize;
-            const nextCol = nextRow === 0 ? (position.col + 1) % boardSize : position.col;
+            for (let i = 0; i < Math.floor(Math.random() * 4); i++) {
+                shape = rotateShape(shape);
+            }
 
-            position =  { row: nextRow, col: nextCol };
+            const shapeInMap = shape.map((pos) => ({
+                row: pos.row + position.row,
+                col: pos.col + position.col
+            }));
+
+            if (shapeInMap.every((pos) => insideBoard(pos, boardSize)
+                && !terrains[positionToIndex(pos, boardSize)])) {
+
+                let cityPos: Position;
+                let shapePositions: Position[] = shapeInMap.slice();
+
+                let cityProb = 0;
+
+                do {
+                    cityPos = shapePositions.splice(Math.floor(Math.random() * shapePositions.length), 1)[0];
+                    cityProb++;
+
+                    if (shapePositions.length === 0) {
+
+                        let candidatePosition;
+                        do {
+                            candidatePosition =
+                                adjacent(shapeInMap[Math.floor(Math.random() * shapeInMap.length)], boardSize)
+                                .filter((pos) => shapeInMap.every((p) => p.row !== pos.row || p.col !== pos.col))
+                                .find((pos, i, o) => Math.random() < (1 / (o.length - i)));
+                        } while (!candidatePosition || terrains[positionToIndex(candidatePosition, boardSize)]);
+
+                        shapePositions.push(candidatePosition);
+
+                        shapeInMap.push(...shapePositions);
+                    }
+
+                } while (Math.random() > cityProb / (Math.PI * (boardSize ** 2 / ( 5 * playerCount)) / 4)
+                    || !adjacent(cityPos, boardSize).every((pos) => insideBoard(pos, boardSize)));
+
+                shapeInMap.push(...neighbours(cityPos, boardSize)
+                    .filter((pos) => shapeInMap.every((p) => p.row !== pos.row || p.col !== pos.col)));
+
+                let itemPos: Position;
+
+                do {
+                    itemPos = shapeInMap[Math.floor(Math.random() * shapeInMap.length)];
+                } while (itemPos.row === cityPos.row && itemPos.col === cityPos.col);
+
+                shapeInMap.push(...neighbours(itemPos, boardSize)
+                    .filter((pos) => shapeInMap.every((p) => p.row !== pos.row || p.col !== pos.col)));
+
+                shapeInMap.forEach((pos) => {
+
+                    let spaceLeft = geographyIndex;
+                    let city: City | undefined = undefined;
+
+                    if (pos.row === cityPos.row
+                        && pos.col === cityPos.col) {
+
+                        spaceLeft--;
+                        city = {
+                            name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
+                            defense: 10 + (spaceLeft * Math.ceil(Math.random() * 5)),
+                            team: Team.default
+                        };
+                    }
+
+                    terrains[positionToIndex(pos, boardSize)] = {
+                        geography: geographyIndex,
+                        item: pos.row === itemPos.row && pos.col === itemPos.col,
+                        position: pos,
+                        spaceLeft: spaceLeft,
+                        topMeeple: -1,
+                        city: city
+                    };
+                });
+
+                terrainCount += shapeInMap.length;
+                patchCount++;
+            }
         }
+
+        position =  {
+            row: Math.floor(Math.random() * boardSize),
+            col: Math.floor(Math.random() * boardSize)
+        };
     }
 
     for (let i: number = 0; i < boardSize; i++) {
 
         for (let j: number = 0; j < boardSize; j++) {
 
-            const position: Position = {
+            position = {
                 row: i,
                 col: j
             };
 
-            const terrain = terrains[positionToIndex(position, boardSize)];
-
-            // solution to x = (1 + y) * y / 2, the fundamental arithmetic series
-            //const geographyIndex = Math.floor((Math.sqrt((Math.random() * 168) + 1) - 1) / 2);
+            const terrain = terrains[positionToIndex(position, boardSize)] ?
+                terrains[positionToIndex(position, boardSize)] :
+                {
+                    geography: Geography.desert,
+                    item: false,
+                    position: position,
+                    spaceLeft: Geography.desert,
+                    topMeeple: -1
+                };
 
             const geographyIndex = terrain.geography;
             let topMeeple: number = -1;
@@ -1204,26 +1231,10 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 meeples[meeple.key] = meeple;
             }
 
-            const itemProbability = Math.random() < geographyIndex / 24;
-            let city: City | undefined = undefined;
-
-            if (topMeeple === -1 && !itemProbability && cityNames.length > 0
-                && geographyIndex === Geography.plains && Math.random() < geographyIndex / 24) {
-
-                spaceLeft--;
-                city = {
-                    name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
-                    defense: 15 + Math.ceil(Math.random() * 15),
-                    team: Team.default
-                };
-            }
-
             terrains[positionToIndex(position, boardSize)] = {
                 ...terrain,
                 spaceLeft: spaceLeft,
-                topMeeple: topMeeple,
-                item: itemProbability,
-                city: city
+                topMeeple: topMeeple
             };
         }
     }
