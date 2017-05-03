@@ -53,11 +53,10 @@ swarm
         triminos - I or L
         neighbour - adjacent or diagonal
         swarm size - if it makes sense for something that would benefit from collectivity
-            faith
-            technology
-        echoes - cumulative benefits from neighbours
-            with reach gone, it's the only place where reach still makes sense (maybe a building improves reach)
-            combos? would combos yield special modifiers?
+            faith - constrains ease of conversion, or number of conversions per action/turn/round
+                ease of conversion is a good option because it makes it easier to convert,
+                but remains unrelated to other already favorable situations
+            technology - constrains number of buildings
 
 tile
     terrain
@@ -122,16 +121,65 @@ cities
 
 /*
 ------x-x-x------
-     analysis
+   future work
 ------x-x-x------
 
-meeple      ok
-terrain     ok
-city
-resource
-artifact    ok
-action      ok
-power
+game progress - figure out how to point to each - draw a graph showing interdependencies
+1.  increase swarm
+2.  capture city
+3.  explore for resources
+4.  build a building
+5.  activate building benefit
+
+swarm size constraint?
+swarm size - limit on different buildings
+swarms count - one conversion per swarm (evaluate if cumulative or not)
+
+meeple breeding
+meeple fusion
+meeple fission
+
+multi-tier economy
+    tier 0: not produced, just tested if available
+        diagonals: energy
+        adjacents: material
+    tier 1: produced by exploration
+                    fuel    food    structure   tool    component
+        swamp:      fuel            structure
+        mountain:                               tool    component
+        valley:             food                        component
+        forest:     fuel    food    structure
+        plains:             food                tool
+        desert:     fuel            structure           component
+    tier 2: used for specific powers
+        - produced by buildings, collected on site (cumulative production if it gets too hard)
+        - produced by patterns of existing building, if on building's "home geography" gives a stronger power
+        breed meeple
+        heal meeple
+        strengthen meeple
+        strengthen city
+        split meeple
+        join meeple
+        move-and-explore
+        move faster (twice)
+        attack on-place
+        hold defense (strength added to defense)
+        hidden objectives
+
+hidden objectives
+    a) consider whether one of these can be used as game end if presented at the time the condition is fulfilled, or
+    b) if they represent something that must be achieved in a single turn, remaining on the table for reactivation
+    option (a) requires more complex conditions, (b) requires simpler conditions
+1. destroy n enemy buildings from m players
+2. gather n (unbuilt) blueprints
+3. eliminate n meeples from m players
+4. convert n meeples from m players
+5. control n cities
+6. build n buildings of m types
+7. swarm with n meeples
+8. n swarms
+9. meeple with trait at least n
+10. produced n units of given resource during in one round
 */
 
 export enum Team {
