@@ -32,14 +32,15 @@ function terrainColor(geography: Geography): string {
 }
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <article
+    <div
         title={props.title}
-        className={"terrain message is-"
+        className={"terrain is-"
             + terrainColor(props.terrain.geography)
             + (props.selected ? " selected" : "")}
         style={{
             top: props.terrain.position.row * 45,
-            left: props.terrain.position.col * 45
+            left: props.terrain.position.col * 45,
+            opacity: 0.5
         }}
         onClick={() => props.select(props.terrain.position)}>
         {props.terrain.city ?
@@ -51,6 +52,6 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         <span className="artifact">
             {props.terrain.item ? GeographyItem[props.terrain.geography].piece : null}
         </span>
-    </article>;
+    </div>;
 
 export default Terrain;
