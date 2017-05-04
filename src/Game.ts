@@ -124,6 +124,25 @@ cities
    future work
 ------x-x-x------
 
+---------------------------------------------
+CREATE TASKS FOR EACH SUBJECT REFERENCED HERE
+---------------------------------------------
+
+swarms constraints
+swarms reach
+terrain modifiers
+tier 0 resources testing
+tier 1 resources generation by exploration, and storage
+buildings construction
+tier 2 resources generation by building visitation or pattern formation
+tier 2 resource powers activation
+objectives testing
+objectives handling (receiving, showing, scoring, game ending)
+
+-------------------------------------------------------------
+USE THE SEQUENCE BELOW TO VALIDATE THE HYPOTHESES THAT FOLLOW
+-------------------------------------------------------------
+
 game progress - figure out how to point to each - draw a graph showing interdependencies
 1.  increase swarm
 2.  capture city
@@ -134,37 +153,49 @@ game progress - figure out how to point to each - draw a graph showing interdepe
 swarm size constraint?
 swarm size - limit on different buildings
 swarms count - one conversion per swarm (evaluate if cumulative or not)
+    how split swarms can benefit from the ship analogy?
+    change terrain analogy to some space analogy? planets? systems? galaxies?
+reach: if splitting swarms is too trivial, but at the same time too powerful, energy production can be tested for reach,
+    which would prevent an early swarm split.
 
-meeple breeding
-meeple fusion
-meeple fission
+terrains: special powers?
+    move into mountain: wait one turn
+    leave mountain: move twice
+    desert only allows moves on heads side turns
+    leaving desert increases faith
 
 multi-tier economy
     tier 0: not produced, just tested if available
         diagonals: energy
         adjacents: material
+            with the reach rule, diagonals have special importance. should adjacents get something special as well?
+            or they don't need, they're already important for something else? (buildings, for instance)
     tier 1: produced by exploration
-                    fuel    food    structure   tool    component
-        swamp:      fuel            structure
-        mountain:                               tool    component
-        valley:             food                        component
-        forest:     fuel    food    structure
-        plains:             food                tool
-        desert:     fuel            structure           component
+          fuel    food    beam    tool    chip
+   swamp: fuel            beam
+mountain:                         tool    chip
+  valley:         food                    chip
+  forest: fuel    food    beam
+  plains:         food            tool
+  desert: fuel            beam            chip
     tier 2: used for specific powers
         - produced by buildings, collected on site (cumulative production if it gets too hard)
         - produced by patterns of existing building, if on building's "home geography" gives a stronger power
-        breed meeple
-        heal meeple
-        strengthen meeple
-        strengthen city
-        split meeple
-        join meeple
-        move-and-explore
-        move faster (twice)
-        attack on-place
-        hold defense (strength added to defense)
-        hidden objectives
+        - can they be stored? at least some of them?
+        breed meeple                    food    beam
+        heal meeple                     food            tool
+        strengthen meeple               food                    chip
+        strengthen city         fuel            beam
+        split meeple            fuel                    tool
+       *join meeple                     food                    chip
+        play twice                                      tool    chip
+       *attack on-place                 food            tool
+        hold defense (d=s+d)                    beam    tool
+        hidden objectives       fuel    food
+    which other combinations may yield different ideas for powers?
+                                                beam            chip
+                                fuel                            chip
+    what to do with more than 2 resources? combos?
 
 hidden objectives
     a) consider whether one of these can be used as game end if presented at the time the condition is fulfilled, or
@@ -179,7 +210,7 @@ hidden objectives
 7. swarm with n meeples
 8. n swarms
 9. meeple with trait at least n
-10. produced n units of given resource during in one round
+10. produced n units of given resource during one round
 */
 
 export enum Team {
