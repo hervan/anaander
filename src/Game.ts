@@ -171,31 +171,38 @@ multi-tier economy
             with the reach rule, diagonals have special importance. should adjacents get something special as well?
             or they don't need, they're already important for something else? (buildings, for instance)
     tier 1: produced by exploration
-          fuel    food    beam    tool    chip
+          fuel    food    beam    chip
+  desert: fuel                    chip
    swamp: fuel            beam
-mountain:                         tool    chip
-  valley:         food                    chip
-  forest: fuel    food    beam
-  plains:         food            tool
-  desert: fuel            beam            chip
+mountain:                 beam    chip
+  forest:         food    beam
+  plains: fuel    food
+  valley:         food            chip
     tier 2: used for specific powers
         - produced by buildings, collected on site (cumulative production if it gets too hard)
         - produced by patterns of existing building, if on building's "home geography" gives a stronger power
         - can they be stored? at least some of them?
-        breed meeple                    food    beam
-        heal meeple                     food            tool
-        strengthen meeple               food                    chip
-        strengthen city         fuel            beam
-        split meeple            fuel                    tool
-       *join meeple                     food                    chip
-        play twice                                      tool    chip
-       *attack on-place                 food            tool
-        hold defense (d=s+d)                    beam    tool
+        breed meeple                            beam
+        enhance meeple                  food            chip
+        strengthen city                 food    beam
+        split meeple            fuel
+       *join meeple             fuel                    chip
+        play twice                                      chip
+       *attack on-place                         beam    chip
+        hold defense (d=s+d)                    beam
         hidden objectives       fuel    food
-    which other combinations may yield different ideas for powers?
-                                                beam            chip
-                                fuel                            chip
+        building construction   fuel            beam
     what to do with more than 2 resources? combos?
+        breed meeple                            beam
+        enhance meeple                  food            chip
+        strengthen city                 food    beam
+        split meeple            fuel
+       *join meeple             fuel                    chip
+        play twice                                      chip
+       *attack on-place                         beam    chip
+        hold defense (d=s+d)                    beam
+        hidden objectives       fuel    food
+        building construction   fuel            beam
 
 hidden objectives
     a) consider whether one of these can be used as game end if presented at the time the condition is fulfilled, or
