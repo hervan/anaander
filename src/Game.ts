@@ -1017,11 +1017,6 @@ function rotateShape(position: Position[]): Position[] {
 
 export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
-    let meepleKey: number = playerCount;
-
-    const terrains: Terrain[] = new Array<Terrain>();
-    const meeples: Meeple[] = new Array<Meeple>();
-
     const cityNames = [
         "Argos",
         "Athens",
@@ -1068,6 +1063,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         "Mytilene"
     ];
 
+    const terrains: Terrain[] = new Array<Terrain>();
     const patchesPerDimension = Math.ceil(Math.sqrt(5 * playerCount));
     const patchLength = boardSize / patchesPerDimension;
     const defaultPatchArea = Math.PI * ((patchLength - 0.5) / 2) ** 2;
@@ -1082,7 +1078,8 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
     let patchIndex = 0;
 
-    while (patchIndex < 5 * playerCount || (patchSeeds.length > 0 && Math.random() < (1 / patchIndex))) {
+    while (patchSeeds.length > 0
+        && patchIndex < patchesPerDimension ** 2) {
 
         const seedPosition: Position = patchSeeds.splice(Math.floor(Math.random() * patchSeeds.length), 1)[0];
 
@@ -1090,27 +1087,32 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
             const patch: Position[] = [seedPosition];
 
+            let patchLimit = patchLength ** 2;
             do {
+                patchLimit--;
                 let candidatePosition;
-                let limit = defaultPatchArea;
+                let candidateLimit = defaultPatchArea;
 
                 do {
-                    limit--;
+                    candidateLimit--;
 
                     candidatePosition =
                         adjacent(patch[Math.floor(Math.random() * patch.length)], boardSize)
                         .filter((pos) => patch.every((p) => p.row !== pos.row || p.col !== pos.col))
                         .filter((pos) => !terrains[positionToIndex(pos, boardSize)])
+                        .filter((pos) => neighbours(pos, boardSize)
+                            .every((p) => !terrains[positionToIndex(p, boardSize)]))
                         .find((pos, i, o) => Math.random() < (1 / (o.length - i)));
 
-                } while (!candidatePosition && limit > 0);
+                } while (!candidatePosition && candidateLimit > 0);
 
-                if (limit > 0) {
+                if (candidateLimit > 0) {
 
                     patch.push(candidatePosition!);
                 }
 
-            } while (Math.random() > (1 - Math.tanh((defaultPatchArea - patch.length) / Math.sqrt(2))) / 2);
+            } while (patchLimit > 0
+                && Math.random() > (1 - Math.tanh((defaultPatchArea - patch.length) / Math.sqrt(2))) / 2);
 
             let cityPosition: Position;
             do {
@@ -1176,6 +1178,9 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         patchIndex++;
     }
 
+    let meepleKey: number = playerCount;
+    const meeples: Meeple[] = new Array<Meeple>();
+
     for (let i: number = 0; i < boardSize; i++) {
 
         for (let j: number = 0; j < boardSize; j++) {
@@ -1188,8 +1193,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             const terrain = terrains[positionToIndex(position, boardSize)] ?
                 terrains[positionToIndex(position, boardSize)] :
                 {
-                    geography: Math.random() < 0.4
-                        && neighbours(position, boardSize).every((pos) =>
+                    geography: neighbours(position, boardSize).every((pos) =>
                             !terrains[positionToIndex(pos, boardSize)]
                             || terrains[positionToIndex(pos, boardSize)].geography !== Geography.sea) ?
                         Geography.sea :

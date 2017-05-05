@@ -82,7 +82,7 @@ mountain:                 ore    silicon
         remote attack           swamp       pattern     no
         breed meeple            valley      building    no
         strengthen city         plains      building    no
-        ???                     forest      building    no
+        hidden bonuses          forest      building    yes (cards)
         double play             mountain    building    no
         hidden objectives       swamp       building    yes (cards)
 
