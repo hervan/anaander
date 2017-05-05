@@ -44,16 +44,12 @@ game progress - figure out how to point to each - draw a graph showing interdepe
 4.  build a building
 5.  activate building benefit
 
-swarm size constraint?
-swarm size - limit on different buildings
-swarms count - one conversion per swarm (evaluate if cumulative or not)
-    how split swarms can benefit from the ship analogy?
-    change terrain analogy to some space analogy? planets? systems? galaxies?
-
 how to constrain size of swarms and number of separate swarms? a pattern-based approach is desired.
+    how split swarms can benefit from the ship analogy?
+
 reduce complexity of swarm actions:
     n+1 actions for the player (n: number of cities)
-    select all meeples to receive command, propagation must be tested for the pattern
+    select all meeples to receive command, propagation must be tested
     this allows an action to be spent on a single meeple (but it's now wasted as a swarm action)
 
 terrains: special powers?
@@ -61,6 +57,7 @@ terrains: special powers?
     leave mountain: move twice
     desert only allows moves on heads side turns
     leaving desert increases faith
+    change terrain analogy to some space analogy? planets? systems? galaxies?
 
 multi-tier economy
     tier 0: not produced, just tested if available for the meeples involved in the action
@@ -81,12 +78,12 @@ mountain:                 ore    silicon
         enhance meeple          valley      pattern     no
         split/join meeple       plains      pattern     no
         re-attack               forest      pattern     no
-        hold defense (d=s+d)    mountain    pattern     no
+        hold defense            mountain    pattern     no
         remote attack           swamp       pattern     no
         breed meeple            valley      building    no
         strengthen city         plains      building    no
         ???                     forest      building    no
-        play twice              mountain    building    no
+        double play             mountain    building    no
         hidden objectives       swamp       building    yes (cards)
 
 hidden objectives

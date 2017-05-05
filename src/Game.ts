@@ -119,107 +119,6 @@ cities
     after conquest, explore improves city - like a stronger defense
 */
 
-/*
-------x-x-x------
-   future work
-------x-x-x------
-
----------------------------------------------
-CREATE TASKS FOR EACH SUBJECT REFERENCED HERE
----------------------------------------------
-
-swarms constraints
-swarms reach
-terrain modifiers
-tier 0 resources testing
-tier 1 resources generation by exploration, and storage
-buildings construction
-tier 2 resources generation by building visitation or pattern formation
-tier 2 resource powers activation
-objectives testing
-objectives handling (receiving, showing, scoring, game ending)
-
--------------------------------------------------------------
-USE THE SEQUENCE BELOW TO VALIDATE THE HYPOTHESES THAT FOLLOW
--------------------------------------------------------------
-
-game progress - figure out how to point to each - draw a graph showing interdependencies
-1.  increase swarm
-2.  capture city
-3.  explore for resources
-4.  build a building
-5.  activate building benefit
-
-swarm size constraint?
-swarm size - limit on different buildings
-swarms count - one conversion per swarm (evaluate if cumulative or not)
-    how split swarms can benefit from the ship analogy?
-    change terrain analogy to some space analogy? planets? systems? galaxies?
-reach: if splitting swarms is too trivial, but at the same time too powerful, energy production can be tested for reach,
-    which would prevent an early swarm split.
-
-terrains: special powers?
-    move into mountain: wait one turn
-    leave mountain: move twice
-    desert only allows moves on heads side turns
-    leaving desert increases faith
-
-multi-tier economy
-    tier 0: not produced, just tested if available
-        diagonals: energy
-        adjacents: material
-            with the reach rule, diagonals have special importance. should adjacents get something special as well?
-            or they don't need, they're already important for something else? (buildings, for instance)
-    tier 1: produced by exploration
-          fuel    food    beam    chip
-  desert: fuel                    chip
-   swamp: fuel            beam
-mountain:                 beam    chip
-  forest:         food    beam
-  plains: fuel    food
-  valley:         food            chip
-    tier 2: used for specific powers
-        - produced by buildings, collected on site (cumulative production if it gets too hard)
-        - produced by patterns of existing building, if on building's "home geography" gives a stronger power
-        - can they be stored? at least some of them?
-        breed meeple                            beam
-        enhance meeple                  food            chip
-        strengthen city                 food    beam
-        split meeple            fuel
-       *join meeple             fuel                    chip
-        play twice                                      chip
-       *attack on-place                         beam    chip
-        hold defense (d=s+d)                    beam
-        hidden objectives       fuel    food
-        building construction   fuel            beam
-    what to do with more than 2 resources? combos?
-        breed meeple                            beam
-        enhance meeple                  food            chip
-        strengthen city                 food    beam
-        split meeple            fuel
-       *join meeple             fuel                    chip
-        play twice                                      chip
-       *attack on-place                         beam    chip
-        hold defense (d=s+d)                    beam
-        hidden objectives       fuel    food
-        building construction   fuel            beam
-
-hidden objectives
-    a) consider whether one of these can be used as game end if presented at the time the condition is fulfilled, or
-    b) if they represent something that must be achieved in a single turn, remaining on the table for reactivation
-    option (a) requires more complex conditions, (b) requires simpler conditions
-1. destroy n enemy buildings from m players
-2. gather n (unbuilt) blueprints
-3. eliminate n meeples from m players
-4. convert n meeples from m players
-5. control n cities
-6. build n buildings of m types
-7. swarm with n meeples
-8. n swarms
-9. meeple with trait at least n
-10. produced n units of given resource during one round
-*/
-
 export enum Team {
     info,
     warning,
@@ -240,12 +139,12 @@ export enum Action {
 
 export enum Geography {
     sea,
+    desert,
     swamp,
     mountain,
     forest,
-    valley,
     plains,
-    desert
+    valley
 };
 
 export enum Item {
@@ -1169,118 +1068,119 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         "Mytilene"
     ];
 
-    let terrainCount = 0;
-    let patchCount = 0;
+    const patchesPerDimension = Math.ceil(Math.sqrt(5 * playerCount));
+    const patchLength = boardSize / patchesPerDimension;
+    const defaultPatchArea = Math.PI * ((patchLength - 0.5) / 2) ** 2;
 
-    let position = {
-        row: Math.floor(Math.random() * boardSize),
-        col: Math.floor(Math.random() * boardSize)
-    };
+    const patchSeeds: Position[] =
+        [...Array(patchesPerDimension ** 2).keys()].map((idx) =>
+            ({
+                row: Math.round((patchLength / 2) + (patchLength * Math.floor(idx / patchesPerDimension))),
+                col: Math.round((patchLength / 2) + (patchLength * (idx % patchesPerDimension)))
+            })
+        );
 
-    while (terrainCount < boardSize ** 2 && patchCount < 5 * playerCount) {
+    let patchIndex = 0;
 
-        if (!terrains[positionToIndex(position, boardSize)]) {
+    while (patchIndex < 5 * playerCount || (patchSeeds.length > 0 && Math.random() < (1 / patchIndex))) {
 
-            const geographyIndex = Math.ceil(Math.random() * 5);
-            let shape: Position[] = PieceShape[GeographyItem[geographyIndex].piece!];
+        const seedPosition: Position = patchSeeds.splice(Math.floor(Math.random() * patchSeeds.length), 1)[0];
 
-            for (let i = 0; i < Math.floor(Math.random() * 2); i++) {
-                shape = flipShape(shape);
-            }
+        if (!terrains[positionToIndex(seedPosition, boardSize)]) {
 
-            for (let i = 0; i < Math.floor(Math.random() * 4); i++) {
-                shape = rotateShape(shape);
-            }
+            const patch: Position[] = [seedPosition];
 
-            const shapeInMap = shape.map((pos) => ({
-                row: pos.row + position.row,
-                col: pos.col + position.col
-            }));
-
-            if (shapeInMap.every((pos) => insideBoard(pos, boardSize)
-                && !terrains[positionToIndex(pos, boardSize)])) {
-
-                let cityPos: Position;
-                let shapePositions: Position[] = shapeInMap.slice();
-
-                let cityProb = 0;
+            do {
+                let candidatePosition;
+                let limit = defaultPatchArea;
 
                 do {
-                    cityPos = shapePositions.splice(Math.floor(Math.random() * shapePositions.length), 1)[0];
-                    cityProb++;
+                    limit--;
 
-                    if (shapePositions.length === 0) {
+                    candidatePosition =
+                        adjacent(patch[Math.floor(Math.random() * patch.length)], boardSize)
+                        .filter((pos) => patch.every((p) => p.row !== pos.row || p.col !== pos.col))
+                        .filter((pos) => !terrains[positionToIndex(pos, boardSize)])
+                        .find((pos, i, o) => Math.random() < (1 / (o.length - i)));
 
-                        let candidatePosition;
-                        do {
-                            candidatePosition =
-                                adjacent(shapeInMap[Math.floor(Math.random() * shapeInMap.length)], boardSize)
-                                .filter((pos) => shapeInMap.every((p) => p.row !== pos.row || p.col !== pos.col))
-                                .find((pos, i, o) => Math.random() < (1 / (o.length - i)));
-                        } while (!candidatePosition || terrains[positionToIndex(candidatePosition, boardSize)]);
+                } while (!candidatePosition && limit > 0);
 
-                        shapePositions.push(candidatePosition);
+                if (limit > 0) {
 
-                        shapeInMap.push(...shapePositions);
-                    }
+                    patch.push(candidatePosition!);
+                }
 
-                } while (Math.random() > cityProb / (Math.PI * (boardSize ** 2 / ( 5 * playerCount)) / 4)
-                    || !adjacent(cityPos, boardSize).every((pos) => insideBoard(pos, boardSize)));
+            } while (Math.random() > (1 - Math.tanh((defaultPatchArea - patch.length) / Math.sqrt(2))) / 2);
 
-                shapeInMap.push(...neighbours(cityPos, boardSize)
-                    .filter((pos) => shapeInMap.every((p) => p.row !== pos.row || p.col !== pos.col)));
+            let cityPosition: Position;
+            do {
+                cityPosition = patch[Math.floor(Math.random() * patch.length)];
 
-                let itemPos: Position;
+            } while (adjacent(cityPosition, boardSize).length !== 4
+                || !adjacent(cityPosition, boardSize).every((pos) => insideBoard(pos, boardSize)));
 
-                do {
-                    itemPos = shapeInMap[Math.floor(Math.random() * shapeInMap.length)];
-                } while (itemPos.row === cityPos.row && itemPos.col === cityPos.col);
+            patch.push(...neighbours(cityPosition, boardSize)
+                .filter((pos) => patch.every((p) => p.row !== pos.row || p.col !== pos.col)));
 
-                shapeInMap.push(...neighbours(itemPos, boardSize)
-                    .filter((pos) => shapeInMap.every((p) => p.row !== pos.row || p.col !== pos.col)));
+            let itemPos: Position;
+            do {
+                itemPos = patch[Math.floor(Math.random() * patch.length)];
 
-                shapeInMap.forEach((pos) => {
+            } while (itemPos.row === cityPosition.row && itemPos.col === cityPosition.col);
 
-                    let spaceLeft = geographyIndex;
-                    let city: City | undefined = undefined;
+            const geographyIndex = Math.ceil(Math.random() * 5) + 1;
+            const boundaries: Position[] = [];
 
-                    if (pos.row === cityPos.row
-                        && pos.col === cityPos.col) {
+            patch.forEach((position) => {
 
-                        spaceLeft--;
-                        city = {
-                            name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
-                            defense: 10 + (spaceLeft * Math.ceil(Math.random() * 5)),
-                            team: Team.default
-                        };
-                    }
+                let spaceLeft = geographyIndex;
+                let city: City | undefined = undefined;
 
-                    terrains[positionToIndex(pos, boardSize)] = {
-                        geography: geographyIndex,
-                        item: pos.row === itemPos.row && pos.col === itemPos.col,
-                        position: pos,
-                        spaceLeft: spaceLeft,
-                        topMeeple: -1,
-                        city: city
+                if (position.row === cityPosition.row
+                    && position.col === cityPosition.col) {
+
+                    spaceLeft--;
+                    city = {
+                        name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
+                        defense: 10 + (spaceLeft * Math.ceil(Math.random() * 5)),
+                        team: Team.default
                     };
-                });
+                }
 
-                terrainCount += shapeInMap.length;
-                patchCount++;
-            }
+                terrains[positionToIndex(position, boardSize)] = {
+                    geography: geographyIndex,
+                    item: position.row === itemPos.row && position.col === itemPos.col,
+                    position: position,
+                    spaceLeft: spaceLeft,
+                    topMeeple: -1,
+                    city: city
+                };
+
+                boundaries.push(...neighbours(position, boardSize)
+                    .filter((pos) => patch.every((p) => pos.row !== p.row || pos.col !== p.col))
+                    .filter((pos) => insideBoard(position, boardSize))
+                    .filter((pos) => !terrains[positionToIndex(pos, boardSize)]));
+            });
+
+            boundaries.forEach((position) => {
+                terrains[positionToIndex(position, boardSize)] = {
+                    geography: Geography.desert,
+                    item: position.row === itemPos.row && position.col === itemPos.col,
+                    position: position,
+                    spaceLeft: 1,
+                    topMeeple: -1
+                };
+            });
         }
 
-        position =  {
-            row: Math.floor(Math.random() * boardSize),
-            col: Math.floor(Math.random() * boardSize)
-        };
+        patchIndex++;
     }
 
     for (let i: number = 0; i < boardSize; i++) {
 
         for (let j: number = 0; j < boardSize; j++) {
 
-            position = {
+            const position = {
                 row: i,
                 col: j
             };
@@ -1288,18 +1188,23 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             const terrain = terrains[positionToIndex(position, boardSize)] ?
                 terrains[positionToIndex(position, boardSize)] :
                 {
-                    geography: Geography.desert,
+                    geography: Math.random() < 0.4
+                        && neighbours(position, boardSize).every((pos) =>
+                            !terrains[positionToIndex(pos, boardSize)]
+                            || terrains[positionToIndex(pos, boardSize)].geography !== Geography.sea) ?
+                        Geography.sea :
+                        Geography.desert,
                     item: false,
                     position: position,
-                    spaceLeft: Geography.desert,
+                    spaceLeft: 1,
                     topMeeple: -1
                 };
 
             const geographyIndex = terrain.geography;
             let topMeeple: number = -1;
-            let spaceLeft: number = terrain.spaceLeft;
+            let spaceLeft: number = terrain.geography === Geography.sea ? 0 : terrain.spaceLeft;
 
-            if (!terrain.city && Math.random() < 0.1 * (spaceLeft % 6)) {
+            if (!terrain.city && Math.random() < 0.1 * (spaceLeft - 1)) {
 
                 const meeple: Meeple = {
 
@@ -1332,13 +1237,16 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
     for (let team = Team.info; team < playerCount; team++) {
 
+        let position: Position;
+
         do { // find a random empty tile
             position = {
                 row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                 col: Math.floor(Math.random() * (boardSize - 2)) + 1
             };
         } while (terrains[positionToIndex(position, boardSize)].city
-            || terrains[positionToIndex(position, boardSize)].topMeeple > -1);
+            || terrains[positionToIndex(position, boardSize)].topMeeple > -1
+            || terrains[positionToIndex(position, boardSize)].spaceLeft < 1);
 
         const meeple: Meeple = {
             key: meepleKey++,
