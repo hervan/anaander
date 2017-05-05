@@ -83,7 +83,7 @@ export class Table extends React.Component<{}, IState> {
         this.state = {
             game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
             mode: Mode.setup,
-            playType: "swarm",
+            playType: "individual",
             playerCount: defaultPlayerCount,
             computerCount: defaultComputerCount,
             boardSize: defaultBoardSize,
@@ -113,7 +113,7 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
-                playType: "swarm",
+                playType: "individual",
                 playerCount: defaultPlayerCount,
                 computerCount: defaultComputerCount,
                 boardSize: defaultBoardSize,
@@ -397,7 +397,7 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    autoSelect(control: Control = "swarm"): void {
+    autoSelect(control: Control = "individual"): void {
 
         const meeples = availableMeeples(this.state.game);
 

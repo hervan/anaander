@@ -100,13 +100,13 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 <a className={"button is-" + Team[props.player.team]
                                     + (props.active && props.playType === "individual" ?
                                     " is-active" : " is-outlined")}
-                                    disabled={props.player.cities - props.player.usedActions <= 0}
+                                    disabled={props.player.cities - props.player.usedActions < 0}
                                     style={{ textDecoration: "none" }}
                                     onClick={() => props.setup("individual")}>
                                     <span className="icon is-small">
                                         <i className="fa fa-user fa-fw"></i>
                                     </span>
-                                    <span>{props.player.cities - props.player.usedActions}</span>
+                                    <span>{props.player.cities - props.player.usedActions + 1}</span>
                                 </a>
                             </p>
                         </div>

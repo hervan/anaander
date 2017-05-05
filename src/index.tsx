@@ -62,7 +62,9 @@ terrains: special powers?
 multi-tier economy
     tier 0: not produced, just tested if available for the meeples involved in the action
         diagonals: energy - reach (propagation of the swarm command, one swarm command per turn)
+            NO NEED FOR TESTING - movement propagates only to diagonals!
         adjacents: material - building construction
+            besides movement, propagate other actions to adjacents?
     tier 1: produced by exploration
           fuel    food    ore    silicon
   desert: fuel                   silicon

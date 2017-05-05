@@ -566,7 +566,22 @@ export function play(game: Game, play: Play): Game {
 
         case "individual": {
 
-            const gameStep = playIndividual(game, play.play.action, play.play.meepleIndex);
+            const swarm = [play.play.meepleIndex];
+            let gameStep: Game = game;
+
+            while (swarm.length > 0) {
+
+                const meepleKey: number = swarm.splice(0, 1)[0];
+                gameStep = playIndividual(gameStep, play.play.action, meepleKey);
+
+                const meeple = gameStep.meeples[meepleKey];
+                adjacent(meeple.position, gameStep.boardSize).forEach((position) => {
+                    if (isMeepleAvailable(gameStep, position)) {
+
+                        swarm.push(gameStep.terrains[positionToIndex(position, gameStep.boardSize)].topMeeple);
+                    }
+                });
+            }
             const nt = nextTurn(gameStep);
 
             if (nt.side !== gameStep.turn.side) {
@@ -604,6 +619,8 @@ export function play(game: Game, play: Play): Game {
 
 function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
+    const meeple = game.meeples[swarm[0]];
+
     const selection = selectSwarm(game, game.meeples[swarm[0]].position);
 
     if (selection.every((meepleIndex, i) => swarm[i] === meepleIndex)) {
@@ -636,7 +653,7 @@ function playPattern(game: Game, pattern: number[], meepleIndex: number): Game {
 
 function playIndividual(game: Game, action: Action, meepleIndex: number): Game {
 
-    if (game.players[game.turn.team].usedActions < game.players[game.turn.team].cities) {
+    if (game.players[game.turn.team].usedActions < game.players[game.turn.team].cities + 1) {
 
         const gameStep = playMeeple(game, action, meepleIndex);
         const players = gameStep.players;
@@ -1217,7 +1234,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
                     key: meepleKey++,
                     position: position,
-                    team: Team.default,
+                    team: Math.random() < 0.5 ? Team.info : Team.warning,
                     side: Side.heads,
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
