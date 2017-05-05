@@ -1193,9 +1193,12 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             const terrain = terrains[positionToIndex(position, boardSize)] ?
                 terrains[positionToIndex(position, boardSize)] :
                 {
-                    geography: neighbours(position, boardSize).every((pos) =>
-                            !terrains[positionToIndex(pos, boardSize)]
-                            || terrains[positionToIndex(pos, boardSize)].geography !== Geography.sea) ?
+                    geography: Math.random() < 0.5
+                        && neighbours(position, boardSize)
+                        .filter((pos) =>
+                            terrains[positionToIndex(pos, boardSize)] !== undefined
+                            && terrains[positionToIndex(pos, boardSize)].geography === Geography.sea)
+                        .length < 4 ?
                         Geography.sea :
                         Geography.desert,
                     item: false,
