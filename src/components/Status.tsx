@@ -78,12 +78,6 @@ export default class Status extends React.Component<IProps, {}> {
 
             break;
 
-            case " ":
-
-            this.props.setup("begin");
-
-            break;
-
             case "/":
             case "?":
 

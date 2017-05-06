@@ -288,48 +288,47 @@ function flipSide(side: Side): Side {
     return (side + 1) % 2;
 }
 
-function rotateTeam(game: Game): Team {
+function rotateTeam(turn: Turn, playerCount: number): Team {
 
-    let team: Team = game.turn.team;
-    let i: number = game.players.length - 1;
-
-    if (i < 0) {
-
-        return team;
-    }
-
-    do {
-        team = (team + 1) % game.players.length;
-    } while (i-- > 0
-        && (game.players[team].usedActions > game.players[team].cities
-            || availableMeeples({...game, turn: {...game.turn, team: team}}).length === 0));
-
-    return team;
+    return playerCount < 1 ?
+        turn.team :
+        (turn.team + 1) % playerCount;
 }
 
-function nextTurn(game: Game): Turn {
+function nextTurn(game: Game): Game {
 
-    let nextTeam: Team = game.turn.team;
-    let i: number = game.players.length;
-    let gameStep = game;
+    let { round, team, side } = game.turn;
 
-    nextTeam = rotateTeam(gameStep);
+    let availableTeams = game.players
+        .filter((player) => player.usedActions < player.cities + 1
+            && availableMeeples(game, player.team).length > 0)
+        .map((player) => player.team);
 
-    if (game.players[nextTeam].usedActions > game.players[nextTeam].cities
-        || availableMeeples({...game, turn: {...game.turn, team: nextTeam}}).length === 0) {
+    if (availableTeams.length === 0) {
         // no more actions left this round
-        return {
-            round: game.turn.round + 1,
-            team: Team.info,
-            side: flipSide(game.turn.side)
-        };
+        round++;
+        team = -1;
+        side = flipSide(side);
     } else {
-        // next team can play this round yet
-        return {
-            ...game.turn,
-            team: nextTeam
-        };
+
+        do {
+            team = rotateTeam({
+                round: round,
+                team: team,
+                side: side
+            }, game.players.length);
+
+        } while (!availableTeams.some((t) => t === team));
     }
+
+    return {
+        ...game,
+        turn: {
+            round: round,
+            team: team,
+            side: side
+        }
+    };
 }
 
 function isOver(game: Game): boolean {
@@ -365,22 +364,21 @@ export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[] = []
     }
 }
 
-export function availableMeeples(game: Game): Meeple[] {
+export function availableMeeples(game: Game, team?: Team): Meeple[] {
 
-    return game.terrains.filter((terrain) => isMeepleAvailable(game, terrain.position))
+    return game.terrains.filter((terrain) => isMeepleAvailable(game, terrain.position, team))
         .map((terrain) => game.meeples[terrain.topMeeple]);
 }
 
-export function isMeepleAvailable(game: Game, position: Position): boolean {
+export function isMeepleAvailable(game: Game, position: Position, team?: Team): boolean {
 
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
     const meepleIndex = terrain.topMeeple;
     const meeple = game.meeples[meepleIndex];
 
     return meepleIndex !== -1
-        && meeple.team === game.turn.team
-        && meeple.side === game.turn.side
-        && (!terrain.city || meeple.team === terrain.city.team);
+        && meeple.team === (team !== undefined ? team : game.turn.team)
+        && meeple.side === game.turn.side;
 }
 
 export function selectSwarm(game: Game, position: Position, selection?: number[]): number[] {
@@ -520,25 +518,41 @@ export function play(game: Game, play: Play): Game {
         gameStep.players[gameStep.turn.team].usedActions++;
     }
 
-    const nt = nextTurn(gameStep);
-    if (nt.side !== gameStep.turn.side) {
+    if (!isOver(gameStep)) {
 
-        gameStep.players = gameStep.players.map((player) => { return {
-            ...player,
-            usedActions: 0
-        }; });
+        const gameTurn = nextTurn(gameStep);
+
+        if (gameTurn.turn.side !== gameStep.turn.side) {
+
+            gameTurn.players = gameTurn.players.map((player) => { return {
+                ...player,
+                usedActions: 0
+            }; });
+
+            return {
+                ...nextTurn(gameTurn),
+                outcome: [{
+                    type: "action",
+                    action: play.action
+                }]
+            };
+        } else {
+
+            return {
+                ...gameTurn,
+                outcome: [{
+                    type: "action",
+                    action: play.action
+                }]
+            };
+        }
+    } else {
+
+        return {
+            ...gameStep,
+            outcome: [{ type: "gameover" }]
+        };
     }
-
-    return {
-        ...gameStep,
-        turn: nt,
-        outcome: isOver(gameStep) ?
-            [{ type: "gameover" }] :
-            [{
-                type: "action",
-                action: play.action
-            }]
-    };
 }
 
 function playSwarm(game: Game, action: Action, swarm: number[]): Game {
@@ -1108,7 +1122,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
 
                     key: meepleKey++,
                     position: position,
-                    team: Math.random() < 0.5 ? Team.info : Team.warning,
+                    team: Team.default,
                     side: Side.heads,
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
