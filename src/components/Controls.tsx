@@ -6,7 +6,6 @@ import {
     Game,
     Item,
     Play,
-    PlayType,
     Position,
     Side,
     Team
@@ -21,7 +20,6 @@ interface IProps {
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position, item?: Item) => void;
     game: Game;
-    playType: PlayType;
     selectedItem: Item;
 };
 
@@ -36,7 +34,6 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 setup={props.setup}
                 enqueuePlay={props.enqueuePlay}
                 active={player.team === props.game.turn.team}
-                playType={props.playType}
                 selectedItem={props.selectedItem}
             />
         )}

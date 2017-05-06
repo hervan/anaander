@@ -5,6 +5,7 @@ import {
     Action,
     Game,
     Meeple,
+    Outcome,
     Play,
     Position,
     Side,
@@ -204,11 +205,13 @@ export default class Status extends React.Component<IProps, {}> {
                     </span>'s turn.
                 </p>;
 
-            switch (this.props.game.outcome.type) {
+            let outcome: Outcome = this.props.game.outcome[0];
+
+            switch (outcome.type) {
 
                 case "invalid":
 
-                guideDetail = <p>{this.props.game.outcome.explanation}</p>;
+                guideDetail = <p>{outcome.explanation}</p>;
 
                 break;
 

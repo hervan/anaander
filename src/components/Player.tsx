@@ -7,7 +7,6 @@ import {
     Item,
     Play,
     Player,
-    PlayType,
     Team
 } from "../Game";
 
@@ -18,7 +17,6 @@ interface IProps {
     setup: (control: Control, item?: Item) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     active: boolean;
-    playType: PlayType;
     selectedItem: Item;
 }
 
@@ -83,10 +81,8 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                         <div className="tile is-child">
                             <p title="if you lose\nall your meeples\nyou're dead.">
                                 <a className={"button is-" + Team[props.player.team]
-                                    + (props.active && props.playType === "swarm" ?
-                                    " is-active" : " is-outlined")}
-                                    style={{ textDecoration: "none" }}
-                                    onClick={() => props.setup("swarm")}>
+                                    + " is-outlined"}
+                                    style={{ textDecoration: "none" }}>
                                     <span className="icon is-small">
                                         <i className="fa fa-users fa-fw"></i>
                                     </span>
@@ -98,11 +94,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     + "every turn you can do it a number of times\n"
                                     + "equal to the number of cities you control."}>
                                 <a className={"button is-" + Team[props.player.team]
-                                    + (props.active && props.playType === "individual" ?
-                                    " is-active" : " is-outlined")}
+                                    + " is-outlined"}
                                     disabled={props.player.cities - props.player.usedActions < 0}
-                                    style={{ textDecoration: "none" }}
-                                    onClick={() => props.setup("individual")}>
+                                    style={{ textDecoration: "none" }}>
                                     <span className="icon is-small">
                                         <i className="fa fa-user fa-fw"></i>
                                     </span>
@@ -118,12 +112,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     .map(({ type, item, piece }, i) =>
                                     <a key={i}
                                         className={"button is-" + Team[props.player.team]
-                                        + (props.active && props.playType === "pattern"
-                                        && props.selectedItem
-                                        && props.selectedItem === item ? " is-active" : " is-outlined")}
+                                        + " is-outlined"}
                                         title={type}
-                                        disabled={!props.player.items[i]}
-                                        onClick={() => props.setup("pattern", item!)}>
+                                        disabled={!props.player.items[i]}>
                                         <span className="icon">
                                             <span className="fa artifact">{piece}</span>
                                         </span>

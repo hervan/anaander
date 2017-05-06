@@ -219,29 +219,10 @@ export type Player = {
     usedActions: number;
 };
 
-export type PlayType =
-| "skip"
-| "swarm"
-| "pattern"
-| "individual";
-
 export type Play = {
     team: Team;
-    play: {
-        type: "individual";
-        action: Action;
-        meepleIndex: number;
-    } | {
-        type: "pattern";
-        pattern: number[];
-        meepleIndex: number;
-    } | {
-        type: "swarm";
-        action: Action;
-        swarm: number[];
-    } | {
-        type: "skip";
-    }
+    action: Action;
+    selection: number[];
 };
 
 const InvalidPlays: { [key: string]: string } = {
@@ -251,8 +232,7 @@ const InvalidPlays: { [key: string]: string } = {
     TerrainIsCrowded: "move to a terrain with space available.",
     NotOnGround: "only meeples on the ground can explore the terrain",
     NoSelection: "please select meeples before choosing the action",
-    NoExtraActions: "you need to control more cities to perform more actions",
-    NoSwarm: "you must play a whole swarm, or spend extra actions"
+    NoActions: "you need to control more cities to perform more actions"
 };
 
 type Turn = {
@@ -261,7 +241,7 @@ type Turn = {
     side: Side;
 };
 
-type Outcome = {
+export type Outcome = {
         type: "action"
         action: Action
     } | {
@@ -282,7 +262,7 @@ export type Game = {
     terrains: Terrain[];
     meeples: Meeple[];
     turn: Turn;
-    outcome: Outcome;
+    outcome: Outcome[];
 };
 
 export function logBoard(game: Game): void {
@@ -303,6 +283,11 @@ export function logBoard(game: Game): void {
     console.log(board);
 }
 
+function flipSide(side: Side): Side {
+
+    return (side + 1) % 2;
+}
+
 function rotateTeam(game: Game): Team {
 
     let team: Team = game.turn.team;
@@ -315,14 +300,11 @@ function rotateTeam(game: Game): Team {
 
     do {
         team = (team + 1) % game.players.length;
-    } while (i-- > 0 && availableMeeples({...game, turn: {...game.turn, team: team}}).length === 0);
+    } while (i-- > 0
+        && (game.players[team].usedActions > game.players[team].cities
+            || availableMeeples({...game, turn: {...game.turn, team: team}}).length === 0));
 
     return team;
-}
-
-function flipSide(side: Side): Side {
-
-    return (side + 1) % 2;
 }
 
 function nextTurn(game: Game): Turn {
@@ -333,7 +315,8 @@ function nextTurn(game: Game): Turn {
 
     nextTeam = rotateTeam(gameStep);
 
-    if (availableMeeples({...game, turn: {...game.turn, team: nextTeam}}).length === 0) {
+    if (game.players[nextTeam].usedActions > game.players[nextTeam].cities
+        || availableMeeples({...game, turn: {...game.turn, team: nextTeam}}).length === 0) {
         // no more actions left this round
         return {
             round: game.turn.round + 1,
@@ -505,178 +488,69 @@ export function play(game: Game, play: Play): Game {
 
         return {
             ...game,
-            outcome: {
+            outcome: [{
                 type: "invalid",
                 explanation: InvalidPlays.NotYourTurn
-            }
+            }]
         };
-    }
-
-    switch (play.play.type) {
-
-        case "swarm": {
-
-            const gameStep = playSwarm(game, play.play.action, play.play.swarm);
-            const nt = nextTurn(gameStep);
-
-            if (nt.side !== gameStep.turn.side) {
-
-                gameStep.players = gameStep.players.map((player) => { return {
-                    ...player,
-                    usedActions: 0
-                }; });
-            }
-
-            return {
-                ...gameStep,
-                turn: nt,
-                outcome: isOver(gameStep) ?
-                    { type: "gameover" } :
-                    {
-                        type: "action",
-                        action: play.play.action
-                    }
-            };
-        }
-
-        case "pattern": {
-
-            const gameStep = playPattern(game, play.play.pattern, play.play.meepleIndex);
-            const nt = nextTurn(gameStep);
-
-            if (nt.side !== gameStep.turn.side) {
-
-                gameStep.players = gameStep.players.map((player) => { return {
-                    ...player,
-                    usedActions: 0
-                }; });
-            }
-
-            return {
-                ...gameStep,
-                turn: nt,
-                outcome: isOver(gameStep) ?
-                    { type: "gameover" } :
-                    {
-                        type: "pattern",
-                        pattern: Item.energy
-                    }
-            };
-        }
-
-        case "individual": {
-
-            const swarm = [play.play.meepleIndex];
-            let gameStep: Game = game;
-
-            while (swarm.length > 0) {
-
-                const meepleKey: number = swarm.splice(0, 1)[0];
-                gameStep = playIndividual(gameStep, play.play.action, meepleKey);
-
-                const meeple = gameStep.meeples[meepleKey];
-                adjacent(meeple.position, gameStep.boardSize).forEach((position) => {
-                    if (isMeepleAvailable(gameStep, position)) {
-
-                        swarm.push(gameStep.terrains[positionToIndex(position, gameStep.boardSize)].topMeeple);
-                    }
-                });
-            }
-            const nt = nextTurn(gameStep);
-
-            if (nt.side !== gameStep.turn.side) {
-
-                gameStep.players = gameStep.players.map((player) => { return {
-                    ...player,
-                    usedActions: 0
-                }; });
-            }
-
-            return {
-                ...gameStep,
-                turn: nt,
-                outcome: isOver(gameStep) ?
-                    { type: "gameover" } :
-                    {
-                        type: "action",
-                        action: play.play.action
-                    }
-            };
-        }
-
-        default:
-        case "skip":
-
-        const nt = nextTurn(game);
+    } else if (game.players[game.turn.team].usedActions > game.players[game.turn.team].cities) {
 
         return {
             ...game,
-            turn: nt,
-            outcome: { type: "none" }
+            outcome: [{
+                type: "invalid",
+                explanation: InvalidPlays.NoActions
+            }]
+        };
+    } else if (play.selection.length === 0) {
+
+        return {
+            ...game,
+            outcome: [{
+                type: "invalid",
+                explanation: InvalidPlays.NoSelection
+            }]
         };
     }
+
+    const gameStep = playSwarm(game, play.action, play.selection);
+
+    if (gameStep.outcome.some((oc) => oc.type !== "invalid")) {
+
+        gameStep.players[gameStep.turn.team].usedActions++;
+    }
+
+    const nt = nextTurn(gameStep);
+    if (nt.side !== gameStep.turn.side) {
+
+        gameStep.players = gameStep.players.map((player) => { return {
+            ...player,
+            usedActions: 0
+        }; });
+    }
+
+    return {
+        ...gameStep,
+        turn: nt,
+        outcome: isOver(gameStep) ?
+            [{ type: "gameover" }] :
+            [{
+                type: "action",
+                action: play.action
+            }]
+    };
 }
 
 function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
-    const meeple = game.meeples[swarm[0]];
+    const meeplePositionIndices = swarm.map((meepleIndex) =>
+        positionToIndex(game.meeples[meepleIndex].position, game.boardSize));
 
-    const selection = selectSwarm(game, game.meeples[swarm[0]].position);
-
-    if (selection.every((meepleIndex, i) => swarm[i] === meepleIndex)) {
-
-        const meeplePositionIndices = swarm.map((meepleIndex) =>
-            positionToIndex(game.meeples[meepleIndex].position, game.boardSize));
-
-        return (action === Action.right || action === Action.down ?
-            meeplePositionIndices.reverse() : // make sure a meeple won't jump on a meeple of the same swarm
-            meeplePositionIndices)
-            .map((mpi) => game.terrains[mpi].topMeeple)
-            .reduce((acc, meepleIndex) => playMeeple(acc, action, meepleIndex), game);
-
-    } else {
-
-        return {
-            ...game,
-            outcome: {
-                type: "invalid",
-                explanation: InvalidPlays.NoSwarm
-            }
-        };
-    }
-}
-
-function playPattern(game: Game, pattern: number[], meepleIndex: number): Game {
-
-    return game;
-}
-
-function playIndividual(game: Game, action: Action, meepleIndex: number): Game {
-
-    if (game.players[game.turn.team].usedActions < game.players[game.turn.team].cities + 1) {
-
-        const gameStep = playMeeple(game, action, meepleIndex);
-        const players = gameStep.players;
-
-        if (gameStep.outcome.type === "action") {
-
-            players[gameStep.turn.team].usedActions++;
-        }
-
-        return {
-            ...gameStep,
-            players: players
-        };
-    } else {
-
-        return {
-            ...game,
-            outcome: {
-                type: "invalid",
-                explanation: InvalidPlays.NoExtraActions
-            }
-        };
-    }
+    return (action === Action.right || action === Action.down ?
+        meeplePositionIndices.reverse() : // make sure a meeple won't jump on a meeple of the same swarm
+        meeplePositionIndices)
+        .map((mpi) => game.terrains[mpi].topMeeple)
+        .reduce((acc, meepleIndex) => playMeeple(acc, action, meepleIndex), {...game, outcome: [] as Outcome[]});
 }
 
 function exploreTerrain(game: Game, position: Position): Game {
@@ -711,19 +585,19 @@ function exploreTerrain(game: Game, position: Position): Game {
             terrains: gameTerrains,
             players: gamePlayers,
             meeples: gameMeeples,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "action",
                 action: Action.explore
-            }
+            }]
         };
     } else {
 
         return {
             ...game,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "invalid",
                 explanation: InvalidPlays.NotOnGround
-            }
+            }]
         };
     }
 }
@@ -873,10 +747,10 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
 
         return {
             ...game,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "invalid",
                 explanation: InvalidPlays.OutOfBoard
-            }
+            }]
         };
     }
 
@@ -890,10 +764,10 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
 
         return {
             ...game,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "invalid",
                 explanation: InvalidPlays.TerrainIsCrowded
-            }
+            }]
         };
     }
 
@@ -931,10 +805,10 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         ...game,
         terrains: gameTerrains,
         meeples: gameMeeples,
-        outcome: {
+            outcome: [...game.outcome, {
             type: "action",
             action: action
-        }
+        }]
     };
 
     if (terrainTo.city && terrainTo.city.team !== meeple.team) {
@@ -956,10 +830,10 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
 
         return {
             ...game,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "invalid",
                 explanation: InvalidPlays.MeepleNotAvailable
-            }
+            }]
         };
     }
 
@@ -969,10 +843,10 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
 
         return {
             ...game,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "invalid",
                 explanation: InvalidPlays.MeepleNotAvailable
-            }
+            }]
         };
     }
 
@@ -988,10 +862,10 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
         return {
             ...game,
             meeples: gameMeeples,
-            outcome: {
+            outcome: [...game.outcome, {
                 type: "action",
                 action: action
-            }
+            }]
         };
 
         case Action.explore:
@@ -1290,7 +1164,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         players[team] = {
             team: team,
             cities: 0,
-            swarmSize: 1,
+            swarmSize: meeples.filter((m) => m.team === team).length,
             items: Array(5).map((o, index) => false),
             usedActions: 0
         };
@@ -1307,7 +1181,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             team: Team.default,
             side: Side.none
         },
-        outcome: { type: "none" }
+        outcome: [{ type: "none" }]
     };
 
     return game;
@@ -1342,7 +1216,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // a blue meeple
             boardSize: 3,
@@ -1367,7 +1241,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // the meeple colors
             boardSize: 6,
@@ -1442,7 +1316,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // the moves
             boardSize: 4,
@@ -1475,7 +1349,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // moving over meeples
             boardSize: 4,
@@ -1523,7 +1397,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // converting a meeple
             boardSize: 4,
@@ -1571,7 +1445,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // battling meeples
             boardSize: 4,
@@ -1619,7 +1493,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // dying meeple
             boardSize: 4,
@@ -1667,7 +1541,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // the swarm
             boardSize: 6,
@@ -1765,7 +1639,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // hi
             boardSize: 8,
@@ -1947,7 +1821,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         },
         { // the conflicts
             boardSize: 6,
@@ -2015,7 +1889,7 @@ export function tutorial(index: number): Game {
                 team: Team.info,
                 side: Side.heads
             },
-            outcome: { type: "none" }
+            outcome: [{ type: "none" }]
         }
     ];
 

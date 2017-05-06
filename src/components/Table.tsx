@@ -13,7 +13,6 @@ import {
     neighbours,
     Play,
     play,
-    PlayType,
     Position,
     positionToIndex,
     selectSwarm,
@@ -41,8 +40,7 @@ export type Control =
 | "-player"   | "+player"
 | "-computer" | "+computer"
 | "-size"     | "+size"
-| "begin"     | "tutorial"
-| PlayType;
+| "begin"     | "tutorial";
 
 export type Zoom = {
     scale: number;
@@ -55,7 +53,6 @@ export type Zoom = {
 interface IState {
     game: Game;
     mode: Mode;
-    playType: PlayType;
     playerCount: number;
     computerCount: number;
     boardSize: number;
@@ -74,7 +71,7 @@ export class Table extends React.Component<{}, IState> {
         super();
 
         window.clearInterval(this.refresher);
-        this.refresher = window.setInterval(() => this.dequeue(), 85);
+        this.refresher = window.setInterval(() => this.dequeuePlay(), 85);
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
@@ -83,7 +80,6 @@ export class Table extends React.Component<{}, IState> {
         this.state = {
             game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
             mode: Mode.setup,
-            playType: "individual",
             playerCount: defaultPlayerCount,
             computerCount: defaultComputerCount,
             boardSize: defaultBoardSize,
@@ -113,7 +109,6 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
-                playType: "individual",
                 playerCount: defaultPlayerCount,
                 computerCount: defaultComputerCount,
                 boardSize: defaultBoardSize,
@@ -245,85 +240,20 @@ export class Table extends React.Component<{}, IState> {
             });
 
             break;
-
-            case "swarm":
-            case "pattern":
-            case "individual":
-
-            this.setState({
-                playType: control,
-                selection: [],
-                param: param
-            });
-
-            this.autoSelect(control);
-
-            break;
         }
     }
 
-    enqueuePlay(team: Team, action: Action | "skip"): void {
+    enqueuePlay(team: Team, action: Action): void {
 
         const queue: Play[][] = this.state.playQueue;
 
-        if (action === "skip") {
+        if (this.state.selection.length > 0) {
 
             queue[team].push({
                 team: team,
-                play: { type: "skip" }
+                action: action,
+                selection: this.state.selection
             });
-        } else {
-
-            switch (this.state.playType) {
-
-                case "swarm":
-
-                if (this.state.selection.length > 0) {
-
-                    queue[team].push({
-                        team: team,
-                        play: {
-                            type: this.state.playType,
-                            action: action,
-                            swarm: this.state.selection
-                        }
-                    });
-                }
-
-                break;
-
-                case "pattern":
-
-                if (this.state.selection.length === 5) {
-
-                    queue[team].push({
-                        team: team,
-                        play: {
-                            type: this.state.playType,
-                            pattern: this.state.selection.slice(0, 4),
-                            meepleIndex: this.state.selection[4]
-                        }
-                    });
-                }
-
-                break;
-
-                case "individual":
-
-                if (this.state.selection.length === 1) {
-
-                    queue[team].push({
-                        team: team,
-                        play: {
-                            type: this.state.playType,
-                            action: action,
-                            meepleIndex: this.state.selection[0]
-                        }
-                    });
-                }
-
-                break;
-            }
         }
 
         this.setState({
@@ -332,7 +262,7 @@ export class Table extends React.Component<{}, IState> {
         });
     }
 
-    dequeue(): void {
+    dequeuePlay(): void {
 
         const queue: Play[][] = this.state.playQueue;
 
@@ -342,7 +272,7 @@ export class Table extends React.Component<{}, IState> {
             const gameStep = play(this.state.game, playData);
 
             const mode =
-                gameStep.outcome.type === "gameover" ?
+                gameStep.outcome[0].type === "gameover" ?
                 Mode.end :
                 this.state.mode;
 
@@ -363,93 +293,42 @@ export class Table extends React.Component<{}, IState> {
 
     select(position: Position): void {
 
-        switch (this.state.playType) {
-
-            case "swarm":
-
-            if (this.state.game.turn.team !== Team.default) {
-
-                this.setState({ selection: selectSwarm(this.state.game, position) });
-            }
-
-            break;
-
-            case "individual":
+        if (this.state.game.turn.team !== Team.default) {
 
             if (isMeepleAvailable(this.state.game, position)) {
 
-                this.setState({
-                    selection:
-                        [this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)].topMeeple]
-                });
-            } else {
-
-                this.setState({
-                    selection: []
-                });
-            }
-
-            break;
-
-            case "pattern":
-
-            break;
-        }
-    }
-
-    autoSelect(control: Control = "individual"): void {
-
-        const meeples = availableMeeples(this.state.game);
-
-        if (meeples.length > 0) {
-
-            switch (control) {
-
-                case "individual":
-
-                this.setState({
-                    playType: control,
-                    selection: [meeples[0].key]
-                });
-
-                break;
-
-                case "pattern":
-
-                let i = 0;
-                let pattern;
-
-                do {
-                    pattern = selectSwarm(this.state.game, meeples[i++].position);
-                } while (pattern.length !== 4 || i < meeples.length);
-
-                if (pattern.length === 4) {
+                if (this.state.selection
+                    .some((mi) =>
+                        position.row === this.state.game.meeples[mi].position.row
+                        && position.col === this.state.game.meeples[mi].position.col)) {
 
                     this.setState({
-                        playType: control,
-                        selection: pattern
+                        selection:
+                            [this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)].topMeeple]
                     });
                 } else {
 
-                    this.autoSelect();
+                    this.setState({ selection: selectSwarm(this.state.game, position) });
                 }
+            } else {
 
-                break;
-
-                case "swarm":
-
-                const selection = selectSwarm(this.state.game, meeples[0].position);
-
-                this.setState({
-                    playType: control,
-                    selection: selection
-                });
-
-                break;
+                this.setState({ selection: [] });
             }
-        } else {
+        }
+    }
 
-            this.enqueuePlay(this.state.game.turn.team, "skip");
+    autoSelect(): void {
+
+        const meeples = availableMeeples(this.state.game);
+        if (meeples.length > 0) {
+
+            const maxSwarm = meeples.map((meeple) =>
+                ({ p: meeple.position, s: selectSwarm(this.state.game, meeple.position).length }))
+                .reduce((a, b) => a.s >= b.s ? a : b);
+
+            this.setState({
+                selection: selectSwarm(this.state.game, maxSwarm.p)
+            });
         }
     }
 
@@ -528,7 +407,6 @@ export class Table extends React.Component<{}, IState> {
                     enqueuePlay={this.enqueuePlay.bind(this)}
                     select={this.select.bind(this)}
                     game={this.state.game}
-                    playType={this.state.playType}
                     selectedItem={this.state.param as Item} />
             </div> :
             null;
