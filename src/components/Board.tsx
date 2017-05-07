@@ -3,10 +3,10 @@ import * as React from "react";
 
 import {
     Action,
+    Buildings,
     Game,
     Geography,
-    GeographyItem,
-    Item,
+    GeographyInfo,
     Meeple as MeepleType,
     meeplesBelow,
     Position,
@@ -57,14 +57,21 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
-                        title={(terrain.city ? `City of ${terrain.city.name}\n`
-                            + (terrain.city.team === Team.default ? "" : `team ${Team[terrain.city.team]}\n`)
-                            + `defense ${terrain.city.defense}\n\n` : "")
+                        title={(terrain.construction ?
+                            terrain.construction.type === "city" ?
+                            `City of ${terrain.construction.name}\n`
+                            + (terrain.construction.team === Team.default ? "" :
+                                `team ${Team[terrain.construction.team]}\n`)
+                            + `defense ${terrain.construction.defense}\n\n` :
+                            terrain.construction.type === "building" ?
+                            `${terrain.construction.name}\n`
+                            + `team ${Team[terrain.construction.team]}\n` :
+                            "" : "")
                             + Geography[terrain.geography] + "\nspace for " + terrain.spaceLeft + " meeples\n"
-                            + (terrain.item ? GeographyItem
-                                .filter(({ type, item, piece }) => item !== null
+                            + (terrain.item ? GeographyInfo
+                                .filter(({ type, piece }) => piece !== null
                                     && type === Geography[terrain.geography])
-                                .map(({ type, item, piece }) => Item[item!] + "\n").join("") : "")
+                                .map(({ type, piece }) => Buildings[terrain.geography] + " blueprint\n").join("") : "")
                             + meeplesBelow(props.game, terrain.topMeeple)
                                 .map((meeple) => "\n" + Team[meeple.team] + " meeple"
                                 + "\nstrength: " + meeple.strength

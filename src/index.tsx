@@ -44,14 +44,6 @@ game progress - figure out how to point to each - draw a graph showing interdepe
 4.  build a building
 5.  activate building benefit
 
-how to constrain size of swarms and number of separate swarms? a pattern-based approach is desired.
-    how split swarms can benefit from the ship analogy?
-
-reduce complexity of swarm actions:
-    n+1 actions for the player (n: number of cities)
-    select all meeples to receive command, propagation must be tested
-    this allows an action to be spent on a single meeple (but it's now wasted as a swarm action)
-
 terrains: special powers?
     move into mountain: wait one turn
     leave mountain: move twice
@@ -60,12 +52,7 @@ terrains: special powers?
     change terrain analogy to some space analogy? planets? systems? galaxies?
 
 multi-tier economy
-    tier 0: not produced, just tested if available for the meeples involved in the action
-        diagonals: energy - reach (propagation of the swarm command, one swarm command per turn)
-            NO NEED FOR TESTING - movement propagates only to diagonals!
-        adjacents: material - building construction
-            besides movement, propagate other actions to adjacents?
-    tier 1: produced by exploration
+    tier 0: produced by exploration
           fuel    food    ore    silicon
   desert: fuel                   silicon
    swamp: fuel            ore
@@ -73,7 +60,12 @@ mountain:                 ore    silicon
   forest:         food    ore
   plains: fuel    food
   valley:         food           silicon
-    tier 2: used for specific powers
+    tier 1: used for specific powers
+   swamp: power plant
+mountain: research facility
+  forest: silo
+  plains: port
+  valley: hospital
         - buildings produce sided tokens with the ability, then it gets harvested
         - patterns are applied to the meeples in the formation
         ability                 from        where       token

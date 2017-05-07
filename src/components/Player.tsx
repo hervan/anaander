@@ -3,8 +3,7 @@ import * as React from "react";
 
 import {
     Action,
-    GeographyItem,
-    Item,
+    GeographyInfo,
     Play,
     Player,
     Team
@@ -14,10 +13,9 @@ import { Control } from "./Table";
 
 interface IProps {
     player: Player;
-    setup: (control: Control, item?: Item) => void;
+    setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     active: boolean;
-    selectedItem: Item;
 }
 
 const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -108,8 +106,8 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     <div className="field has-addons tile is-parent">
                         <div className="control tile is-child">
                             <p>
-                                {GeographyItem.filter(({type, item, piece}) => item !== null)
-                                    .map(({ type, item, piece }, i) =>
+                                {GeographyInfo.filter(({type, piece}) => piece !== null)
+                                    .map(({ type, piece }, i) =>
                                     <a key={i}
                                         className={"button is-" + Team[props.player.team]
                                         + " is-outlined"}

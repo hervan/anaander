@@ -3,8 +3,7 @@ import * as React from "react";
 import {
     Action,
     Geography,
-    GeographyItem,
-    Item,
+    GeographyInfo,
     Play,
     Position,
     Team,
@@ -43,15 +42,22 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
             opacity: 0.5
         }}
         onClick={() => props.select(props.terrain.position)}>
-        {props.terrain.city ?
-        <span className={"fa-stack fa-lg is-" + Team[props.terrain.city.team]}>
+        {props.terrain.construction && props.terrain.construction.type === "city" ?
+        <span className={"fa-stack fa-lg is-" + Team[props.terrain.construction.team]}>
             <i className="fa fa-building-o fa-stack-2x" style={{ left: "10px" }}></i>
             <i className="fa fa-university fa-stack-1x"></i>
         </span>
-        : null }
+        : props.terrain.construction && props.terrain.construction.type === "building" ?
+        <span className="icon">
+            <span className={"building is-" + Team[props.terrain.construction.team]}>
+                {props.terrain.construction.blueprint}
+            </span>
+        </span> :
+        props.terrain.item ?
         <span className="artifact">
-            {props.terrain.item ? GeographyItem[props.terrain.geography].piece : null}
+            {GeographyInfo[props.terrain.geography].piece}
         </span>
+        : null}
     </div>;
 
 export default Terrain;

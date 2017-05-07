@@ -147,22 +147,21 @@ export enum Geography {
     valley
 };
 
-export enum Item {
-    energy,
+enum Resource {
+    fuel,
     food,
     ore,
-    relic,
-    technology
-};
+    silicon
+}
 
-export const GeographyItem = [
-    { type: "sea", item: null, piece: null },
-    { type: "swamp", item: Item.energy, piece: "i" },
-    { type: "mountain", item: Item.food, piece: "l" },
-    { type: "forest", item: Item.ore, piece: "o" },
-    { type: "valley", item: Item.relic, piece: "s" },
-    { type: "plains", item: Item.technology, piece: "t" },
-    { type: "desert", item: null, piece: null }
+export const GeographyInfo = [
+    { type: "sea", piece: null, resources: [] },
+    { type: "desert", piece: null, resources: [Resource.fuel, Resource.silicon] },
+    { type: "swamp", piece: "i", resources: [Resource.fuel, Resource.ore] },
+    { type: "mountain", piece: "l", resources: [Resource.ore, Resource.silicon] },
+    { type: "forest", piece: "o", resources: [Resource.food, Resource.ore] },
+    { type: "plains", piece: "t", resources: [Resource.fuel, Resource.food] },
+    { type: "valley", piece: "s", resources: [Resource.food, Resource.silicon] }
 ];
 
 const PieceShape: { [key: string]: Position[] } = {
@@ -196,9 +195,25 @@ export type Meeple = {
 };
 
 export type City = {
+    type: "city";
     name: string;
     defense: number;
     team: Team;
+};
+
+type Building = {
+    type: "building";
+    name: string;
+    blueprint: string;
+    team: Team;
+};
+
+export enum Buildings {
+    "power plant" = 2,
+    "research facility",
+    "silo",
+    "port",
+    "hospital"
 };
 
 export type Terrain = {
@@ -208,7 +223,7 @@ export type Terrain = {
     topMeeple: number;
     item: boolean;
     patch?: number;
-    city?: City;
+    construction?: Building | City;
 };
 
 export type Player = {
@@ -217,6 +232,7 @@ export type Player = {
     swarmSize: number;
     items: boolean[];
     usedActions: number;
+    resources: number[];
 };
 
 export type Play = {
@@ -244,9 +260,6 @@ type Turn = {
 export type Outcome = {
         type: "action"
         action: Action
-    } | {
-        type: "pattern"
-        pattern: Item;
     } | {
         type: "invalid"
         explanation: string;
@@ -569,30 +582,30 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
 function exploreTerrain(game: Game, position: Position): Game {
 
-    const origin = game.terrains[positionToIndex(position, game.boardSize)];
+    const terrain = game.terrains[positionToIndex(position, game.boardSize)];
 
-    if (meeplesBelow(game, origin.topMeeple).every((m) => m.team === game.turn.team)) {
+    if (meeplesBelow(game, terrain.topMeeple).every((m) => m.team === game.turn.team)) {
 
         const gameTerrains = game.terrains.slice();
         const gamePlayers = game.players.slice();
         const gameMeeples = game.meeples.slice();
 
         const player = gamePlayers[game.turn.team];
-        const meeple = gameMeeples[origin.topMeeple];
+        const meeple = gameMeeples[terrain.topMeeple];
 
-        if (origin.item && !player.items[origin.geography - 1]) {
+        if (terrain.item && !player.items[terrain.geography - 1]) {
 
-            player.cities++;
-
-            origin.item = false;
-            player.items[origin.geography - 1] = true;
-
-            gameTerrains[positionToIndex(position, game.boardSize)] = origin;
-            gamePlayers[game.turn.team] = player;
+            terrain.item = false;
+            player.items[terrain.geography - 1] = true;
         }
 
+        GeographyInfo[terrain.geography].resources.forEach((resource) => player.resources[resource]++);
+
+        gameTerrains[positionToIndex(position, game.boardSize)] = terrain;
+        gamePlayers[game.turn.team] = player;
+
         meeple.side = flipSide(meeple.side);
-        gameMeeples[origin.topMeeple] = meeple;
+        gameMeeples[terrain.topMeeple] = meeple;
 
         return {
             ...game,
@@ -698,7 +711,13 @@ function solveMeepleConflict(game: Game, position: Position): Game {
 function marchInto(game: Game, meeple: Meeple, position: Position): Game {
 
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
-    const city: City = terrain.city!;
+
+    if (terrain.construction === undefined || terrain.construction.type !== "city") {
+
+        return game;
+    }
+
+    const city: City = terrain.construction;
     const attack = meeplesBelow(game, meeple.key)
         .filter((m) => m.team === meeple.team)
         .reduce((acc, m) => acc + m.strength, 0);
@@ -710,7 +729,7 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
         const terrains = game.terrains.slice();
         terrains[positionToIndex(position, game.boardSize)] = {
             ...terrain,
-            city: city
+            construction: city
         };
 
         const players = game.players.slice();
@@ -772,7 +791,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     const terrainTo: Terrain = game.terrains[positionToIndex(to, game.boardSize)];
 
     if (terrainTo.spaceLeft < 1
-        || (terrainTo.city
+        || (terrainTo.construction
             && terrainTo.topMeeple !== -1
             && game.meeples[terrainTo.topMeeple].team !== meeple.team)) {
 
@@ -825,7 +844,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         }]
     };
 
-    if (terrainTo.city && terrainTo.city.team !== meeple.team) {
+    if (terrainTo.construction && terrainTo.construction.team !== meeple.team) {
 
         return marchInto(gameStep, meeple, to);
     }
@@ -1041,13 +1060,14 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             patch.forEach((position) => {
 
                 let spaceLeft = geographyIndex;
-                let city: City | undefined = undefined;
+                let construction: Building | City | undefined;
 
                 if (position.row === cityPosition.row
                     && position.col === cityPosition.col) {
 
                     spaceLeft--;
-                    city = {
+                    construction = {
+                        type: "city",
                         name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
                         defense: 10 + (spaceLeft * Math.ceil(Math.random() * 5)),
                         team: Team.default
@@ -1060,7 +1080,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     position: position,
                     spaceLeft: spaceLeft,
                     topMeeple: -1,
-                    city: city
+                    construction: construction
                 };
 
                 boundaries.push(...neighbours(position, boardSize)
@@ -1116,7 +1136,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             let topMeeple: number = -1;
             let spaceLeft: number = terrain.geography === Geography.sea ? 0 : terrain.spaceLeft;
 
-            if (!terrain.city && Math.random() < 0.1 * (spaceLeft - 1)) {
+            if (!terrain.construction && Math.random() < 0.1 * (spaceLeft - 1)) {
 
                 const meeple: Meeple = {
 
@@ -1156,7 +1176,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                 col: Math.floor(Math.random() * (boardSize - 2)) + 1
             };
-        } while (terrains[positionToIndex(position, boardSize)].city
+        } while (terrains[positionToIndex(position, boardSize)].construction
             || terrains[positionToIndex(position, boardSize)].topMeeple > -1
             || terrains[positionToIndex(position, boardSize)].spaceLeft < 1);
 
@@ -1179,8 +1199,9 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             team: team,
             cities: 0,
             swarmSize: meeples.filter((m) => m.team === team).length,
-            items: Array(5).map((o, index) => false),
-            usedActions: 0
+            items: [...Array(5).keys()].map((o, index) => false),
+            usedActions: 0,
+            resources: [...Array(4).keys()].map((o) => 0)
         };
     }
 
@@ -1339,8 +1360,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1372,8 +1394,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1420,8 +1443,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1468,8 +1492,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1516,8 +1541,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [...Array(4).keys()].reduce((acc, row) =>
@@ -1564,8 +1590,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 5,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [
@@ -1844,8 +1871,9 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 2,
-                    items: Array(5).map((o, i) => false),
-                    usedActions: 0
+                    items: [...Array(5).keys()].map((o, i) => false),
+                    usedActions: 0,
+                    resources: [...Array(4).keys()].map((o) => 0)
                 },
             ],
             terrains: [

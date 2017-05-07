@@ -4,7 +4,6 @@ import * as React from "react";
 import {
     Action,
     Game,
-    Item,
     Play,
     Position,
     Side,
@@ -18,9 +17,8 @@ import Player from "./Player";
 interface IProps {
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
-    select: (position: Position, item?: Item) => void;
+    select: (position: Position) => void;
     game: Game;
-    selectedItem: Item;
 };
 
 const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -34,7 +32,6 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 setup={props.setup}
                 enqueuePlay={props.enqueuePlay}
                 active={player.team === props.game.turn.team}
-                selectedItem={props.selectedItem}
             />
         )}
     </div>;

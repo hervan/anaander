@@ -8,7 +8,6 @@ import {
     begin,
     Game,
     isMeepleAvailable,
-    Item,
     Meeple,
     neighbours,
     Play,
@@ -59,7 +58,7 @@ interface IState {
     selection: number[];
     zoom: Zoom;
     playQueue: Play[][];
-    param?: Lesson | Item;
+    param?: Lesson;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -96,7 +95,7 @@ export class Table extends React.Component<{}, IState> {
         window.addEventListener("mousewheel", this.wheel);
     }
 
-    setup(control: Control, param?: Lesson | Item): void {
+    setup(control: Control, param?: Lesson): void {
 
         switch (control) {
 
@@ -406,8 +405,7 @@ export class Table extends React.Component<{}, IState> {
                     setup={this.setup.bind(this)}
                     enqueuePlay={this.enqueuePlay.bind(this)}
                     select={this.select.bind(this)}
-                    game={this.state.game}
-                    selectedItem={this.state.param as Item} />
+                    game={this.state.game} />
             </div> :
             null;
 
