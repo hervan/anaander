@@ -14,7 +14,12 @@ function buildConfig(env) {
             new HtmlWebpackPlugin({title: "anaander", template: "index.ejs"}),
             new webpack
                 .optimize
-                .UglifyJsPlugin({sourceMap: false, beautify: false, comments: false})
+                .UglifyJsPlugin({sourceMap: false, beautify: false, comments: false}),
+            new webpack.DefinePlugin({
+                'process.env': {
+                    NODE_ENV: JSON.stringify('production')
+                }
+            })
         ] : [
             new HtmlWebpackPlugin({title: "anaander", template: "index.ejs"})
         ],
