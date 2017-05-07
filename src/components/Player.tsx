@@ -112,7 +112,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                         className={"button is-" + Team[props.player.team]
                                         + " is-outlined"}
                                         title={type}
-                                        disabled={!props.player.items[i]}>
+                                        disabled={!props.player.blueprints[i]}>
                                         <span className="icon">
                                             <span className="fa artifact">{piece}</span>
                                         </span>

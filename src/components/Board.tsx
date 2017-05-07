@@ -68,7 +68,7 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             + `team ${Team[terrain.construction.team]}\n` :
                             "" : "")
                             + Geography[terrain.geography] + "\nspace for " + terrain.spaceLeft + " meeples\n"
-                            + (terrain.item ? GeographyInfo
+                            + (terrain.blueprint ? GeographyInfo
                                 .filter(({ type, piece }) => piece !== null
                                     && type === Geography[terrain.geography])
                                 .map(({ type, piece }) => Buildings[terrain.geography] + " blueprint\n").join("") : "")

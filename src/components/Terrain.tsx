@@ -53,7 +53,7 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 {props.terrain.construction.blueprint}
             </span>
         </span> :
-        props.terrain.item ?
+        props.terrain.blueprint ?
         <span className="artifact">
             {GeographyInfo[props.terrain.geography].piece}
         </span>
