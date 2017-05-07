@@ -153,7 +153,6 @@
 
 .player {
     position: relative;
-    transform: scale(0.93, 0.93);
     transition-property: top, left, color, opacity, transform;
     transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
     transition-timing-function: ease-in;

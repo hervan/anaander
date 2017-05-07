@@ -160,8 +160,8 @@ export const GeographyInfo = [
     { type: "swamp", piece: "i", resources: [Resource.fuel, Resource.ore] },
     { type: "mountain", piece: "l", resources: [Resource.ore, Resource.silicon] },
     { type: "forest", piece: "o", resources: [Resource.food, Resource.ore] },
-    { type: "plains", piece: "t", resources: [Resource.fuel, Resource.food] },
-    { type: "valley", piece: "s", resources: [Resource.food, Resource.silicon] }
+    { type: "plains", piece: "s", resources: [Resource.fuel, Resource.food] },
+    { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] }
 ];
 
 const PieceShape: { [key: string]: Position[] } = {
@@ -600,10 +600,10 @@ function exploreTerrain(game: Game, position: Position): Game {
         const player = gamePlayers[game.turn.team];
         const meeple = gameMeeples[terrain.topMeeple];
 
-        if (terrain.blueprint && !player.blueprints[terrain.geography - 1]) {
+        if (terrain.blueprint && !player.blueprints[terrain.geography - 2]) {
 
             terrain.blueprint = false;
-            player.blueprints[terrain.geography - 1] = true;
+            player.blueprints[terrain.geography - 2] = true;
         }
 
         GeographyInfo[terrain.geography].resources
@@ -1212,7 +1212,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             team: team,
             cities: 0,
             swarmSize: meeples.filter((m) => m.team === team).length,
-            blueprints: [...Array(5).keys()].map((o, index) => false),
+            blueprints: [...Array(5).keys()].map((o) => false),
             usedActions: 0,
             resources: [...Array(4).keys()].map((o) => 0)
         };
@@ -1375,7 +1375,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
@@ -1409,7 +1409,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
@@ -1458,7 +1458,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
@@ -1507,7 +1507,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
@@ -1556,7 +1556,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 1,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
@@ -1605,7 +1605,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 5,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
@@ -1886,7 +1886,7 @@ export function tutorial(index: number): Game {
                     team: Team.info,
                     cities: 0,
                     swarmSize: 2,
-                    blueprints: [...Array(5).keys()].map((o, i) => false),
+                    blueprints: [...Array(5).keys()].map((o) => false),
                     usedActions: 0,
                     resources: [...Array(4).keys()].map((o) => 0)
                 },
