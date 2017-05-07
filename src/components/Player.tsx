@@ -77,7 +77,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             </p>
                         </div>
                         <div className="tile is-child">
-                            <p title="if you lose\nall your meeples\nyou're dead.">
+                            <p>
                                 <a className={"button is-" + Team[props.player.team]
                                     + " is-outlined"}
                                     style={{ textDecoration: "none" }}>
@@ -87,10 +87,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     <span>{props.player.swarmSize}</span>
                                 </a>
                             </p>
-                            <p title={"actions to be assigned to individual\n"
-                                    + "meeples whenever they're available.\n"
-                                    + "every turn you can do it a number of times\n"
-                                    + "equal to the number of cities you control."}>
+                            <p>
                                 <a className={"button is-" + Team[props.player.team]
                                     + " is-outlined"}
                                     disabled={props.player.cities - props.player.usedActions < 0}
@@ -111,7 +108,6 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     <a key={i}
                                         className={"button is-" + Team[props.player.team]
                                         + " is-outlined"}
-                                        title={type}
                                         disabled={!props.player.blueprints[i]}>
                                         <span className="icon">
                                             <span className="fa artifact">{piece}</span>

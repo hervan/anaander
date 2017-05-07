@@ -216,6 +216,11 @@ export enum Buildings {
     "hospital"
 };
 
+type Construction =
+| Building
+| City
+| { type: "emptysite" };
+
 export type Terrain = {
     position: Position;
     geography: Geography;
@@ -223,7 +228,7 @@ export type Terrain = {
     topMeeple: number;
     blueprint: boolean;
     resources: number[];
-    construction?: Building | City;
+    construction: Construction;
 };
 
 export type Player = {
@@ -398,9 +403,11 @@ export function selectSwarm(game: Game, position: Position, selection?: number[]
 
     let resultSelection: number[] = selection ? selection : [];
 
-    const meepleIndex = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
+    const terrain = game.terrains[positionToIndex(position, game.boardSize)];
+    const meepleIndex = terrain.topMeeple;
 
     if (isMeepleAvailable(game, position)
+        // && (terrain.construction.type !== "city")
         && !resultSelection.some((mIndex) =>
             position.row === game.meeples[mIndex].position.row && position.col === game.meeples[mIndex].position.col)) {
 
@@ -713,7 +720,7 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
 
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
 
-    if (terrain.construction === undefined || terrain.construction.type !== "city") {
+    if (terrain.construction.type !== "city") {
 
         return game;
     }
@@ -791,10 +798,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     const terrainFrom: Terrain = game.terrains[positionToIndex(from, game.boardSize)];
     const terrainTo: Terrain = game.terrains[positionToIndex(to, game.boardSize)];
 
-    if (terrainTo.spaceLeft < 1
-        || (terrainTo.construction
-            && terrainTo.topMeeple !== -1
-            && game.meeples[terrainTo.topMeeple].team !== meeple.team)) {
+    if (terrainTo.spaceLeft < 1) {
 
         return {
             ...game,
@@ -849,7 +853,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         }]
     };
 
-    if (terrainTo.construction && terrainTo.construction.team !== meeple.team) {
+    if (terrainTo.construction.type === "city" && terrainTo.construction.team !== meeple.team) {
 
         return marchInto(gameStep, meeple, to);
     }
@@ -1065,7 +1069,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             patch.forEach((position) => {
 
                 let spaceLeft = geographyIndex;
-                let construction: Building | City | undefined;
+                let construction: Construction = { type: "emptysite" };
 
                 if (position.row === cityPosition.row
                     && position.col === cityPosition.col) {
@@ -1102,7 +1106,8 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     spaceLeft: 1,
                     topMeeple: -1,
                     resources: [...Array(4).keys()].map((o) => 0),
-                    blueprint: position.row === blueprintPos.row && position.col === blueprintPos.col
+                    blueprint: position.row === blueprintPos.row && position.col === blueprintPos.col,
+                    construction: { type: "emptysite" }
                 };
             });
         }
@@ -1125,12 +1130,11 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             const terrain: Terrain = terrains[positionToIndex(position, boardSize)] ?
                 terrains[positionToIndex(position, boardSize)] :
                 {
-                    geography: Math.random() < 0.5
-                        && neighbours(position, boardSize)
-                        .filter((pos) =>
-                            terrains[positionToIndex(pos, boardSize)] !== undefined
-                            && terrains[positionToIndex(pos, boardSize)].geography === Geography.sea)
-                        .length < 4 ?
+                    geography: neighbours(position, boardSize)
+                        .every((pos) =>
+                            terrains[positionToIndex(pos, boardSize)] === undefined
+                            || terrains[positionToIndex(pos, boardSize)].geography === Geography.sea
+                            || terrains[positionToIndex(pos, boardSize)].geography === Geography.desert) ?
                         Geography.sea :
                         Geography.desert,
                     position: position,
@@ -1138,13 +1142,14 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     topMeeple: -1,
                     blueprint: false,
                     resources: [...Array(4).keys()].map((o) => 0),
+                    construction: { type: "emptysite" }
                 };
 
             const geographyIndex = terrain.geography;
             let topMeeple: number = -1;
             let spaceLeft: number = terrain.geography === Geography.sea ? 0 : terrain.spaceLeft;
 
-            if (!terrain.construction && Math.random() < 0.1 * (spaceLeft - 1)) {
+            if (terrain.construction.type === "emptysite" && Math.random() < 0.1 * (spaceLeft - 1)) {
 
                 const meeple: Meeple = {
 
@@ -1184,7 +1189,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                 row: Math.floor(Math.random() * (boardSize - 2)) + 1,
                 col: Math.floor(Math.random() * (boardSize - 2)) + 1
             };
-        } while (terrains[positionToIndex(position, boardSize)].construction
+        } while (terrains[positionToIndex(position, boardSize)].construction.type !== "emptysite"
             || terrains[positionToIndex(position, boardSize)].topMeeple > -1
             || terrains[positionToIndex(position, boardSize)].spaceLeft < 1);
 
@@ -1242,7 +1247,8 @@ export function tutorial(index: number): Game {
             spaceLeft: geographyIndex,
             topMeeple: topMeeple,
             blueprint: false,
-            resources: [...Array(4).keys()].map((o) => 0)
+            resources: [...Array(4).keys()].map((o) => 0),
+            construction: { type: "emptysite" }
         };
     };
 

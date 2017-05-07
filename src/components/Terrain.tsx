@@ -13,7 +13,6 @@ import {
 interface IProps {
     terrain: Terrain;
     selected: boolean;
-    title: string;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
 };
@@ -32,7 +31,6 @@ function terrainColor(geography: Geography): string {
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <div
-        title={props.title}
         className={"terrain is-"
             + terrainColor(props.terrain.geography)
             + (props.selected ? " selected" : "")}
