@@ -43,7 +43,7 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         {props.terrain.construction.type === "city" ?
         <span className={"is-" + Team[props.terrain.construction.team]}
             style={{ fontSize: "2em" }}>
-            🌃
+            🌃&#xfe0e;
         </span> :
         props.terrain.construction.type === "building" ?
         <span className={"building is-" + Team[props.terrain.construction.team]}>

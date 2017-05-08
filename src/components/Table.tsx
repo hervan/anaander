@@ -406,8 +406,8 @@ export class Table extends React.Component<{}, IState> {
 
         const panelStyle: CSSProperties = {
             display: "inline-block",
-            margin: "2vmin",
-            width: "45vmin",
+            margin: "1vmin",
+            width: "36vmin",
             height: "95vmin",
             overflow: "hidden"
         };
@@ -430,11 +430,13 @@ export class Table extends React.Component<{}, IState> {
                     selection={this.state.selection}
                     zoom={this.state.zoom}
                 />
-                <div style={panelStyle}>
-                    {leftPanel}
-                </div>
-                <div style={panelStyle}>
-                    {rightPanel}
+                <div style={{ display: "inline-block", width: "76vmin" }}>
+                    <div style={panelStyle}>
+                        {leftPanel}
+                    </div>
+                    <div style={panelStyle}>
+                        {rightPanel}
+                    </div>
                 </div>
             </div>
         );
