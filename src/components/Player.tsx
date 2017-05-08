@@ -4,8 +4,11 @@ import * as React from "react";
 import {
     Action,
     GeographyInfo,
+    Meeple,
     Play,
     Player,
+    Position,
+    Side,
     Team
 } from "../Game";
 
@@ -13,114 +16,129 @@ import { Control } from "./Table";
 
 interface IProps {
     player: Player;
+    swarm: Meeple[];
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
+    select: (position: Position) => void;
+    selection: number[];
     active: boolean;
 }
 
 const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div className="">
-        <article className={"player is-" + Team[props.player.team]
-            + (props.active ? "" : "")}
-            style={{
-                opacity: props.player.swarmSize === 0 ? 0.1 : 1,
-                transition: "opacity 1s"
-        }}>
-            <div className="">
-                <p>
-                    general {Team[props.player.team]} {props.player.swarmSize > 0 ? "" : "is dead :("}
-                </p>
-            </div>
-            <div className="">
-                <div className="">
-                    <div className="">
-                        <div className="">
-                            <p>
-                                <a className={"is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay(props.player.team, Action.hold)}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-hand-paper-o"></i>
-                                    </span>
-                                </a>
-                                <a className={"is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay(props.player.team, Action.up)}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-hand-o-up"></i>
-                                    </span>
-                                </a>
-                                <a className={"is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay(props.player.team, Action.explore)}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-hand-rock-o"></i>
-                                    </span>
-                                </a>
-                            </p>
-                            <p>
-                                <a className={"is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay(props.player.team, Action.left)}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-hand-o-left"></i>
-                                    </span>
-                                </a>
-                                <a className={"is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay(props.player.team, Action.down)}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-hand-o-down"></i>
-                                    </span>
-                                </a>
-                                <a className={"is-" + Team[props.player.team]}
-                                    onClick={() => props.enqueuePlay(props.player.team, Action.right)}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-hand-o-right"></i>
-                                    </span>
-                                </a>
-                            </p>
-                        </div>
-                        <div className="">
-                            <p>
-                                <a className={"is-" + Team[props.player.team]
-                                    + " is-outlined"}
-                                    style={{ textDecoration: "none" }}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-users fa-fw"></i>
-                                    </span>
-                                    <span>{props.player.swarmSize}</span>
-                                </a>
-                            </p>
-                            <p>
-                                <a className={"is-" + Team[props.player.team]
-                                    + " is-outlined"}
-                                    disabled={props.player.cities - props.player.usedActions < 0}
-                                    style={{ textDecoration: "none" }}>
-                                    <span className="icon is-small">
-                                        <i className="fa fa-user fa-fw"></i>
-                                    </span>
-                                    <span>{props.player.cities - props.player.usedActions + 1}</span>
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-                    <div className="">
-                        <div className="">
-                            <p>
-                                {GeographyInfo.filter(({ piece }) => piece !== null)
-                                    .filter((o, i) => props.player.blueprints[i])
-                                    .map(({ piece }, i) =>
-                                        <a key={i}
-                                            className={"is-" + Team[props.player.team]
-                                            + " is-outlined"}>
-                                            <span className="icon">
-                                                <span className="fa artifact">{piece}</span>
-                                            </span>
-                                        </a>
-                                    )
-                                }
-                            </p>
-                        </div>
-                    </div>
+    <div className={"player is-" + Team[props.player.team]}
+        style={{
+            opacity: props.player.swarmSize === 0 ? 0.1 : 1,
+            transition: "opacity 1s"}}>
+        <div>
+            general {Team[props.player.team]} {props.player.swarmSize > 0 ? "" : "is dead :("}
+        </div>
+        <div>
+            <div className="player-view">
+                <div className="player-actions">
+                    <a className={"button is-large is-outlined is-" + Team[props.player.team]}
+                        style={{ borderColor: "transparent" }}
+                        onClick={() => props.enqueuePlay(props.player.team, Action.hold)}>
+                        <span className="icon is-large">
+                            <i className="fa fa-hand-paper-o"></i>
+                        </span>
+                    </a>
+                    <a className={"button is-large is-outlined is-" + Team[props.player.team]}
+                        style={{ borderColor: "transparent" }}
+                        onClick={() => props.enqueuePlay(props.player.team, Action.up)}>
+                        <span className="icon is-large">
+                            <i className="fa fa-hand-o-up"></i>
+                        </span>
+                    </a>
+                    <a className={"button is-large is-outlined is-" + Team[props.player.team]}
+                        style={{ borderColor: "transparent" }}
+                        onClick={() => props.enqueuePlay(props.player.team, Action.explore)}>
+                        <span className="icon is-large">
+                            <i className="fa fa-hand-rock-o"></i>
+                        </span>
+                    </a>
+                </div>
+                <div className="player-actions">
+                    <a className={"button is-large is-outlined is-" + Team[props.player.team]}
+                        style={{ borderColor: "transparent" }}
+                        onClick={() => props.enqueuePlay(props.player.team, Action.left)}>
+                        <span className="icon is-large">
+                            <i className="fa fa-hand-o-left"></i>
+                        </span>
+                    </a>
+                    <a className={"button is-large is-outlined is-" + Team[props.player.team]}
+                        style={{ borderColor: "transparent" }}
+                        onClick={() => props.enqueuePlay(props.player.team, Action.down)}>
+                        <span className="icon is-large">
+                            <i className="fa fa-hand-o-down"></i>
+                        </span>
+                    </a>
+                    <a className={"button is-large is-outlined is-" + Team[props.player.team]}
+                        style={{ borderColor: "transparent" }}
+                        onClick={() => props.enqueuePlay(props.player.team, Action.right)}>
+                        <span className="icon is-large">
+                            <i className="fa fa-hand-o-right"></i>
+                        </span>
+                    </a>
                 </div>
             </div>
-        </article>
+            <div className="meeple-view">
+                {props.swarm
+                    .map((meeple) =>
+                        <div key={meeple.key}>
+                            <a onClick={() => props.select(meeple.position)}
+                                className="button is-large is-outlined"
+                                style={{ textDecoration: "none", borderColor: "transparent" }}>
+                                <span className={"icon is-large"
+                                    + (props.selection.some((meepleKey) => meeple.key === meepleKey) ? " selected" : "")
+                                    + " is-" + Team[meeple.team]}
+                                    style={{ opacity: 0.5 + (meeple.resistance / 20) }}>
+                                    <i className={"fa fa-user-circle" + (meeple.side === Side.heads ? "-o" : "")}>
+                                    </i>
+                                </span>
+                            </a>
+                            <div style={{ display: "inline-block" }}>
+                                <div>
+                                    a{meeple.strength}
+                                </div>
+                                <div>
+                                    r{meeple.resistance}
+                                </div>
+                                <div>
+                                    f{meeple.faith}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+            </div>
+            <div className="buildings-view">
+                <span>
+                    {GeographyInfo.filter(({ piece }) => piece !== null)
+                        .filter((o, i) => props.player.buildingPhase[i] === "built")
+                        .map(({ piece }, i) =>
+                            <a key={i}
+                                className={"button is-large is-outlined is-" + Team[props.player.team]}
+                                style={{ borderColor: "transparent" }}>
+                                <span className="icon is-large">
+                                    <span className="fa building">{piece!.toUpperCase()}</span>
+                                </span>
+                            </a>
+                        )
+                    } {GeographyInfo.filter(({ piece }) => piece !== null)
+                        .filter((o, i) => props.player.buildingPhase[i] === "blueprint")
+                        .map(({ piece }, i) =>
+                            <a key={i}
+                                className={"button is-large is-outlined is-" + Team[props.player.team]}
+                                style={{ borderColor: "transparent" }}>
+                                <span className="icon is-large">
+                                    <span className="fa artifact">{piece}</span>
+                                </span>
+                            </a>
+                        )
+                    }
+                </span>
+            </div>
+        </div>
     </div>;
 
 export default Player;

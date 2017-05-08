@@ -40,16 +40,14 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
             opacity: 0.5
         }}
         onClick={() => props.select(props.terrain.position)}>
-        {props.terrain.construction && props.terrain.construction.type === "city" ?
-        <span className={"fa-stack fa-lg is-" + Team[props.terrain.construction.team]}>
-            <i className="fa fa-building-o fa-stack-2x" style={{ left: "10px" }}></i>
-            <i className="fa fa-university fa-stack-1x"></i>
-        </span>
-        : props.terrain.construction && props.terrain.construction.type === "building" ?
-        <span className="icon">
-            <span className={"building is-" + Team[props.terrain.construction.team]}>
-                {props.terrain.construction.blueprint}
-            </span>
+        {props.terrain.construction.type === "city" ?
+        <span className={"is-" + Team[props.terrain.construction.team]}
+            style={{ fontSize: "2em" }}>
+            🌃
+        </span> :
+        props.terrain.construction.type === "building" ?
+        <span className={"building is-" + Team[props.terrain.construction.team]}>
+            {props.terrain.construction.blueprint}
         </span> :
         props.terrain.blueprint ?
         <span className="artifact">

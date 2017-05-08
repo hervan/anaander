@@ -296,14 +296,23 @@ export class Table extends React.Component<{}, IState> {
 
             if (isMeepleAvailable(this.state.game, position)) {
 
-                if (this.state.selection
+                const terrain = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)];
+                const meeple = this.state.game.meeples[terrain.topMeeple];
+
+                if (terrain.construction.type === "city" && terrain.construction.team !== meeple.team) {
+
+                    this.setState({
+                        selection:
+                            [terrain.topMeeple]
+                    });
+                } else if (this.state.selection
                     .some((mi) =>
                         position.row === this.state.game.meeples[mi].position.row
                         && position.col === this.state.game.meeples[mi].position.col)) {
 
                     this.setState({
                         selection:
-                            [this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)].topMeeple]
+                            [meeple.key]
                     });
                 } else {
 
@@ -323,7 +332,11 @@ export class Table extends React.Component<{}, IState> {
 
             const maxSwarm = meeples.map((meeple) =>
                 ({ p: meeple.position, s: selectSwarm(this.state.game, meeple.position).length }))
-                .reduce((a, b) => a.s >= b.s ? a : b);
+                .reduce((a, b) => b.s > a.s ? b :
+                    this.state.game.terrains[positionToIndex(b.p, this.state.game.boardSize)]
+                        .construction.type !== "city"
+                    && this.state.game.terrains[positionToIndex(a.p, this.state.game.boardSize)]
+                        .construction.type === "city" ? b : a);
 
             this.setState({
                 selection: selectSwarm(this.state.game, maxSwarm.p)
@@ -394,20 +407,18 @@ export class Table extends React.Component<{}, IState> {
         const panelStyle: CSSProperties = {
             display: "inline-block",
             margin: "2vmin",
-            width: "47.5vmin",
+            width: "45vmin",
             height: "95vmin",
             overflow: "hidden"
         };
 
         const rightPanel = this.state.mode === Mode.play || this.state.mode === Mode.end ?
-            <div style={panelStyle}>
-                <Controls
-                    setup={this.setup.bind(this)}
-                    enqueuePlay={this.enqueuePlay.bind(this)}
-                    select={this.select.bind(this)}
-                    game={this.state.game} />
-            </div> :
-            null;
+            <Controls
+                setup={this.setup.bind(this)}
+                enqueuePlay={this.enqueuePlay.bind(this)}
+                select={this.select.bind(this)}
+                selection={this.state.selection}
+                game={this.state.game} /> : null;
 
         return (
             <div>
@@ -422,7 +433,9 @@ export class Table extends React.Component<{}, IState> {
                 <div style={panelStyle}>
                     {leftPanel}
                 </div>
-                {rightPanel}
+                <div style={panelStyle}>
+                    {rightPanel}
+                </div>
             </div>
         );
     }

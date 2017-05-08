@@ -139,7 +139,7 @@
     outline: black dashed thin;
 }
 
-.terrain.selected {
+.selected {
     outline: black dashed thin;
     animation: highlighting 1s linear infinite;
 }
@@ -170,5 +170,9 @@
 
 .building {
     font-family: anaander;
-    font-size: 28px;
+    font-size: 24px;
+}
+
+.player-info>.button {
+    float: right;
 }
