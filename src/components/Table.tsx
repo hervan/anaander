@@ -186,8 +186,8 @@ export class Table extends React.Component<{}, IState> {
             if (this.state.boardSize > this.state.playerCount + this.state.computerCount + 3) {
 
                 this.setState({
-                    game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 1),
-                    boardSize: this.state.boardSize - 1,
+                    game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 4),
+                    boardSize: this.state.boardSize - 4,
                     zoom: {
                         scale: 1,
                         origin: { x: 0, y: 0 }
@@ -200,8 +200,8 @@ export class Table extends React.Component<{}, IState> {
             case "+size":
 
             this.setState({
-                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 16),
-                boardSize: this.state.boardSize + 16,
+                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 4),
+                boardSize: this.state.boardSize + 4,
                 zoom: {
                     scale: 1,
                     origin: { x: 0, y: 0 }

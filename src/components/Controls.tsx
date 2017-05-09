@@ -3,6 +3,7 @@ import * as React from "react";
 
 import {
     Action,
+    City,
     Game,
     Meeple,
     Play,
@@ -33,6 +34,9 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 player={player}
                 swarm={props.game.meeples
                     .filter((meeple) => meeple.key !== -1 && meeple.team === player.team)}
+                empire={player.cities
+                    .map((cityKey) => props.game.terrains[cityKey].construction as City)
+                    .filter((city) => city.type === "city")}
                 setup={props.setup}
                 enqueuePlay={props.enqueuePlay}
                 select={props.select}

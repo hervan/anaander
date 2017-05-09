@@ -151,6 +151,11 @@
     transition-timing-function: ease-out;
 }
 
+.meeple-stats {
+    display: inline-block;
+    font-size: 0.75rem;
+}
+
 .player {
     position: relative;
     transition-property: top, left, color, opacity, transform;

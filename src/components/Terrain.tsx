@@ -2,6 +2,7 @@
 import * as React from "react";
 import {
     Action,
+    Construction,
     Geography,
     GeographyInfo,
     Play,
@@ -17,22 +18,27 @@ interface IProps {
     select: (position: Position) => void;
 };
 
-function terrainColor(geography: Geography): string {
-    switch (geography) {
-        case Geography.sea: return "info";
-        case Geography.swamp: return "default";
-        case Geography.mountain: return "danger";
-        case Geography.forest: return "success";
-        case Geography.valley: return "primary";
-        case Geography.plains: return "warning";
-        case Geography.desert: return "nocolor";
-    }
+function terrainColor(terrain: Terrain): string {
+    // if (terrain.construction.type === "emptysite" || terrain.construction.team === Team.default) {
+        switch (terrain.geography) {
+            case Geography.sea: return "info";
+            case Geography.swamp: return "default";
+            case Geography.mountain: return "danger";
+            case Geography.forest: return "success";
+            case Geography.valley: return "primary";
+            case Geography.plains: return "nocolor";
+            case Geography.desert:
+            default: return "warning";
+        }
+    // } else {
+    //     return Team[terrain.construction.team];
+    // }
 }
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
     <div
         className={"terrain is-"
-            + terrainColor(props.terrain.geography)
+            + terrainColor(props.terrain)
             + (props.selected ? " selected" : "")}
         style={{
             top: props.terrain.position.row * 45,
@@ -42,18 +48,13 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         onClick={() => props.select(props.terrain.position)}>
         {props.terrain.construction.type === "city" ?
         <span className={"is-" + Team[props.terrain.construction.team]}
-            style={{ fontSize: "2em" }}>
-            🌃&#xfe0e;
+            style={{ fontSize: "2.25rem", color: Team[props.terrain.construction.team] }}>
+            🏙
         </span> :
         props.terrain.construction.type === "building" ?
         <span className={"building is-" + Team[props.terrain.construction.team]}>
             {props.terrain.construction.blueprint}
-        </span> :
-        props.terrain.blueprint ?
-        <span className="artifact">
-            {GeographyInfo[props.terrain.geography].piece}
-        </span>
-        : null}
+        </span> : null}
     </div>;
 
 export default Terrain;

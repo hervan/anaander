@@ -222,7 +222,7 @@ type BuildingPhase =
 | "blueprint"
 | "built";
 
-type Construction =
+export type Construction =
 | Building
 | City
 | { type: "emptysite" };
@@ -232,7 +232,6 @@ export type Terrain = {
     geography: Geography;
     spaceLeft: number;
     topMeeple: number;
-    blueprint: boolean;
     resources: number[];
     construction: Construction;
 };
@@ -615,12 +614,6 @@ function exploreTerrain(game: Game, position: Position): Game {
         const player = gamePlayers[game.turn.team];
         const meeple = gameMeeples[terrain.topMeeple];
 
-        if (terrain.blueprint && player.buildingPhase[terrain.geography - 2] === "notbuilt") {
-
-            terrain.blueprint = false;
-            player.buildingPhase[terrain.geography - 2] = "blueprint";
-        }
-
         GeographyInfo[terrain.geography].resources
             .forEach((resource) => player.resources[resource] += terrain.resources[resource]);
 
@@ -765,6 +758,12 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
         };
 
         const player = players[meeple.team];
+
+        if (player.buildingPhase[terrain.geography - 2] === "notbuilt") {
+
+            player.buildingPhase[terrain.geography - 2] = "blueprint";
+        }
+
         player.cities.push(city.key);
         players[player.team] = player;
 
@@ -1037,7 +1036,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
         );
 
     let patchIndex = 0;
-    let cityKey = 0;
 
     while (patchSeeds.length > 0
         && patchIndex < patchesPerDimension ** 2) {
@@ -1085,12 +1083,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             patch.push(...neighbours(cityPosition, boardSize)
                 .filter((pos) => patch.every((p) => p.row !== pos.row || p.col !== pos.col)));
 
-            let blueprintPos: Position;
-            do {
-                blueprintPos = patch[Math.floor(Math.random() * patch.length)];
-
-            } while (blueprintPos.row === cityPosition.row && blueprintPos.col === cityPosition.col);
-
             const geographyIndex = Math.ceil(Math.random() * 5) + 1;
             const boundaries: Position[] = [];
 
@@ -1105,7 +1097,7 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     spaceLeft--;
                     construction = {
                         type: "city",
-                        key: cityKey++,
+                        key: positionToIndex(position, boardSize),
                         name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
                         defense: 10 + (spaceLeft * Math.ceil(Math.random() * 5)),
                         team: Team.default
@@ -1117,7 +1109,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     position: position,
                     spaceLeft: spaceLeft,
                     topMeeple: -1,
-                    blueprint: position.row === blueprintPos.row && position.col === blueprintPos.col,
                     resources: [...Array(4).keys()].map((o) => 0),
                     construction: construction
                 };
@@ -1135,7 +1126,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     spaceLeft: 1,
                     topMeeple: -1,
                     resources: [...Array(4).keys()].map((o) => 0),
-                    blueprint: position.row === blueprintPos.row && position.col === blueprintPos.col,
                     construction: { type: "emptysite" }
                 };
             });
@@ -1169,7 +1159,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
                     position: position,
                     spaceLeft: 1,
                     topMeeple: -1,
-                    blueprint: false,
                     resources: [...Array(4).keys()].map((o) => 0),
                     construction: { type: "emptysite" }
                 };
@@ -1245,8 +1234,6 @@ export function setup(playerCount: number = 0, boardSize: number = 16): Game {
             usedActions: 0,
             resources: [...Array(4).keys()].map((o) => 0)
         };
-
-        players[team].buildingPhase[Math.floor(Math.random() * 5)] = "built";
     }
 
     const game: Game = {
@@ -1270,14 +1257,13 @@ export function tutorial(index: number): Game {
 
     const t = (row: number, col: number, topMeeple: number = -1): Terrain => {
 
-        const geographyIndex = ((row + col) % 5) + 1;
+        const geographyIndex = (row + col) % 7;
 
         return {
             position: { row: row, col: col },
             geography: geographyIndex,
             spaceLeft: geographyIndex,
             topMeeple: topMeeple,
-            blueprint: false,
             resources: [...Array(4).keys()].map((o) => 0),
             construction: { type: "emptysite" }
         };

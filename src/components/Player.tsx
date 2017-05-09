@@ -3,6 +3,7 @@ import * as React from "react";
 
 import {
     Action,
+    City,
     GeographyInfo,
     Meeple,
     Play,
@@ -17,6 +18,7 @@ import { Control } from "./Table";
 interface IProps {
     player: Player;
     swarm: Meeple[];
+    empire: City[];
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
@@ -84,7 +86,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             <div className="meeple-view">
                 {props.swarm
                     .map((meeple) =>
-                        <div key={meeple.key}>
+                        <div key={meeple.key} style={{ display: "inline-block"}}>
                             <a onClick={() => props.select(meeple.position)}
                                 className="button is-large is-outlined"
                                 style={{ textDecoration: "none", borderColor: "transparent" }}>
@@ -96,15 +98,36 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     </i>
                                 </span>
                             </a>
-                            <div style={{ display: "inline-block" }}>
+                            <div className="meeple-stats">
                                 <div>
-                                    a{meeple.strength}
+                                    ⚔️{meeple.strength}
                                 </div>
                                 <div>
-                                    r{meeple.resistance}
+                                    🛡{meeple.resistance}
                                 </div>
                                 <div>
-                                    f{meeple.faith}
+                                    🙏{meeple.faith}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+            </div>
+            <div className="cities-view">
+                {props.empire
+                    .map((city) =>
+                        <div key={city.key} style={{ display: "inline-block"}}>
+                            <a className="button is-large is-outlined"
+                                style={{ textDecoration: "none", borderColor: "transparent" }}>
+                                <span className={"icon is-large"
+                                    + " is-" + Team[city.team]}
+                                    style={{ opacity: 0.5 + (city.defense / 20) }}>
+                                    🏙
+                                </span>
+                            </a>
+                            <div>
+                                <div>
+                                    🛡{city.defense}
                                 </div>
                             </div>
                         </div>
