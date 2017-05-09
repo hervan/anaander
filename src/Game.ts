@@ -601,6 +601,39 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
         .reduce((acc, meepleIndex) => playMeeple(acc, action, meepleIndex), {...game, outcome: [] as Outcome[]});
 }
 
+function build(game: Game, position: Position): Game {
+
+    // TODO: if can build (most of the work),
+    // BUILD at position and flip every meeple involved;
+    // ELSE, flip only meeple at position.
+    // REMEMBER to verify if outcome is being pushed elsewhere.
+    // may be further changes to the tableau are useful now,
+    // showing more player stats (mainly resources)
+    // and showing more information about the terrain a player meeple is on,
+    // like it already does with still unconquered cities.
+
+    const gameTerrains = game.terrains.slice();
+    const gamePlayers = game.players.slice();
+
+    const terrain = gameTerrains[positionToIndex(position, game.boardSize)];
+
+    const gameMeeples = game.meeples.slice();
+    const meeple = gameMeeples[terrain.topMeeple];
+    meeple.side = flipSide(meeple.side);
+    gameMeeples[terrain.topMeeple] = meeple;
+
+    return {
+        ...game,
+        terrains: gameTerrains,
+        players: gamePlayers,
+        meeples: gameMeeples,
+        outcome: [...game.outcome, {
+            type: "action",
+            action: Action.explore
+        }]
+    };
+}
+
 function exploreTerrain(game: Game, position: Position): Game {
 
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
@@ -609,30 +642,27 @@ function exploreTerrain(game: Game, position: Position): Game {
 
         const gameTerrains = game.terrains.slice();
         const gamePlayers = game.players.slice();
-        const gameMeeples = game.meeples.slice();
 
         const player = gamePlayers[game.turn.team];
-        const meeple = gameMeeples[terrain.topMeeple];
 
         GeographyInfo[terrain.geography].resources
-            .forEach((resource) => player.resources[resource] += terrain.resources[resource]);
+            .forEach((resource) => {
+                player.resources[resource] += terrain.resources[resource];
+                terrain.resources[resource] = 0;
+            });
 
         gameTerrains[positionToIndex(position, game.boardSize)] = terrain;
         gamePlayers[game.turn.team] = player;
 
-        meeple.side = flipSide(meeple.side);
-        gameMeeples[terrain.topMeeple] = meeple;
-
-        return {
+        return build({
             ...game,
             terrains: gameTerrains,
             players: gamePlayers,
-            meeples: gameMeeples,
             outcome: [...game.outcome, {
                 type: "action",
                 action: Action.explore
             }]
-        };
+        }, position);
     } else {
 
         return {
