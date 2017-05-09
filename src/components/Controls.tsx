@@ -8,6 +8,7 @@ import {
     Meeple,
     Play,
     Position,
+    positionToIndex,
     Side,
     Team
 } from "../Game";
@@ -36,7 +37,17 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     .filter((meeple) => meeple.key !== -1 && meeple.team === player.team)}
                 empire={player.cities
                     .map((cityKey) => props.game.terrains[cityKey].construction as City)
-                    .filter((city) => city.type === "city")}
+                    .filter((city) => city.type === "city")
+                    .concat(
+                        props.game.meeples
+                            .filter((meeple) => meeple.key !== -1
+                                && meeple.team === player.team
+                                && meeple.topsMeeple === -1)
+                            .map((meeple) => props.game
+                                .terrains[positionToIndex(meeple.position, props.game.boardSize)]
+                                .construction as City)
+                            .filter((city) => city.type === "city" && city.team !== player.team)
+                    )}
                 setup={props.setup}
                 enqueuePlay={props.enqueuePlay}
                 select={props.select}

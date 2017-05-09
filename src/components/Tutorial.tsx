@@ -245,7 +245,7 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action]>]> = [
             that is the board, and those tiny squares are terrain tiles.
         </div>,
         <span>
-            the board is usually made of 16&times;16 squares. hover your mouse over the tiles and you&rsquo;ll see the
+            the board is usually made of 32&times;32 squares. hover your mouse over the tiles and you&rsquo;ll see the
             geography of that terrain, matching its pale color.
         </span>,
         []

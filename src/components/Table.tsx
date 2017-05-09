@@ -74,7 +74,7 @@ export class Table extends React.Component<{}, IState> {
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
-        const defaultBoardSize = 16;
+        const defaultBoardSize = 32;
 
         this.state = {
             game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
@@ -103,7 +103,7 @@ export class Table extends React.Component<{}, IState> {
 
             const defaultPlayerCount = 1;
             const defaultComputerCount = 1;
-            const defaultBoardSize = 16;
+            const defaultBoardSize = 32;
 
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
