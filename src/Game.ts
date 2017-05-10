@@ -164,13 +164,13 @@ export const GeographyInfo = [
     { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] }
 ];
 
-const PieceShape: { [key: string]: Position[] } = {
-    i: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}],
-    l: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}],
-    o: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 0, col: 1}],
-    s: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}],
-    t: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}]
-};
+const pieceShapes: Array<{ i: number, piece: string, shape: Position[] }> = [
+    { i: 0, piece: "i", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}] },
+    { i: 1, piece: "l", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}] },
+    { i: 2, piece: "o", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 0, col: 1}] },
+    { i: 3, piece: "s", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}] },
+    { i: 4, piece: "t", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}] }
+];
 
 export enum Side {
     heads,
@@ -209,12 +209,12 @@ type Building = {
     team: Team;
 };
 
-export enum Buildings {
-    "power plant" = 2,
-    "research facility",
-    "silo",
-    "port",
-    "hospital"
+const Buildings: { [key: string]: string } = {
+    i: "power plant",
+    l: "research facility",
+    o: "silo",
+    s: "port",
+    t: "hospital"
 };
 
 type BuildingPhase =
@@ -367,6 +367,13 @@ function isOver(game: Game): boolean {
 export function positionToIndex(position: Position, boardSize: number): number {
 
     return (position.row * boardSize + position.col);
+}
+
+function teamControls(game: Game, position: Position, team: Team = game.turn.team): boolean {
+
+    const meepleKey = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
+
+    return meeplesBelow(game, meepleKey).every((meeple) => meeple.team === team);
 }
 
 export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[] = []): Meeple[] {
@@ -612,37 +619,80 @@ function build(game: Game, position: Position): Game {
     // and showing more information about the terrain a player meeple is on,
     // like it already does with still unconquered cities.
 
-    const gameTerrains = game.terrains.slice();
     const gamePlayers = game.players.slice();
+    const player = gamePlayers[game.turn.team];
 
-    const terrain = gameTerrains[positionToIndex(position, game.boardSize)];
+    pieceShapes
+        .filter((o, i) => player.buildingPhase[i] === "blueprint")
+        .forEach(({ i, piece, shape }) => {
 
-    const gameMeeples = game.meeples.slice();
-    const meeple = gameMeeples[terrain.topMeeple];
-    meeple.side = flipSide(meeple.side);
-    gameMeeples[terrain.topMeeple] = meeple;
+        let shapeHandling: Position[] = [...shape];
 
-    return {
-        ...game,
-        terrains: gameTerrains,
-        players: gamePlayers,
-        meeples: gameMeeples,
-        outcome: [...game.outcome, {
-            type: "action",
-            action: Action.explore
-        }]
-    };
+        [Side.heads, Side.tails].forEach(() => {
+
+            [Action.up, Action.left, Action.down, Action.right].forEach(() => {
+
+                const shapeOnMap = shapeHandling.map((pos) => ({
+                    row: position.row + pos.row,
+                    col: position.col + pos.col
+                }));
+
+                const gameTerrains = game.terrains.slice();
+
+                if (shapeOnMap.every((pos) =>
+                    insideBoard(pos, game.boardSize)
+                    && gameTerrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
+                    && teamControls(game, pos))) {
+
+                    const terrain = gameTerrains[positionToIndex(position, game.boardSize)];
+
+                    const gameMeeples = game.meeples.slice();
+                    const meeple = gameMeeples[terrain.topMeeple];
+
+                    meeple.side = flipSide(meeple.side);
+                    gameMeeples[terrain.topMeeple] = meeple;
+
+                    terrain.construction = {
+                        type: "building",
+                        team: game.turn.team,
+                        blueprint: piece,
+                        name: Buildings[piece]
+                    };
+                    gameTerrains[positionToIndex(position, game.boardSize)] = terrain;
+
+                    player.buildingPhase[i] = "built";
+                    gamePlayers[game.turn.team] = player;
+
+                    return {
+                        ...game,
+                        players: gamePlayers,
+                        terrains: gameTerrains,
+                        meeples: gameMeeples,
+                        outcome: [...game.outcome, {
+                            type: "action",
+                            action: Action.explore
+                        }]
+                    };
+                }
+
+                shapeHandling = rotateShape(shapeHandling);
+            });
+
+            shapeHandling = flipShape(shapeHandling);
+        });
+    });
+
+    return game;
 }
 
 function exploreTerrain(game: Game, position: Position): Game {
 
-    const terrain = game.terrains[positionToIndex(position, game.boardSize)];
-
-    if (meeplesBelow(game, terrain.topMeeple).every((m) => m.team === game.turn.team)) {
+    if (teamControls(game, position)) {
 
         const gameTerrains = game.terrains.slice();
         const gamePlayers = game.players.slice();
 
+        const terrain = game.terrains[positionToIndex(position, game.boardSize)];
         const player = gamePlayers[game.turn.team];
 
         GeographyInfo[terrain.geography].resources
@@ -765,7 +815,6 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
 
     const city: City = terrain.construction;
     const attack = meeplesBelow(game, meeple.key)
-        .filter((m) => m.team === meeple.team)
         .reduce((acc, m) => acc + m.strength, 0);
 
     if (attack >= city.defense) {
@@ -914,7 +963,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     let marchIntoCityGame = conflictGame;
     if (terrainTo.construction.type === "city"
         && terrainTo.construction.team !== meeple.team
-        && meeplesBelow(conflictGame, meeple.key).every((m) => m.team === meeple.team)) {
+        && teamControls(conflictGame, meeple.position)) {
 
         marchIntoCityGame = marchInto(conflictGame, meeple, to);
     }
@@ -994,14 +1043,14 @@ export function begin(game: Game): Game {
     };
 }
 
-function flipShape(position: Position[]): Position[] {
+function flipShape(positions: Position[]): Position[] {
 
-    return position.map(({row, col}) => ({row: row, col: -1 * col}));
+    return positions.map(({row, col}) => ({row: row, col: -1 * col}));
 }
 
-function rotateShape(position: Position[]): Position[] {
+function rotateShape(positions: Position[]): Position[] {
 
-    return position.map(({row, col}) => ({row: -1 * col, col: row}));
+    return positions.map(({row, col}) => ({row: -1 * col, col: row}));
 }
 
 export function setup(playerCount: number = 0, boardSize: number = 32): Game {
