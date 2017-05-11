@@ -373,7 +373,9 @@ function teamControls(game: Game, position: Position, team: Team = game.turn.tea
 
     const meepleKey = game.terrains[positionToIndex(position, game.boardSize)].topMeeple;
 
-    return meeplesBelow(game, meepleKey).every((meeple) => meeple.team === team);
+    return meepleKey !== -1
+        && game.meeples[meepleKey].team === team
+        && meeplesBelow(game, meepleKey).every((meeple) => meeple.team === team);
 }
 
 export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[] = []): Meeple[] {
@@ -628,22 +630,21 @@ function build(game: Game, position: Position): Game {
 
         let shapeHandling: Position[] = [...shape];
 
-        [Side.heads, Side.tails].forEach(() => {
+        for (let flip = 0; flip < 2; flip++) {
 
-            [Action.up, Action.left, Action.down, Action.right].forEach(() => {
+            for (let rotate = 0; rotate < 4; rotate++) {
 
                 const shapeOnMap = shapeHandling.map((pos) => ({
                     row: position.row + pos.row,
                     col: position.col + pos.col
                 }));
 
-                const gameTerrains = game.terrains.slice();
-
                 if (shapeOnMap.every((pos) =>
                     insideBoard(pos, game.boardSize)
-                    && gameTerrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
+                    && game.terrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
                     && teamControls(game, pos))) {
 
+                    const gameTerrains = game.terrains.slice();
                     const terrain = gameTerrains[positionToIndex(position, game.boardSize)];
 
                     const gameMeeples = game.meeples.slice();
@@ -674,12 +675,10 @@ function build(game: Game, position: Position): Game {
                         }]
                     };
                 }
-
                 shapeHandling = rotateShape(shapeHandling);
-            });
-
+            }
             shapeHandling = flipShape(shapeHandling);
-        });
+        }
     });
 
     return game;
