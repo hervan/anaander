@@ -36,17 +36,20 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 swarm={props.game.meeples
                     .filter((meeple) => meeple.key !== -1 && meeple.team === player.team)}
                 empire={player.cities
-                    .map((cityKey) => props.game.terrains[cityKey].construction as City)
-                    .filter((city) => city.type === "city")
+                    .map((cityKey) => props.game.terrains[cityKey])
+                    .filter(({construction}) => construction.type === "city")
+                    .map((terrain) => ({ city: terrain.construction as City, spaceLeft: terrain.spaceLeft }))
                     .concat(
                         props.game.meeples
                             .filter((meeple) => meeple.key !== -1
                                 && meeple.team === player.team
                                 && meeple.topsMeeple === -1)
                             .map((meeple) => props.game
-                                .terrains[positionToIndex(meeple.position, props.game.boardSize)]
-                                .construction as City)
-                            .filter((city) => city.type === "city" && city.team !== player.team)
+                                .terrains[positionToIndex(meeple.position, props.game.boardSize)])
+                            .filter(({construction}) =>
+                                construction.type === "city"
+                                && construction.team !== player.team)
+                            .map((terrain) => ({ city: terrain.construction as City, spaceLeft: terrain.spaceLeft }))
                     )}
                 setup={props.setup}
                 enqueuePlay={props.enqueuePlay}

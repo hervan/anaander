@@ -14,11 +14,12 @@ import {
 } from "../Game";
 
 import { Control } from "./Table";
+import { buildings } from "./Terrain";
 
 interface IProps {
     player: Player;
     swarm: Meeple[];
-    empire: City[];
+    empire: Array<{ city: City, spaceLeft: number }>;
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
@@ -100,13 +101,13 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             </a>
                             <div className="meeple-stats">
                                 <div>
-                                    ⚔️{meeple.strength}
+                                    ⚔️&#xFE0F;{meeple.strength}
                                 </div>
                                 <div>
-                                    🛡{meeple.resistance}
+                                    🛡&#xFE0F;{meeple.resistance}
                                 </div>
                                 <div>
-                                    🙏{meeple.faith}
+                                    🙏&#xFE0F;{meeple.faith}
                                 </div>
                             </div>
                         </div>
@@ -115,20 +116,26 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             </div>
             <div className="cities-view">
                 {props.empire
-                    .map((city) =>
-                        <div key={city.key} style={{ display: "inline-block"}}>
+                    .map(({ city, spaceLeft }) =>
+                        <div key={city.key} style={{ display: "inline-block" }}>
+                            <div style={{ textAlign: "center" }}>
+                                {city.name}
+                            </div>
                             <a className="button is-large is-outlined"
-                                style={{ textDecoration: "none", borderColor: "transparent" }}>
+                                style={{
+                                    textDecoration: "none",
+                                    textAlign: "center",
+                                    borderColor: "transparent"
+                                }}>
                                 <span className={"icon is-large"
                                     + " is-" + Team[city.team]}
                                     style={{ opacity: 0.5 + (city.defense / 20) }}>
-                                    🏙
+                                    🏙&#xFE0F;
                                 </span>
                             </a>
-                            <div>
-                                <div>
-                                    🛡{city.defense}
-                                </div>
+                            <div style={{ textAlign: "center" }}>
+                                🛡&#xFE0F;{city.defense}
+                                👥&#xFE0F;{spaceLeft}
                             </div>
                         </div>
                     )
@@ -143,7 +150,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 className={"button is-large is-outlined is-" + Team[props.player.team]}
                                 style={{ borderColor: "transparent" }}>
                                 <span className="icon is-large">
-                                    <span className="fa building">{piece!.toUpperCase()}</span>
+                                    <span className="fa building">{buildings(piece!)}&#xFE0F;</span>
                                 </span>
                             </a>
                         )

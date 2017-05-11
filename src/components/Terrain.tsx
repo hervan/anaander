@@ -19,7 +19,7 @@ interface IProps {
 };
 
 function terrainColor(terrain: Terrain): string {
-    // if (terrain.construction.type === "emptysite" || terrain.construction.team === Team.default) {
+    if (terrain.construction.type === "emptysite" || terrain.construction.team === Team.default) {
         switch (terrain.geography) {
             case Geography.sea: return "info";
             case Geography.swamp: return "default";
@@ -30,9 +30,20 @@ function terrainColor(terrain: Terrain): string {
             case Geography.desert:
             default: return "warning";
         }
-    // } else {
-    //     return Team[terrain.construction.team];
-    // }
+    } else {
+        return Team[terrain.construction.team];
+    }
+}
+
+export function buildings(blueprint: string): string {
+    switch (blueprint) {
+        case "i": return "🏭";
+        case "l": return "📡";
+        case "o": return "🏫";
+        case "s": return "🚉";
+        case "t": return "🏥";
+        default: return "🏗";
+    }
 }
 
 const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -49,11 +60,11 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         {props.terrain.construction.type === "city" ?
         <span className={"is-" + Team[props.terrain.construction.team]}
             style={{ fontSize: "2.25rem", color: Team[props.terrain.construction.team] }}>
-            🏙
+            🏙&#xFE0F;
         </span> :
         props.terrain.construction.type === "building" ?
         <span className={"building is-" + Team[props.terrain.construction.team]}>
-            {props.terrain.construction.blueprint}
+            {buildings(props.terrain.construction.blueprint)}&#xFE0F;
         </span> : null}
     </div>;
 

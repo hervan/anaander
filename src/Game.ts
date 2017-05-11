@@ -212,8 +212,8 @@ type Building = {
 const Buildings: { [key: string]: string } = {
     i: "power plant",
     l: "research facility",
-    o: "silo",
-    s: "port",
+    o: "school",
+    s: "station",
     t: "hospital"
 };
 
@@ -612,21 +612,18 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
 function build(game: Game, position: Position): Game {
 
-    // TODO: if can build (most of the work),
-    // BUILD at position and flip every meeple involved;
-    // ELSE, flip only meeple at position.
-    // REMEMBER to verify if outcome is being pushed elsewhere.
-    // may be further changes to the tableau are useful now,
+    // TODO: further changes to the tableau are useful now,
     // showing more player stats (mainly resources)
     // and showing more information about the terrain a player meeple is on,
     // like it already does with still unconquered cities.
 
-    const gamePlayers = game.players.slice();
-    const player = gamePlayers[game.turn.team];
+    const gameMeeples = game.meeples.slice();
 
-    pieceShapes
-        .filter((o, i) => player.buildingPhase[i] === "blueprint")
-        .forEach(({ i, piece, shape }) => {
+    const player = game.players[game.turn.team];
+    const terrain = game.terrains[positionToIndex(position, game.boardSize)];
+    const meeple = gameMeeples[terrain.topMeeple];
+
+    for (let { i, piece, shape } of pieceShapes.filter((o, n) => player.buildingPhase[n] === "blueprint")) {
 
         let shapeHandling: Position[] = [...shape];
 
@@ -645,13 +642,13 @@ function build(game: Game, position: Position): Game {
                     && teamControls(game, pos))) {
 
                     const gameTerrains = game.terrains.slice();
-                    const terrain = gameTerrains[positionToIndex(position, game.boardSize)];
 
-                    const gameMeeples = game.meeples.slice();
-                    const meeple = gameMeeples[terrain.topMeeple];
-
-                    meeple.side = flipSide(meeple.side);
-                    gameMeeples[terrain.topMeeple] = meeple;
+                    const side = flipSide(meeple.side);
+                    shapeOnMap.forEach((p) => {
+                        const m = gameMeeples[gameTerrains[positionToIndex(p, game.boardSize)].topMeeple];
+                        m.side = side;
+                        gameMeeples[m.key] = m;
+                    });
 
                     terrain.construction = {
                         type: "building",
@@ -659,10 +656,11 @@ function build(game: Game, position: Position): Game {
                         blueprint: piece,
                         name: Buildings[piece]
                     };
-                    gameTerrains[positionToIndex(position, game.boardSize)] = terrain;
+                    gameTerrains[positionToIndex(terrain.position, game.boardSize)] = terrain;
 
+                    const gamePlayers = game.players.slice();
                     player.buildingPhase[i] = "built";
-                    gamePlayers[game.turn.team] = player;
+                    gamePlayers[player.team] = player;
 
                     return {
                         ...game,
@@ -679,9 +677,15 @@ function build(game: Game, position: Position): Game {
             }
             shapeHandling = flipShape(shapeHandling);
         }
-    });
+    }
 
-    return game;
+    meeple.side = flipSide(meeple.side);
+    gameMeeples[meeple.key] = meeple;
+
+    return {
+        ...game,
+        meeples: gameMeeples
+    };
 }
 
 function exploreTerrain(game: Game, position: Position): Game {
@@ -1003,6 +1007,7 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
         case Action.hold:
 
         meeple.side = flipSide(meeple.side);
+        meeple.resistance++;
         gameMeeples[meepleIndex] = meeple;
 
         return {
