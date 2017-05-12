@@ -74,7 +74,7 @@ export class Table extends React.Component<{}, IState> {
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
-        const defaultBoardSize = 32;
+        const defaultBoardSize = 25;
 
         this.state = {
             game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
@@ -103,7 +103,7 @@ export class Table extends React.Component<{}, IState> {
 
             const defaultPlayerCount = 1;
             const defaultComputerCount = 1;
-            const defaultBoardSize = 32;
+            const defaultBoardSize = 25;
 
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
@@ -186,8 +186,8 @@ export class Table extends React.Component<{}, IState> {
             if (this.state.boardSize > this.state.playerCount + this.state.computerCount + 3) {
 
                 this.setState({
-                    game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 4),
-                    boardSize: this.state.boardSize - 4,
+                    game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 5),
+                    boardSize: this.state.boardSize - 5,
                     zoom: {
                         scale: 1,
                         origin: { x: 0, y: 0 }
@@ -200,8 +200,8 @@ export class Table extends React.Component<{}, IState> {
             case "+size":
 
             this.setState({
-                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 4),
-                boardSize: this.state.boardSize + 4,
+                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 5),
+                boardSize: this.state.boardSize + 5,
                 zoom: {
                     scale: 1,
                     origin: { x: 0, y: 0 }
@@ -290,37 +290,57 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    select(position: Position): void {
+    select(position: Position, selectmode: "swarm" | "meeple" = "meeple"): void {
 
         if (this.state.game.turn.team !== Team.default) {
 
-            if (isMeepleAvailable(this.state.game, position)) {
+            if (selectmode === "swarm") {
 
-                const terrain = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)];
-                const meeple = this.state.game.meeples[terrain.topMeeple];
+                if (isMeepleAvailable(this.state.game, position)) {
 
-                if (terrain.construction.type === "city" && terrain.construction.team !== meeple.team) {
+                    const terrain = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)];
 
-                    this.setState({
-                        selection:
-                            [terrain.topMeeple]
-                    });
-                } else if (this.state.selection
-                    .some((mi) =>
-                        position.row === this.state.game.meeples[mi].position.row
-                        && position.col === this.state.game.meeples[mi].position.col)) {
+                    if (terrain.construction.type === "city"
+                        && terrain.construction.team !== this.state.game.turn.team) {
 
-                    this.setState({
-                        selection:
-                            [meeple.key]
-                    });
+                        this.setState({selection: [terrain.topMeeple]});
+
+                    } else {
+
+                        this.setState({ selection: selectSwarm(this.state.game, position) });
+                    }
                 } else {
 
-                    this.setState({ selection: selectSwarm(this.state.game, position) });
+                    this.setState({ selection: [] });
                 }
             } else {
+                if (isMeepleAvailable(this.state.game, position)) {
 
-                this.setState({ selection: [] });
+                    const selection = this.state.selection
+                        .filter((mi) =>
+                            !(position.row === this.state.game.meeples[mi].position.row
+                            && position.col === this.state.game.meeples[mi].position.col));
+
+                    if (selection.length < this.state.selection.length) {
+
+                        this.setState({selection: selection});
+
+                    } else {
+
+                        const terrain = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)];
+
+                        if (terrain.construction.type === "city"
+                            && terrain.construction.team !== this.state.game.turn.team) {
+
+                            this.setState({selection: [terrain.topMeeple]});
+
+                        } else {
+
+                            selection.push(terrain.topMeeple);
+                            this.setState({selection: selection});
+                        }
+                    }
+                }
             }
         }
     }

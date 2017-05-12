@@ -22,7 +22,7 @@ interface IProps {
     empire: Array<{ city: City, spaceLeft: number }>;
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
-    select: (position: Position) => void;
+    select: (position: Position, selectmode?: "swarm" | "meeple") => void;
     selection: number[];
     active: boolean;
 }
@@ -89,6 +89,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     .map((meeple) =>
                         <div key={meeple.key} style={{ display: "inline-block"}}>
                             <a onClick={() => props.select(meeple.position)}
+                                onDoubleClick={() => props.select(meeple.position, "swarm")}
                                 className="button is-large is-outlined"
                                 style={{ textDecoration: "none", borderColor: "transparent" }}>
                                 <span className={"icon is-large"

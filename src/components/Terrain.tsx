@@ -15,7 +15,7 @@ interface IProps {
     terrain: Terrain;
     selected: boolean;
     enqueuePlay: (team: Team, action: Action) => void;
-    select: (position: Position) => void;
+    select: (position: Position, selectmode?: "swarm" | "meeple") => void;
 };
 
 function terrainColor(terrain: Terrain): string {
@@ -56,7 +56,8 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
             left: props.terrain.position.col * 45,
             opacity: 0.5
         }}
-        onClick={() => props.select(props.terrain.position)}>
+        onClick={() => props.select(props.terrain.position)}
+        onDoubleClick={() => props.select(props.terrain.position, "swarm")}>
         {props.terrain.construction.type === "city" ?
         <span className={"is-" + Team[props.terrain.construction.team]}
             style={{ fontSize: "2.25rem", color: Team[props.terrain.construction.team] }}>

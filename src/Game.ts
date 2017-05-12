@@ -396,20 +396,20 @@ export function meeplesBelow(game: Game, meepleIndex: number, acc: Meeple[] = []
     }
 }
 
-export function availableMeeples(game: Game, team?: Team): Meeple[] {
+export function availableMeeples(game: Game, team: Team = game.turn.team): Meeple[] {
 
     return game.terrains.filter((terrain) => isMeepleAvailable(game, terrain.position, team))
         .map((terrain) => game.meeples[terrain.topMeeple]);
 }
 
-export function isMeepleAvailable(game: Game, position: Position, team?: Team): boolean {
+export function isMeepleAvailable(game: Game, position: Position, team: Team = game.turn.team): boolean {
 
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
     const meepleIndex = terrain.topMeeple;
     const meeple = game.meeples[meepleIndex];
 
     return meepleIndex !== -1
-        && meeple.team === (team !== undefined ? team : game.turn.team)
+        && meeple.team === team
         && meeple.side === game.turn.side;
 }
 
@@ -552,6 +552,21 @@ export function play(game: Game, play: Play): Game {
                 explanation: InvalidPlays.NoSelection
             }]
         };
+    } else {
+
+        const swarm = selectSwarm(game, game.meeples[play.selection[0]].position);
+
+        if (play.selection
+            .some((meepleKey) => !swarm.some((swarmKey) => swarmKey === meepleKey))) {
+
+            return {
+                ...game,
+                outcome: [{
+                    type: "invalid",
+                    explanation: InvalidPlays.NoSelection
+                }]
+            };
+        }
     }
 
     const gameStep = playSwarm(game, play.action, play.selection);
@@ -601,11 +616,14 @@ export function play(game: Game, play: Play): Game {
 function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
     const meeplePositionIndices = swarm.map((meepleIndex) =>
-        positionToIndex(game.meeples[meepleIndex].position, game.boardSize));
+        positionToIndex(game.meeples[meepleIndex].position, game.boardSize)).sort();
 
-    return (action === Action.right || action === Action.down ?
-        meeplePositionIndices.reverse() : // make sure a meeple won't jump on a meeple of the same swarm
-        meeplePositionIndices)
+    if (action === Action.right || action === Action.down) {
+        // make sure a meeple won't jump on a meeple of the same swarm
+        meeplePositionIndices.reverse();
+    }
+
+    return meeplePositionIndices
         .map((mpi) => game.terrains[mpi].topMeeple)
         .reduce((acc, meepleIndex) => playMeeple(acc, action, meepleIndex), {...game, outcome: [] as Outcome[]});
 }
@@ -626,51 +644,60 @@ function build(game: Game, position: Position): Game {
 
         let shapeHandling: Position[] = [...shape];
 
+        const gameSteps: Game[] = [game];
+
         for (let flip = 0; flip < 2; flip++) {
-
             for (let rotate = 0; rotate < 4; rotate++) {
+                for (let shapeAt = 0; shapeAt < 4; shapeAt++) {
 
-                const shapeOnMap = shapeHandling.map((pos) => ({
-                    row: position.row + pos.row,
-                    col: position.col + pos.col
-                }));
-
-                if (shapeOnMap.every((pos) =>
-                    insideBoard(pos, game.boardSize)
-                    && game.terrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
-                    && teamControls(game, pos))) {
-
-                    const gameTerrains = game.terrains.slice();
-
-                    const side = flipSide(meeple.side);
-                    shapeOnMap.forEach((p) => {
-                        const m = gameMeeples[gameTerrains[positionToIndex(p, game.boardSize)].topMeeple];
-                        m.side = side;
-                        gameMeeples[m.key] = m;
-                    });
-
-                    terrain.construction = {
-                        type: "building",
-                        team: game.turn.team,
-                        blueprint: piece,
-                        name: Buildings[piece]
+                    const firstPosition: Position = {
+                        row: position.row - shapeHandling[shapeAt].row,
+                        col: position.col - shapeHandling[shapeAt].col
                     };
-                    gameTerrains[positionToIndex(terrain.position, game.boardSize)] = terrain;
 
-                    const gamePlayers = game.players.slice();
-                    player.buildingPhase[i] = "built";
-                    gamePlayers[player.team] = player;
+                    const shapeOnMap = shapeHandling.map((pos) => ({
+                        row: firstPosition.row + pos.row,
+                        col: firstPosition.col + pos.col
+                    }));
 
-                    return {
-                        ...game,
-                        players: gamePlayers,
-                        terrains: gameTerrains,
-                        meeples: gameMeeples,
-                        outcome: [...game.outcome, {
-                            type: "action",
-                            action: Action.explore
-                        }]
-                    };
+                    if (shapeOnMap.every((pos) =>
+                        insideBoard(pos, game.boardSize)
+                        && isMeepleAvailable(game, pos)
+                        && game.terrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
+                        && teamControls(game, pos))) {
+
+                        const gameTerrains = game.terrains.slice();
+
+                        const side = flipSide(meeple.side);
+                        shapeOnMap.forEach((p) => {
+                            const m = gameMeeples[gameTerrains[positionToIndex(p, game.boardSize)].topMeeple];
+                            m.side = side;
+                            gameMeeples[m.key] = m;
+                        });
+
+                        terrain.construction = {
+                            type: "building",
+                            team: game.turn.team,
+                            blueprint: piece,
+                            name: Buildings[piece]
+                        };
+                        gameTerrains[positionToIndex(terrain.position, game.boardSize)] = terrain;
+
+                        const gamePlayers = game.players.slice();
+                        player.buildingPhase[i] = "built";
+                        gamePlayers[player.team] = player;
+
+                        return {
+                            ...game,
+                            players: gamePlayers,
+                            terrains: gameTerrains,
+                            meeples: gameMeeples,
+                            outcome: [...game.outcome, {
+                                type: "action",
+                                action: Action.explore
+                            }]
+                        };
+                    }
                 }
                 shapeHandling = rotateShape(shapeHandling);
             }
@@ -1055,7 +1082,7 @@ function rotateShape(positions: Position[]): Position[] {
     return positions.map(({row, col}) => ({row: -1 * col, col: row}));
 }
 
-export function setup(playerCount: number = 0, boardSize: number = 32): Game {
+export function setup(playerCount: number = 0, boardSize: number = 25): Game {
 
     const cityNames = [
         "Argos",
@@ -1354,10 +1381,10 @@ export function tutorial(index: number): Game {
         // tutorial start
         begin(setup(5)),
         { // the board
-            boardSize: 32,
+            boardSize: 25,
             players: [],
-            terrains: [...Array(32).keys()].reduce((acc, row) =>
-                acc.concat([...Array(32).keys()].map((col) => t(row, col))), [] as Terrain[]),
+            terrains: [...Array(25).keys()].reduce((acc, row) =>
+                acc.concat([...Array(25).keys()].map((col) => t(row, col))), [] as Terrain[]),
             meeples: [],
             turn: {
                 round: 0,

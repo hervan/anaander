@@ -20,15 +20,12 @@
 @keyframes highlighting {
 	0% {
     	outline-color: black;
-        box-shadow: 0 0 0 1px white;
     }
 	50% {
-    	outline-color: white;
-        box-shadow: 0 0 0 1px black;
+    	outline-color: transparent;
     }
 	100% {
     	outline-color: black;
-        box-shadow: 0 0 0 1px white;
     }
 }
 
@@ -140,8 +137,8 @@
 }
 
 .selected {
-    outline: black dashed thin;
-    animation: highlighting 1s linear infinite;
+    outline: black dashed thick;
+    animation: highlighting 1s ease infinite;
 }
 
 .meeple {
