@@ -612,18 +612,17 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
 function build(game: Game, position: Position): Game {
 
-    // TODO: further changes to the tableau are useful now,
-    // showing more player stats (mainly resources)
-    // and showing more information about the terrain a player meeple is on,
-    // like it already does with still unconquered cities.
-
     const gameMeeples = game.meeples.slice();
 
     const player = game.players[game.turn.team];
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
     const meeple = gameMeeples[terrain.topMeeple];
 
-    for (let { i, piece, shape } of pieceShapes.filter((o, n) => player.buildingPhase[n] === "blueprint")) {
+    for (let pieceShape of pieceShapes.filter((o, n) => player.buildingPhase[n] === "blueprint")) {
+
+        const i = pieceShape.i;
+        const piece = pieceShape.piece;
+        const shape = pieceShape.shape;
 
         let shapeHandling: Position[] = [...shape];
 
@@ -1007,7 +1006,6 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
         case Action.hold:
 
         meeple.side = flipSide(meeple.side);
-        meeple.resistance++;
         gameMeeples[meepleIndex] = meeple;
 
         return {
