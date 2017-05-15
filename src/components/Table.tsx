@@ -41,14 +41,6 @@ export type Control =
 | "-size"     | "+size"
 | "begin"     | "tutorial";
 
-export type Zoom = {
-    scale: number;
-    origin: {
-        x: number;
-        y: number;
-    };
-};
-
 interface IState {
     game: Game;
     mode: Mode;
@@ -56,7 +48,7 @@ interface IState {
     computerCount: number;
     boardSize: number;
     selection: number[];
-    zoom: Zoom;
+    zoom: number;
     playQueue: Play[][];
     param?: Lesson;
 };
@@ -83,10 +75,7 @@ export class Table extends React.Component<{}, IState> {
             computerCount: defaultComputerCount,
             boardSize: defaultBoardSize,
             selection: [],
-            zoom: {
-                scale: 1,
-                origin: { x: 0, y: 0 }
-            },
+            zoom: defaultBoardSize,
             playQueue: [[], [], [], [], [], []]
         };
 
@@ -112,10 +101,7 @@ export class Table extends React.Component<{}, IState> {
                 computerCount: defaultComputerCount,
                 boardSize: defaultBoardSize,
                 selection: [],
-                zoom: {
-                    scale: 1,
-                    origin: { x: 0, y: 0 }
-                },
+                zoom: defaultBoardSize,
                 playQueue: [[], [], [], [], [], []]
             });
 
@@ -125,10 +111,7 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize),
-                zoom: {
-                    scale: 1,
-                    origin: { x: 0, y: 0 }
-                }
+                zoom: this.state.boardSize
             });
 
             break;
@@ -183,15 +166,14 @@ export class Table extends React.Component<{}, IState> {
 
             case "-size":
 
-            if (this.state.boardSize > this.state.playerCount + this.state.computerCount + 3) {
+            if (this.state.boardSize > (this.state.playerCount + this.state.computerCount + 1) * 5) {
+
+                const boardSize = this.state.boardSize - 5;
 
                 this.setState({
-                    game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize - 5),
-                    boardSize: this.state.boardSize - 5,
-                    zoom: {
-                        scale: 1,
-                        origin: { x: 0, y: 0 }
-                    }
+                    game: setup(this.state.playerCount + this.state.computerCount, boardSize),
+                    boardSize: boardSize,
+                    zoom: boardSize
                 });
             }
 
@@ -199,13 +181,12 @@ export class Table extends React.Component<{}, IState> {
 
             case "+size":
 
+            const boardSize = this.state.boardSize + 5;
+
             this.setState({
-                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize + 5),
-                boardSize: this.state.boardSize + 5,
-                zoom: {
-                    scale: 1,
-                    origin: { x: 0, y: 0 }
-                }
+                game: setup(this.state.playerCount + this.state.computerCount, boardSize),
+                boardSize: boardSize,
+                zoom: boardSize
             });
 
             break;
@@ -215,10 +196,7 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: begin(this.state.game),
                 mode: Mode.play,
-                zoom: {
-                    scale: 1,
-                    origin: { x: 0, y: 0 }
-                }
+                zoom: this.state.boardSize
             });
             this.autoSelect();
 
@@ -231,10 +209,7 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: tutorial(p.index),
                 mode: Mode.tutorial,
-                zoom: {
-                    scale: 1,
-                    origin: { x: 0, y: 0 }
-                },
+                zoom: this.state.boardSize,
                 param: p
             });
 
@@ -372,13 +347,14 @@ export class Table extends React.Component<{}, IState> {
 
             if ((e.currentTarget as Element).id === board.id) {
 
-                const zoom: Zoom = {
-                    scale: Math.max(1, this.state.zoom.scale * (e.wheelDelta > 0 ? 1.15 : 0.85)),
-                    origin: { x: e.x, y: e.y }
-                };
+                e.preventDefault();
 
                 this.setState({
-                    zoom: zoom
+                    zoom: Math.min(this.state.boardSize,
+                        Math.max(1,
+                            Math.round(this.state.zoom * (e.wheelDelta < 0 ? 1.15 : 0.85))
+                        )
+                    )
                 });
             } else {
 
