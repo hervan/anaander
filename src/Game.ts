@@ -1082,7 +1082,7 @@ function rotateShape(positions: Position[]): Position[] {
     return positions.map(({row, col}) => ({row: -1 * col, col: row}));
 }
 
-export function setup(playerCount: number = 0, boardSize: number = 25): Game {
+export function setup(playerCount: number = 0, boardSize: number = 20): Game {
 
     const cityNames = [
         "Argos",
@@ -1381,10 +1381,10 @@ export function tutorial(index: number): Game {
         // tutorial start
         begin(setup(5)),
         { // the board
-            boardSize: 25,
+            boardSize: 20,
             players: [],
-            terrains: [...Array(25).keys()].reduce((acc, row) =>
-                acc.concat([...Array(25).keys()].map((col) => t(row, col))), [] as Terrain[]),
+            terrains: [...Array(20).keys()].reduce((acc, row) =>
+                acc.concat([...Array(20).keys()].map((col) => t(row, col))), [] as Terrain[]),
             meeples: [],
             turn: {
                 round: 0,

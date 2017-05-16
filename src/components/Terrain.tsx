@@ -13,6 +13,7 @@ import {
 
 interface IProps {
     terrain: Terrain;
+    size: number;
     selected: boolean;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position, selectmode?: "swarm" | "meeple") => void;
@@ -52,19 +53,22 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
             + terrainColor(props.terrain)
             + (props.selected ? " selected" : "")}
         style={{
-            top: props.terrain.position.row * 45,
-            left: props.terrain.position.col * 45,
+            width: `calc(${props.size}vmin - 1px)`,
+            height: `calc(${props.size}vmin - 1px)`,
+            top: `${props.terrain.position.row * props.size}vmin`,
+            left: `${props.terrain.position.col * props.size}vmin`,
             opacity: 0.5
         }}
         onClick={() => props.select(props.terrain.position)}
         onDoubleClick={() => props.select(props.terrain.position, "swarm")}>
         {props.terrain.construction.type === "city" ?
         <span className={"is-" + Team[props.terrain.construction.team]}
-            style={{ fontSize: "2.25rem", color: Team[props.terrain.construction.team] }}>
+            style={{ fontSize: `${props.size / 1.5}vmin`, color: Team[props.terrain.construction.team] }}>
             🏙&#xFE0F;
         </span> :
         props.terrain.construction.type === "building" ?
-        <span className={"building is-" + Team[props.terrain.construction.team]}>
+        <span className={"building is-" + Team[props.terrain.construction.team]}
+            style={{ fontSize: `${props.size / 1.5}vmin` }}>
             {buildings(props.terrain.construction.blueprint)}&#xFE0F;
         </span> : null}
     </div>;

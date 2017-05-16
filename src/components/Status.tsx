@@ -144,7 +144,7 @@ export default class Status extends React.Component<IProps, {}> {
 
                 const action: Action = roll - 1;
 
-                repetitions = Math.random() * weights[action] * 25;
+                repetitions = Math.random() * weights[action] * 20;
 
                 const nextPlay: Play[] = [];
 

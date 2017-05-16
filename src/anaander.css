@@ -90,15 +90,13 @@
 }
 
 #board {
-    transition-property: top, left, color, opacity, transform;
+    transition-property: top, left, color, opacity, transform, transform-origin;
     transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
     transition-timing-function: ease-out;
 }
 
 .terrain {
     position: absolute;
-    width: 43px;
-    height: 43px;
     transition-property: color, background-color, border-color;
     transition-duration: 0.6s, 0.6s, 0.6s;
     transition-timing-function: ease-out;
@@ -168,11 +166,6 @@
     font-family: anaander;
     font-size: 24px;
     color: grey;
-}
-
-.building {
-    font-family: anaander;
-    font-size: 24px;
 }
 
 .player-info>.button {

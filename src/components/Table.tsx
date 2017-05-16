@@ -34,6 +34,11 @@ export enum Mode {
     end
 };
 
+export type Zoom = {
+    scale: number;
+    position: Position;
+};
+
 export type Control =
 | "setup"     | "rearrange"
 | "-player"   | "+player"
@@ -48,7 +53,7 @@ interface IState {
     computerCount: number;
     boardSize: number;
     selection: number[];
-    zoom: number;
+    zoom: Zoom;
     playQueue: Play[][];
     param?: Lesson;
 };
@@ -66,7 +71,7 @@ export class Table extends React.Component<{}, IState> {
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
-        const defaultBoardSize = 25;
+        const defaultBoardSize = 20;
 
         this.state = {
             game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
@@ -75,7 +80,10 @@ export class Table extends React.Component<{}, IState> {
             computerCount: defaultComputerCount,
             boardSize: defaultBoardSize,
             selection: [],
-            zoom: defaultBoardSize,
+            zoom: {
+                scale: defaultBoardSize,
+                position: { row: Math.floor(defaultBoardSize / 2), col: Math.floor(defaultBoardSize / 2) }
+            },
             playQueue: [[], [], [], [], [], []]
         };
 
@@ -92,7 +100,7 @@ export class Table extends React.Component<{}, IState> {
 
             const defaultPlayerCount = 1;
             const defaultComputerCount = 1;
-            const defaultBoardSize = 25;
+            const defaultBoardSize = 20;
 
             this.setState({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
@@ -101,7 +109,10 @@ export class Table extends React.Component<{}, IState> {
                 computerCount: defaultComputerCount,
                 boardSize: defaultBoardSize,
                 selection: [],
-                zoom: defaultBoardSize,
+                zoom: {
+                    scale: defaultBoardSize,
+                    position: { row: Math.floor(defaultBoardSize / 2), col: Math.floor(defaultBoardSize / 2) }
+                },
                 playQueue: [[], [], [], [], [], []]
             });
 
@@ -111,7 +122,10 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState({
                 game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize),
-                zoom: this.state.boardSize
+                zoom: {
+                    scale: this.state.boardSize,
+                    position: { row: Math.floor(this.state.boardSize / 2), col: Math.floor(this.state.boardSize / 2) }
+                }
             });
 
             break;
@@ -173,7 +187,10 @@ export class Table extends React.Component<{}, IState> {
                 this.setState({
                     game: setup(this.state.playerCount + this.state.computerCount, boardSize),
                     boardSize: boardSize,
-                    zoom: boardSize
+                    zoom: {
+                        scale: boardSize,
+                        position: { row: Math.floor(boardSize / 2), col: Math.floor(boardSize / 2) }
+                    }
                 });
             }
 
@@ -186,7 +203,10 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: setup(this.state.playerCount + this.state.computerCount, boardSize),
                 boardSize: boardSize,
-                zoom: boardSize
+                zoom: {
+                    scale: boardSize,
+                    position: { row: Math.floor(boardSize / 2), col: Math.floor(boardSize / 2) }
+                }
             });
 
             break;
@@ -196,7 +216,10 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: begin(this.state.game),
                 mode: Mode.play,
-                zoom: this.state.boardSize
+                zoom: {
+                    scale: this.state.boardSize,
+                    position: { row: Math.floor(this.state.boardSize / 2), col: Math.floor(this.state.boardSize / 2) }
+                }
             });
             this.autoSelect();
 
@@ -209,7 +232,10 @@ export class Table extends React.Component<{}, IState> {
             this.setState({
                 game: tutorial(p.index),
                 mode: Mode.tutorial,
-                zoom: this.state.boardSize,
+                zoom: {
+                    scale: this.state.boardSize,
+                    position: { row: Math.floor(this.state.boardSize / 2), col: Math.floor(this.state.boardSize / 2) }
+                },
                 param: p
             });
 
@@ -278,11 +304,24 @@ export class Table extends React.Component<{}, IState> {
                     if (terrain.construction.type === "city"
                         && terrain.construction.team !== this.state.game.turn.team) {
 
-                        this.setState({selection: [terrain.topMeeple]});
-
+                        this.setState({
+                            selection: [terrain.topMeeple],
+                            zoom: {
+                                scale: this.state.zoom.scale,
+                                position: this.state.game.meeples[terrain.topMeeple].position
+                            }
+                        });
                     } else {
 
-                        this.setState({ selection: selectSwarm(this.state.game, position) });
+                        const selection = selectSwarm(this.state.game, position);
+
+                        this.setState({
+                            selection: selection,
+                            zoom: selection.length === 0 ? this.state.zoom : {
+                                scale: this.state.zoom.scale,
+                                position: this.state.game.meeples[selection[0]].position
+                            }
+                        });
                     }
                 } else {
 
@@ -298,8 +337,13 @@ export class Table extends React.Component<{}, IState> {
 
                     if (selection.length < this.state.selection.length) {
 
-                        this.setState({selection: selection});
-
+                        this.setState({
+                            selection: selection,
+                            zoom: selection.length === 0 ? this.state.zoom : {
+                                scale: this.state.zoom.scale,
+                                position: this.state.game.meeples[selection[0]].position
+                            }
+                        });
                     } else {
 
                         const terrain = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)];
@@ -307,12 +351,23 @@ export class Table extends React.Component<{}, IState> {
                         if (terrain.construction.type === "city"
                             && terrain.construction.team !== this.state.game.turn.team) {
 
-                            this.setState({selection: [terrain.topMeeple]});
-
+                            this.setState({
+                                selection: [terrain.topMeeple],
+                                zoom: {
+                                    scale: this.state.zoom.scale,
+                                    position: this.state.game.meeples[terrain.topMeeple].position
+                                }
+                            });
                         } else {
 
                             selection.push(terrain.topMeeple);
-                            this.setState({selection: selection});
+                            this.setState({
+                                selection: selection,
+                                zoom: {
+                                    scale: this.state.zoom.scale,
+                                    position: this.state.game.meeples[selection[0]].position
+                                }
+                            });
                         }
                     }
                 }
@@ -333,8 +388,14 @@ export class Table extends React.Component<{}, IState> {
                     && this.state.game.terrains[positionToIndex(a.p, this.state.game.boardSize)]
                         .construction.type === "city" ? b : a);
 
+            const selection = selectSwarm(this.state.game, maxSwarm.p);
+
             this.setState({
-                selection: selectSwarm(this.state.game, maxSwarm.p)
+                selection: selection,
+                zoom: selection.length === 0 ? this.state.zoom : {
+                    scale: this.state.zoom.scale,
+                    position: this.state.game.meeples[selection[0]].position
+                }
             });
         }
     }
@@ -350,11 +411,11 @@ export class Table extends React.Component<{}, IState> {
                 e.preventDefault();
 
                 this.setState({
-                    zoom: Math.min(this.state.boardSize,
-                        Math.max(1,
-                            Math.round(this.state.zoom * (e.wheelDelta < 0 ? 1.15 : 0.85))
-                        )
-                    )
+                    zoom: {
+                        scale: Math.min(this.state.boardSize,
+                            Math.max(1, this.state.zoom.scale * (e.wheelDelta < 0 ? 1.15 : 0.85))),
+                        position: this.state.zoom.position
+                    }
                 });
             } else {
 

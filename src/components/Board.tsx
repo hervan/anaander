@@ -15,7 +15,7 @@ import {
 import Meeple from "./Meeple";
 import Terrain from "./Terrain";
 
-import { Control } from "Table";
+import { Control, Zoom } from "Table";
 
 interface IProps {
     setup: (control: Control) => void;
@@ -23,18 +23,17 @@ interface IProps {
     game: Game;
     select: (position: Position) => void;
     selection: number[];
-    zoom: number;
+    zoom: Zoom;
 };
 
 const translation: Array<Array<{ row: number, col: number }>> =
 [
     [{row: 0, col: 0}],
-    [{row: -9, col: -9}, {row: 9, col: 9}],
-    [{row: -13, col: -13}, {row: 0, col: 0}, {row: 13, col: 13}],
-    [{row: -10, col: -10}, {row: -10, col: 10}, {row: 10, col: -10}, {row: 10, col: 10}],
-    [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: 0}, {row: 14, col: -14}, {row: 14, col: 14}],
-    [{row: -14, col: -14}, {row: -14, col: 14}, {row: 0, col: -14}, {row: 0, col: 14}, {row: 14, col: -14},
-        {row: 14, col: 14}]
+    [{row: -1, col: -1}, {row: 1, col: 1}],
+    [{row: -1, col: -1}, {row: 0, col: 0}, {row: 1, col: 1}],
+    [{row: -1, col: -1}, {row: -1, col: 1}, {row: 1, col: -1}, {row: 1, col: 1}],
+    [{row: -1, col: -1}, {row: -1, col: 1}, {row: 0, col: 0}, {row: 1, col: -1}, {row: 1, col: 1}],
+    [{row: -1, col: -1}, {row: -1, col: 1}, {row: 0, col: -1}, {row: 0, col: 1}, {row: 1, col: -1}, {row: 1, col: 1}]
 ];
 
 const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
@@ -46,17 +45,16 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
         overflow: "hidden"
     }}>
         <div id="board" style={{
-            transformOrigin: props.selection.length > 0 ?
-                `${props.game.meeples[props.selection[0]].position.row * 43}px
-                ${props.game.meeples[props.selection[0]].position.col * 43}px` :
-                `${props.game.terrains[Math.floor(props.game.boardSize ** 2 / 2)].position.row}px
-                ${props.game.terrains[Math.floor(props.game.boardSize ** 2 / 2)].position.col}px`,
-            transform: `scale(${16 / props.zoom}, ${16 / props.zoom})` }}>
+            transformOrigin: `${(props.zoom.position.col + 0.5) * 95 / props.game.boardSize}vmin`
+                + ` ${(props.zoom.position.row + 0.5) * 95 / props.game.boardSize}vmin`,
+            transform: `scale(${props.game.boardSize / props.zoom.scale})`
+        }}>
             <div key="terrains" className="board">
                 {props.game.terrains.map((terrain) =>
                     <Terrain
                         key={"row" + terrain.position.row + "col" + terrain.position.col}
                         terrain={terrain}
+                        size={95 / props.game.boardSize}
                         selected={props.selection.some((mi) => mi === terrain.topMeeple)}
                         enqueuePlay={props.enqueuePlay}
                         select={props.select}
@@ -77,7 +75,8 @@ const Board: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             key={meeple.m.key}
                             meeple={meeple.m}
                             translation={translation[meeple.l - 1][meeple.p]}
-                            scale={1.4 - (meeple.l / 7)}
+                            scale={1 - ((meeple.l - 1) / 6)}
+                            size={95 / props.game.boardSize}
                             select={props.select}
                         />
                     )}
