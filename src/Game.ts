@@ -133,8 +133,8 @@ export enum Action {
     left,
     down,
     right,
-    hold,
-    explore
+    explore,
+    hold
 };
 
 export enum Geography {

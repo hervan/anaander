@@ -60,14 +60,9 @@ interface IState {
 
 export class Table extends React.Component<{}, IState> {
 
-    refresher: number;
-
     constructor() {
 
         super();
-
-        window.clearInterval(this.refresher);
-        this.refresher = window.setInterval(() => this.dequeuePlay(), 85);
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
@@ -102,7 +97,7 @@ export class Table extends React.Component<{}, IState> {
             const defaultComputerCount = 1;
             const defaultBoardSize = 20;
 
-            this.setState({
+            this.setState((prevState, props) => ({
                 game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
                 playerCount: defaultPlayerCount,
@@ -114,19 +109,19 @@ export class Table extends React.Component<{}, IState> {
                     position: { row: Math.floor(defaultBoardSize / 2), col: Math.floor(defaultBoardSize / 2) }
                 },
                 playQueue: [[], [], [], [], [], []]
-            });
+            }));
 
             break;
 
             case "rearrange":
 
-            this.setState({
-                game: setup(this.state.playerCount + this.state.computerCount, this.state.boardSize),
+            this.setState((prevState, props) => ({
+                game: setup(prevState.playerCount + prevState.computerCount, prevState.boardSize),
                 zoom: {
-                    scale: this.state.boardSize,
-                    position: { row: Math.floor(this.state.boardSize / 2), col: Math.floor(this.state.boardSize / 2) }
+                    scale: prevState.boardSize,
+                    position: { row: Math.floor(prevState.boardSize / 2), col: Math.floor(prevState.boardSize / 2) }
                 }
-            });
+            }));
 
             break;
 
@@ -134,10 +129,10 @@ export class Table extends React.Component<{}, IState> {
 
             if (this.state.playerCount > 0 && this.state.playerCount + this.state.computerCount > 1) {
 
-                this.setState({
-                    game: setup((this.state.playerCount - 1) + this.state.computerCount, this.state.boardSize),
-                    playerCount: this.state.playerCount - 1,
-                });
+                this.setState((prevState, props) => ({
+                    game: setup((prevState.playerCount - 1) + prevState.computerCount, prevState.boardSize),
+                    playerCount: prevState.playerCount - 1,
+                }));
             }
 
             break;
@@ -146,10 +141,10 @@ export class Table extends React.Component<{}, IState> {
 
             if (this.state.playerCount + this.state.computerCount < 5) {
 
-                this.setState({
-                    game: setup((this.state.playerCount + 1) + this.state.computerCount, this.state.boardSize),
-                    playerCount: this.state.playerCount + 1,
-                });
+                this.setState((prevState, props) => ({
+                    game: setup((prevState.playerCount + 1) + prevState.computerCount, prevState.boardSize),
+                    playerCount: prevState.playerCount + 1,
+                }));
             }
 
             break;
@@ -158,10 +153,10 @@ export class Table extends React.Component<{}, IState> {
 
             if (this.state.computerCount > 0 && this.state.playerCount + this.state.computerCount > 1) {
 
-                this.setState({
-                    game: setup(this.state.playerCount + (this.state.computerCount - 1), this.state.boardSize),
-                    computerCount: this.state.computerCount - 1,
-                });
+                this.setState((prevState, props) => ({
+                    game: setup(prevState.playerCount + (prevState.computerCount - 1), prevState.boardSize),
+                    computerCount: prevState.computerCount - 1,
+                }));
             }
 
             break;
@@ -170,10 +165,10 @@ export class Table extends React.Component<{}, IState> {
 
             if (this.state.playerCount + this.state.computerCount < 5) {
 
-                this.setState({
-                    game: setup(this.state.playerCount + (this.state.computerCount + 1), this.state.boardSize),
-                    computerCount: this.state.computerCount + 1,
-                });
+                this.setState((prevState, props) => ({
+                    game: setup(prevState.playerCount + (prevState.computerCount + 1), prevState.boardSize),
+                    computerCount: prevState.computerCount + 1,
+                }));
             }
 
             break;
@@ -182,45 +177,47 @@ export class Table extends React.Component<{}, IState> {
 
             if (this.state.boardSize > (this.state.playerCount + this.state.computerCount + 1) * 5) {
 
-                const boardSize = this.state.boardSize - 5;
-
-                this.setState({
-                    game: setup(this.state.playerCount + this.state.computerCount, boardSize),
-                    boardSize: boardSize,
+                this.setState((prevState, props) => ({
+                    game: setup(prevState.playerCount + prevState.computerCount, prevState.boardSize - 5),
+                    boardSize: prevState.boardSize - 5,
                     zoom: {
-                        scale: boardSize,
-                        position: { row: Math.floor(boardSize / 2), col: Math.floor(boardSize / 2) }
+                        scale: prevState.boardSize - 5,
+                        position: {
+                            row: Math.floor((prevState.boardSize - 5) / 2),
+                            col: Math.floor((prevState.boardSize - 5) / 2)
+                        }
                     }
-                });
+                }));
             }
 
             break;
 
             case "+size":
 
-            const boardSize = this.state.boardSize + 5;
-
-            this.setState({
-                game: setup(this.state.playerCount + this.state.computerCount, boardSize),
-                boardSize: boardSize,
+            this.setState((prevState, props) => ({
+                game: setup(prevState.playerCount + prevState.computerCount, prevState.boardSize + 5),
+                boardSize: prevState.boardSize + 5,
                 zoom: {
-                    scale: boardSize,
-                    position: { row: Math.floor(boardSize / 2), col: Math.floor(boardSize / 2) }
+                    scale: prevState.boardSize + 5,
+                    position: {
+                        row: Math.floor((prevState.boardSize + 5) / 2),
+                        col: Math.floor((prevState.boardSize + 5) / 2)
+                    }
                 }
-            });
+            }));
 
             break;
 
             case "begin":
 
-            this.setState({
-                game: begin(this.state.game),
+            this.setState((prevState, props) => ({
+                game: begin(prevState.game),
                 mode: Mode.play,
                 zoom: {
-                    scale: this.state.boardSize,
-                    position: { row: Math.floor(this.state.boardSize / 2), col: Math.floor(this.state.boardSize / 2) }
+                    scale: prevState.boardSize,
+                    position: { row: Math.floor(prevState.boardSize / 2), col: Math.floor(prevState.boardSize / 2) }
                 }
-            });
+            }));
             this.autoSelect();
 
             break;
@@ -229,15 +226,15 @@ export class Table extends React.Component<{}, IState> {
 
             const p = param ? param as Lesson : { index: 0 };
 
-            this.setState({
+            this.setState((prevState, props) => ({
                 game: tutorial(p.index),
                 mode: Mode.tutorial,
                 zoom: {
-                    scale: this.state.boardSize,
-                    position: { row: Math.floor(this.state.boardSize / 2), col: Math.floor(this.state.boardSize / 2) }
+                    scale: prevState.boardSize,
+                    position: { row: Math.floor(prevState.boardSize / 2), col: Math.floor(prevState.boardSize / 2) }
                 },
                 param: p
-            });
+            }));
 
             break;
         }
@@ -245,48 +242,59 @@ export class Table extends React.Component<{}, IState> {
 
     enqueuePlay(team: Team, action: Action): void {
 
-        const queue: Play[][] = this.state.playQueue;
+        this.setState((prevState, props) => {
 
-        if (this.state.selection.length > 0) {
+            const queue: Play[][] = prevState.playQueue;
 
-            queue[team].push({
-                team: team,
-                action: action,
-                selection: this.state.selection
+            if (prevState.selection.length > 0) {
+
+                queue[team].push({
+                    team: team,
+                    action: action,
+                    selection: prevState.selection
+                });
+            }
+
+            return ({
+                playQueue: queue,
+                selection: []
             });
-        }
-
-        this.setState({
-            playQueue: queue,
-            selection: []
         });
+
+        this.dequeuePlay();
     }
 
     dequeuePlay(): void {
 
-        const queue: Play[][] = this.state.playQueue;
+        if (this.state.game.players.length > 0 && this.state.game.turn.team !== Team.default) {
 
-        if (this.state.game.players.length > 0 && queue[this.state.game.turn.team].length > 0) {
+            if (this.state.playQueue[this.state.game.turn.team].length > 0) {
 
-            const playData: Play = queue[this.state.game.turn.team].shift() as Play;
-            const gameStep = play(this.state.game, playData);
+                this.setState((prevState, props) => {
 
-            const mode =
-                gameStep.outcome[0].type === "gameover" ?
-                Mode.end :
-                this.state.mode;
+                    const queue: Play[][] = prevState.playQueue;
+                    const playData: Play = queue[prevState.game.turn.team].shift() as Play;
+                    const gameStep = play(prevState.game, playData);
 
-            this.setState({
-                game: gameStep,
-                mode: mode,
-                playQueue: queue,
-                selection: []
-            });
+                    const mode =
+                        gameStep.outcome[0].type === "gameover" ?
+                        Mode.end :
+                        prevState.mode;
 
-            if (gameStep.turn.team !== Team.default
-                && queue[this.state.game.turn.team].length === 0) {
+                    return ({
+                        game: gameStep,
+                        mode: mode,
+                        playQueue: queue,
+                        selection: []
+                    });
+                });
 
                 this.autoSelect();
+
+                if (this.state.game.turn.team > this.state.playerCount - 1) {
+
+                    this.autoplay();
+                }
             }
         }
     }
@@ -304,72 +312,79 @@ export class Table extends React.Component<{}, IState> {
                     if (terrain.construction.type === "city"
                         && terrain.construction.team !== this.state.game.turn.team) {
 
-                        this.setState({
+                        this.setState((prevState, props) => ({
                             selection: [terrain.topMeeple],
                             zoom: {
-                                scale: this.state.zoom.scale,
-                                position: this.state.game.meeples[terrain.topMeeple].position
+                                scale: prevState.zoom.scale,
+                                position: prevState.game.meeples[terrain.topMeeple].position
                             }
-                        });
+                        }));
                     } else {
 
-                        const selection = selectSwarm(this.state.game, position);
+                        this.setState((prevState, props) => {
 
-                        this.setState({
-                            selection: selection,
-                            zoom: selection.length === 0 ? this.state.zoom : {
-                                scale: this.state.zoom.scale,
-                                position: this.state.game.meeples[selection[0]].position
-                            }
+                            const selection = selectSwarm(prevState.game, position);
+
+                            return ({
+                                selection: selection,
+                                zoom: selection.length === 0 ? prevState.zoom : {
+                                    scale: prevState.zoom.scale,
+                                    position: prevState.game.meeples[selection[0]].position
+                                }
+                            });
                         });
                     }
                 } else {
 
-                    this.setState({ selection: [] });
+                    this.setState((prevState, props) => ({ selection: [] }));
                 }
             } else {
                 if (isMeepleAvailable(this.state.game, position)) {
 
-                    const selection = this.state.selection
-                        .filter((mi) =>
-                            !(position.row === this.state.game.meeples[mi].position.row
-                            && position.col === this.state.game.meeples[mi].position.col));
+                    this.setState((prevState, props) => {
 
-                    if (selection.length < this.state.selection.length) {
+                        const selection = prevState.selection
+                            .filter((mi) =>
+                                !(position.row === prevState.game.meeples[mi].position.row
+                                && position.col === prevState.game.meeples[mi].position.col));
 
-                        this.setState({
-                            selection: selection,
-                            zoom: selection.length === 0 ? this.state.zoom : {
-                                scale: this.state.zoom.scale,
-                                position: this.state.game.meeples[selection[0]].position
-                            }
-                        });
-                    } else {
+                        if (selection.length < prevState.selection.length) {
 
-                        const terrain = this.state.game.terrains[positionToIndex(position, this.state.game.boardSize)];
-
-                        if (terrain.construction.type === "city"
-                            && terrain.construction.team !== this.state.game.turn.team) {
-
-                            this.setState({
-                                selection: [terrain.topMeeple],
-                                zoom: {
-                                    scale: this.state.zoom.scale,
-                                    position: this.state.game.meeples[terrain.topMeeple].position
+                            return ({
+                                selection: selection,
+                                zoom: selection.length === 0 ? prevState.zoom : {
+                                    scale: prevState.zoom.scale,
+                                    position: prevState.game.meeples[selection[0]].position
                                 }
                             });
                         } else {
 
-                            selection.push(terrain.topMeeple);
-                            this.setState({
-                                selection: selection,
-                                zoom: {
-                                    scale: this.state.zoom.scale,
-                                    position: this.state.game.meeples[selection[0]].position
-                                }
-                            });
+                            const terrain =
+                                prevState.game.terrains[positionToIndex(position, prevState.game.boardSize)];
+
+                            if (terrain.construction.type === "city"
+                                && terrain.construction.team !== prevState.game.turn.team) {
+
+                                return ({
+                                    selection: [terrain.topMeeple],
+                                    zoom: {
+                                        scale: prevState.zoom.scale,
+                                        position: prevState.game.meeples[terrain.topMeeple].position
+                                    }
+                                });
+                            } else {
+
+                                selection.push(terrain.topMeeple);
+                                return ({
+                                    selection: selection,
+                                    zoom: {
+                                        scale: prevState.zoom.scale,
+                                        position: prevState.game.meeples[selection[0]].position
+                                    }
+                                });
+                            }
                         }
-                    }
+                    });
                 }
             }
         }
@@ -388,16 +403,71 @@ export class Table extends React.Component<{}, IState> {
                     && this.state.game.terrains[positionToIndex(a.p, this.state.game.boardSize)]
                         .construction.type === "city" ? b : a);
 
-            const selection = selectSwarm(this.state.game, maxSwarm.p);
+            this.setState((prevState, props) => {
 
-            this.setState({
-                selection: selection,
-                zoom: selection.length === 0 ? this.state.zoom : {
-                    scale: this.state.zoom.scale,
-                    position: this.state.game.meeples[selection[0]].position
-                }
+                const selection = selectSwarm(prevState.game, maxSwarm.p);
+
+                return ({
+                    selection: selection,
+                    zoom: selection.length === 0 ? prevState.zoom : {
+                        scale: prevState.zoom.scale,
+                        position: prevState.game.meeples[selection[0]].position
+                    }
+                });
             });
         }
+    }
+
+    autoplay(): void {
+
+        this.setState((prevState, props) => {
+
+            let playData: Play;
+            let gameStep: Game;
+            let actions: Action[] = [...Array(5).keys()].map((o, i) => i as Action);
+
+            do {
+                playData = {
+                    team: prevState.game.turn.team,
+                    action: actions.splice(Math.floor(Math.random() * actions.length), 1)[0],
+                    selection: prevState.selection
+                };
+                console.log(
+                    this.state.game.turn.team,
+                    this.state.game.players[prevState.game.turn.team].usedActions
+                );
+
+                const game: Game = {
+                    boardSize: prevState.game.boardSize,
+                    terrains: prevState.game.terrains.slice(),
+                    players: prevState.game.players.slice(),
+                    meeples: prevState.game.meeples.slice(),
+                    turn: {
+                        round: prevState.game.turn.round,
+                        side: prevState.game.turn.side,
+                        team: prevState.game.turn.team
+                    },
+                    outcome: prevState.game.outcome.slice()
+                };
+                gameStep = play(game, playData);
+                console.log(
+                    this.state.game.turn.team,
+                    this.state.game.players[prevState.game.turn.team].usedActions
+                );
+
+            } while (actions.length > 0 && gameStep.outcome[gameStep.outcome.length - 1].type === "invalid");
+
+            if (gameStep.outcome[gameStep.outcome.length - 1].type === "invalid") {
+
+                this.enqueuePlay(prevState.game.turn.team, Action.hold);
+
+            } else {
+
+                this.enqueuePlay(prevState.game.turn.team, playData.action);
+            }
+
+            return ({});
+        });
     }
 
     wheel(e: WheelEvent): void {
@@ -410,24 +480,19 @@ export class Table extends React.Component<{}, IState> {
 
                 e.preventDefault();
 
-                this.setState({
+                this.setState((prevState, props) => ({
                     zoom: {
-                        scale: Math.min(this.state.boardSize,
-                            Math.max(1, this.state.zoom.scale * (e.wheelDelta < 0 ? 1.15 : 0.85))),
-                        position: this.state.zoom.position
+                        scale: Math.min(prevState.boardSize,
+                            Math.max(1, prevState.zoom.scale * (e.wheelDelta < 0 ? 1.15 : 0.85))),
+                        position: prevState.zoom.position
                     }
-                });
+                }));
             } else {
 
                 window.removeEventListener("mousewheel", this.wheel);
                 board.addEventListener("mousewheel", this.wheel);
             }
         }
-    }
-
-    componentWillUnmount(): void {
-
-        window.clearInterval(this.refresher);
     }
 
     render(): JSX.Element {
