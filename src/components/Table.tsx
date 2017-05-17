@@ -177,34 +177,44 @@ export class Table extends React.Component<{}, IState> {
 
             if (this.state.boardSize > (this.state.playerCount + this.state.computerCount + 1) * 5) {
 
-                this.setState((prevState, props) => ({
-                    game: setup(prevState.playerCount + prevState.computerCount, prevState.boardSize - 5),
-                    boardSize: prevState.boardSize - 5,
-                    zoom: {
-                        scale: prevState.boardSize - 5,
-                        position: {
-                            row: Math.floor((prevState.boardSize - 5) / 2),
-                            col: Math.floor((prevState.boardSize - 5) / 2)
+                this.setState((prevState, props) => {
+
+                    const boardSize = prevState.boardSize - 5;
+
+                    return ({
+                        game: setup(prevState.playerCount + prevState.computerCount, boardSize),
+                        boardSize: boardSize,
+                        zoom: {
+                            scale: boardSize,
+                            position: {
+                                row: Math.floor(boardSize / 2),
+                                col: Math.floor(boardSize / 2)
+                            }
                         }
-                    }
-                }));
+                    });
+                });
             }
 
             break;
 
             case "+size":
 
-            this.setState((prevState, props) => ({
-                game: setup(prevState.playerCount + prevState.computerCount, prevState.boardSize + 5),
-                boardSize: prevState.boardSize + 5,
-                zoom: {
-                    scale: prevState.boardSize + 5,
-                    position: {
-                        row: Math.floor((prevState.boardSize + 5) / 2),
-                        col: Math.floor((prevState.boardSize + 5) / 2)
+            this.setState((prevState, props) => {
+
+                const boardSize = prevState.boardSize + 5;
+
+                return ({
+                    game: setup(prevState.playerCount + prevState.computerCount, boardSize),
+                    boardSize: boardSize,
+                    zoom: {
+                        scale: boardSize,
+                        position: {
+                            row: Math.floor(boardSize / 2),
+                            col: Math.floor(boardSize / 2)
+                        }
                     }
-                }
-            }));
+                });
+            });
 
             break;
 
@@ -215,7 +225,10 @@ export class Table extends React.Component<{}, IState> {
                 mode: Mode.play,
                 zoom: {
                     scale: prevState.boardSize,
-                    position: { row: Math.floor(prevState.boardSize / 2), col: Math.floor(prevState.boardSize / 2) }
+                    position: {
+                        row: Math.floor(prevState.boardSize / 2),
+                        col: Math.floor(prevState.boardSize / 2)
+                    }
                 }
             }));
             this.autoSelect();
@@ -226,15 +239,23 @@ export class Table extends React.Component<{}, IState> {
 
             const p = param ? param as Lesson : { index: 0 };
 
-            this.setState((prevState, props) => ({
-                game: tutorial(p.index),
-                mode: Mode.tutorial,
-                zoom: {
-                    scale: prevState.boardSize,
-                    position: { row: Math.floor(prevState.boardSize / 2), col: Math.floor(prevState.boardSize / 2) }
-                },
-                param: p
-            }));
+            this.setState((prevState, props) => {
+
+                const tutorialGame = tutorial(p.index);
+
+                return ({
+                    game: tutorialGame,
+                    mode: Mode.tutorial,
+                    zoom: {
+                        scale: tutorialGame.boardSize,
+                        position: {
+                            row: Math.floor(tutorialGame.boardSize / 2),
+                            col: Math.floor(tutorialGame.boardSize / 2)
+                        }
+                    },
+                    param: p
+                });
+            });
 
             break;
         }
@@ -244,19 +265,19 @@ export class Table extends React.Component<{}, IState> {
 
         this.setState((prevState, props) => {
 
-            const queue: Play[][] = prevState.playQueue;
+            const queue: Play[][] = prevState.playQueue.slice();
 
             if (prevState.selection.length > 0) {
 
                 queue[team].push({
                     team: team,
                     action: action,
-                    selection: prevState.selection
+                    selection: prevState.selection.slice()
                 });
             }
 
             return ({
-                playQueue: queue,
+                playQueue: queue.slice(),
                 selection: []
             });
         });
@@ -272,7 +293,7 @@ export class Table extends React.Component<{}, IState> {
 
                 this.setState((prevState, props) => {
 
-                    const queue: Play[][] = prevState.playQueue;
+                    const queue: Play[][] = prevState.playQueue.slice();
                     const playData: Play = queue[prevState.game.turn.team].shift() as Play;
                     const gameStep = play(prevState.game, playData);
 
@@ -284,7 +305,7 @@ export class Table extends React.Component<{}, IState> {
                     return ({
                         game: gameStep,
                         mode: mode,
-                        playQueue: queue,
+                        playQueue: queue.slice(),
                         selection: []
                     });
                 });
@@ -326,7 +347,7 @@ export class Table extends React.Component<{}, IState> {
                             const selection = selectSwarm(prevState.game, position);
 
                             return ({
-                                selection: selection,
+                                selection: selection.slice(),
                                 zoom: selection.length === 0 ? prevState.zoom : {
                                     scale: prevState.zoom.scale,
                                     position: prevState.game.meeples[selection[0]].position
@@ -343,7 +364,7 @@ export class Table extends React.Component<{}, IState> {
 
                     this.setState((prevState, props) => {
 
-                        const selection = prevState.selection
+                        const selection = prevState.selection.slice()
                             .filter((mi) =>
                                 !(position.row === prevState.game.meeples[mi].position.row
                                 && position.col === prevState.game.meeples[mi].position.col));
@@ -351,7 +372,7 @@ export class Table extends React.Component<{}, IState> {
                         if (selection.length < prevState.selection.length) {
 
                             return ({
-                                selection: selection,
+                                selection: selection.slice(),
                                 zoom: selection.length === 0 ? prevState.zoom : {
                                     scale: prevState.zoom.scale,
                                     position: prevState.game.meeples[selection[0]].position
@@ -376,7 +397,7 @@ export class Table extends React.Component<{}, IState> {
 
                                 selection.push(terrain.topMeeple);
                                 return ({
-                                    selection: selection,
+                                    selection: selection.slice(),
                                     zoom: {
                                         scale: prevState.zoom.scale,
                                         position: prevState.game.meeples[selection[0]].position
@@ -408,7 +429,7 @@ export class Table extends React.Component<{}, IState> {
                 const selection = selectSwarm(prevState.game, maxSwarm.p);
 
                 return ({
-                    selection: selection,
+                    selection: selection.slice(),
                     zoom: selection.length === 0 ? prevState.zoom : {
                         scale: prevState.zoom.scale,
                         position: prevState.game.meeples[selection[0]].position
@@ -420,54 +441,39 @@ export class Table extends React.Component<{}, IState> {
 
     autoplay(): void {
 
-        this.setState((prevState, props) => {
+        let playData: Play;
+        let gameStep: Game;
+        let actions: Action[] = [...Array(5).keys()].map((o, i) => i as Action);
 
-            let playData: Play;
-            let gameStep: Game;
-            let actions: Action[] = [...Array(5).keys()].map((o, i) => i as Action);
+        do {
+            playData = {
+                team: this.state.game.turn.team,
+                action: actions.splice(Math.floor(Math.random() * actions.length), 1)[0],
+                selection: this.state.selection.slice()
+            };
 
-            do {
-                playData = {
-                    team: prevState.game.turn.team,
-                    action: actions.splice(Math.floor(Math.random() * actions.length), 1)[0],
-                    selection: prevState.selection
-                };
-                console.log(
-                    this.state.game.turn.team,
-                    this.state.game.players[prevState.game.turn.team].usedActions
-                );
+            const game: Game = {
+                boardSize: this.state.game.boardSize,
+                terrains: this.state.game.terrains.slice(),
+                players: this.state.game.players.slice(),
+                meeples: this.state.game.meeples.slice(),
+                turn: {
+                    ...this.state.game.turn
+                },
+                outcome: this.state.game.outcome.slice()
+            };
+            gameStep = play(game, playData);
 
-                const game: Game = {
-                    boardSize: prevState.game.boardSize,
-                    terrains: prevState.game.terrains.slice(),
-                    players: prevState.game.players.slice(),
-                    meeples: prevState.game.meeples.slice(),
-                    turn: {
-                        round: prevState.game.turn.round,
-                        side: prevState.game.turn.side,
-                        team: prevState.game.turn.team
-                    },
-                    outcome: prevState.game.outcome.slice()
-                };
-                gameStep = play(game, playData);
-                console.log(
-                    this.state.game.turn.team,
-                    this.state.game.players[prevState.game.turn.team].usedActions
-                );
+        } while (actions.length > 0 && gameStep.outcome[gameStep.outcome.length - 1].type === "invalid");
 
-            } while (actions.length > 0 && gameStep.outcome[gameStep.outcome.length - 1].type === "invalid");
+        if (gameStep.outcome[gameStep.outcome.length - 1].type === "invalid") {
 
-            if (gameStep.outcome[gameStep.outcome.length - 1].type === "invalid") {
+            this.enqueuePlay(this.state.game.turn.team, Action.hold);
 
-                this.enqueuePlay(prevState.game.turn.team, Action.hold);
+        } else {
 
-            } else {
-
-                this.enqueuePlay(prevState.game.turn.team, playData.action);
-            }
-
-            return ({});
-        });
+            this.enqueuePlay(this.state.game.turn.team, playData.action);
+        }
     }
 
     wheel(e: WheelEvent): void {
