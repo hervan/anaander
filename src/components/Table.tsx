@@ -60,9 +60,15 @@ interface IState {
 
 export class Table extends React.Component<{}, IState> {
 
+    refresher: number;
+
     constructor() {
 
         super();
+
+        window.clearInterval(this.refresher);
+        this.dequeuePlay = this.dequeuePlay.bind(this);
+        this.refresher = window.setInterval(() => this.dequeuePlay(), 300);
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
@@ -175,7 +181,7 @@ export class Table extends React.Component<{}, IState> {
 
             case "-size":
 
-            if (this.state.boardSize > (this.state.playerCount + this.state.computerCount + 1) * 5) {
+            if (this.state.boardSize > (this.state.playerCount + this.state.computerCount) * 5) {
 
                 this.setState((prevState, props) => {
 
@@ -281,8 +287,6 @@ export class Table extends React.Component<{}, IState> {
                 selection: []
             });
         });
-
-        this.dequeuePlay();
     }
 
     dequeuePlay(): void {
@@ -311,11 +315,6 @@ export class Table extends React.Component<{}, IState> {
                 });
 
                 this.autoSelect();
-
-                if (this.state.game.turn.team > this.state.playerCount - 1) {
-
-                    this.autoplay();
-                }
             }
         }
     }
@@ -436,6 +435,11 @@ export class Table extends React.Component<{}, IState> {
                     }
                 });
             });
+        }
+
+        if (this.state.game.turn.team > this.state.playerCount - 1) {
+
+            this.autoplay();
         }
     }
 
