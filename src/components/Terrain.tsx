@@ -36,7 +36,7 @@ function terrainColor(terrain: Terrain): string {
     }
 }
 
-export function buildings(blueprint: string): string {
+export function buildingIcon(blueprint: string): string {
     switch (blueprint) {
         case "i": return "🏭";
         case "l": return "📡";
@@ -69,7 +69,7 @@ const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
         props.terrain.construction.type === "building" ?
         <span className={"building is-" + Team[props.terrain.construction.team]}
             style={{ fontSize: `${props.size / 1.5}vmin` }}>
-            {buildings(props.terrain.construction.blueprint)}&#xFE0F;
+            {buildingIcon(props.terrain.construction.blueprint)}&#xFE0F;
         </span> : null}
     </div>;
 

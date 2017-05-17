@@ -315,6 +315,13 @@ export class Table extends React.Component<{}, IState> {
                 });
 
                 this.autoSelect();
+
+            } else {
+
+                if (this.state.game.turn.team > this.state.playerCount - 1) {
+
+                    this.autoplay();
+                }
             }
         }
     }
@@ -435,11 +442,6 @@ export class Table extends React.Component<{}, IState> {
                     }
                 });
             });
-        }
-
-        if (this.state.game.turn.team > this.state.playerCount - 1) {
-
-            this.autoplay();
         }
     }
 

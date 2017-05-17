@@ -147,7 +147,7 @@ export enum Geography {
     valley
 };
 
-enum Resource {
+export enum Resource {
     fuel,
     food,
     ore,
@@ -734,22 +734,23 @@ function exploreTerrain(game: Game, position: Position): Game {
         const gameTerrains = game.terrains.slice();
         const gamePlayers = game.players.slice();
 
-        const terrain = game.terrains[positionToIndex(position, game.boardSize)];
         const player = gamePlayers[game.turn.team];
+        const terrain = game.terrains[positionToIndex(position, game.boardSize)];
 
-        GeographyInfo[terrain.geography].resources
-            .forEach((resource) => {
-                player.resources[resource] += terrain.resources[resource];
-                terrain.resources[resource] = 0;
-            });
-
-        gameTerrains[positionToIndex(position, game.boardSize)] = terrain;
-        gamePlayers[game.turn.team] = player;
+        gamePlayers[game.turn.team] = {
+            ...player,
+            resources: terrain.resources
+                .map((amount, i) => player.resources[i] + amount)
+        };
+        gameTerrains[positionToIndex(position, game.boardSize)] = {
+            ...terrain,
+            resources: player.resources.map((amount, i) => 0)
+        };
 
         return build({
             ...game,
-            terrains: gameTerrains,
-            players: gamePlayers,
+            terrains: gameTerrains.slice(),
+            players: gamePlayers.slice(),
             outcome: [...game.outcome, {
                 type: "action",
                 action: Action.explore
@@ -1020,7 +1021,9 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         side: flipSide(meeple.side)
     };
 
-    if (terrainFrom.topMeeple !== -1) {
+    const resoucesFrom = terrainFrom.resources.slice();
+
+    if (topMeepleFrom !== -1) {
 
         const freedMeeple = gameMeeples[terrainFrom.topMeeple];
 
@@ -1034,7 +1037,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     } else {
 
         GeographyInfo[terrainFrom.geography].resources
-            .forEach((resource) => terrainFrom.resources[resource]++);
+            .forEach((resource) => resoucesFrom[resource]++);
     }
 
     meeple = {
@@ -1052,7 +1055,8 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     gameTerrains[positionToIndex(from, game.boardSize)] = {
         ...terrainFrom,
         topMeeple: topMeepleFrom,
-        spaceLeft: spaceLeftFrom
+        spaceLeft: spaceLeftFrom,
+        resources: resoucesFrom.slice()
     };
     gameTerrains[positionToIndex(to, game.boardSize)] = {
         ...terrainTo,
