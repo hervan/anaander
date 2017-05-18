@@ -58,11 +58,11 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
         style={{
             opacity: props.player.swarmSize === 0 ? 0.1 : 1,
             transition: "opacity 1s"}}>
-        <div>
+        <div key="title">
             general {Team[props.player.team]} {props.player.swarmSize > 0 ? "" : "is dead :("}
         </div>
-        <div>
-            <div className="player-view">
+        <div key="details">
+            <div key="player-view">
                 <div className="player-actions">
                     <a className={"button is-large is-outlined is-" + Team[props.player.team]}
                         style={{ borderColor: "transparent" }}
@@ -110,16 +110,16 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     </a>
                 </div>
             </div>
-            <div className="resource-view">
-                {props.player.resources.map((amount, i) => ({ icon: resourceIcon(i), amount: amount }))
-                    .map(({icon, amount}) =>
-                        <div style={{ display: "inline-block", margin: "2px" }}>
+            <div key="resource-view">
+                {props.player.resources.map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
+                    .map(({index, icon, amount}) =>
+                        <div key={index} style={{ display: "inline-block", margin: "2px" }}>
                             {icon}&#xFE0F;{amount}
                         </div>
                     )
                 }
             </div>
-            <div className="meeple-view">
+            <div key="meeple-view">
                 {props.swarm
                     .map(({meeple, terrain}) =>
                         <div key={meeple.key} style={{ display: "inline-block" }}>
@@ -140,7 +140,6 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                         </span>
                                     </a>
                                     <div className="meeple-stats" style={{
-                                        verticalAlign: "top",
                                         display: "inline-block"
                                     }}>
                                         <div>
@@ -159,15 +158,15 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                         terrain.construction.type === "emptysite"
                                             || terrain.construction.team === Team.default ?
                                         <span style={{margin: "2px"}}>
-                                            {geographyIcon(terrain.geography)}
+                                            {geographyIcon(terrain.geography)}&#xFE0F;
                                         </span> : null
                                     }
                                     {
                                         terrain.resources
-                                        .map((amount, i) => ({ icon: resourceIcon(i), amount: amount }))
+                                        .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
                                         .filter(({amount}) => amount > 0)
-                                        .map(({icon, amount}) =>
-                                            <span style={{margin: "2px"}}>{icon}&#xFE0F;{amount}</span>
+                                        .map(({index, icon, amount}) =>
+                                            <span key={index} style={{margin: "2px"}}>{icon}&#xFE0F;{amount}</span>
                                         )
                                     }
                                 </div>
@@ -176,7 +175,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     )
                 }
             </div>
-            <div className="cities-view">
+            <div key="cities-view">
                 {props.empire
                     .map(({ city, spaceLeft }) =>
                         <div key={city.key} style={{ display: "inline-block" }}>
@@ -203,7 +202,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     )
                 }
             </div>
-            <div className="buildings-view">
+            <div key="buildings-view">
                 <span>
                     {GeographyInfo.filter(({ piece }) => piece !== null)
                         .filter((o, i) => props.player.buildingPhase[i] === "built")

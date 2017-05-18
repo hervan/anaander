@@ -68,7 +68,9 @@ export class Table extends React.Component<{}, IState> {
 
         window.clearInterval(this.refresher);
         this.dequeuePlay = this.dequeuePlay.bind(this);
-        this.refresher = window.setInterval(() => this.dequeuePlay(), 300);
+        this.autoselect = this.autoselect.bind(this);
+        this.autoplay = this.autoplay.bind(this);
+        this.refresher = window.setInterval(() => this.dequeuePlay(), 250);
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
@@ -181,7 +183,7 @@ export class Table extends React.Component<{}, IState> {
 
             case "-size":
 
-            if (this.state.boardSize > (this.state.playerCount + this.state.computerCount) * 5) {
+            if (this.state.boardSize > (this.state.playerCount + this.state.computerCount + 1) * 5) {
 
                 this.setState((prevState, props) => {
 
@@ -237,7 +239,8 @@ export class Table extends React.Component<{}, IState> {
                     }
                 }
             }));
-            this.autoSelect();
+
+            this.autoselect();
 
             break;
 
@@ -314,13 +317,20 @@ export class Table extends React.Component<{}, IState> {
                     });
                 });
 
-                this.autoSelect();
+                this.autoselect();
 
             } else {
 
                 if (this.state.game.turn.team > this.state.playerCount - 1) {
 
-                    this.autoplay();
+                    if (this.state.selection.length === 0) {
+
+                        this.autoselect();
+
+                    } else {
+
+                        this.autoplay();
+                    }
                 }
             }
         }
@@ -417,7 +427,7 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    autoSelect(): void {
+    autoselect(): void {
 
         const meeples = availableMeeples(this.state.game);
         if (meeples.length > 0) {

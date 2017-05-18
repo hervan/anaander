@@ -916,9 +916,13 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
 
         if (city.team !== Team.default) {
 
-            const attackedPlayer: Player = players[city.team];
-            attackedPlayer.cities.splice(attackedPlayer.cities.findIndex((cityKey) => cityKey === city.key), 1);
-            players[attackedPlayer.team] = attackedPlayer;
+            const attackedPlayer = {
+                ...players[city.team],
+                cities: players[city.team].cities.filter((cityKey) => cityKey !== city.key)
+            };
+            players[attackedPlayer.team] = {
+                ...attackedPlayer
+            };
         }
 
         const terrains = game.terrains.slice();
@@ -930,15 +934,15 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
             }
         };
 
-        const player = players[meeple.team];
+        const playerCities = players[meeple.team].cities.slice();
+        playerCities.push(city.key);
 
-        if (player.buildingPhase[terrain.geography - 2] === "notbuilt") {
-
-            player.buildingPhase[terrain.geography - 2] = "blueprint";
-        }
-
-        player.cities.push(city.key);
-        players[player.team] = player;
+        players[meeple.team] = {
+            ...players[meeple.team],
+            cities: playerCities.slice(),
+            buildingPhase: players[meeple.team].buildingPhase
+                .map((phase, i) => i === terrain.geography - 2 && phase === "notbuilt" ? "blueprint" : phase)
+        };
 
         const meeples = game.meeples.slice();
         meeples[meeple.key] = {
@@ -948,9 +952,9 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
 
         return {
             ...game,
-            terrains: terrains,
-            meeples: meeples,
-            players: players
+            terrains: terrains.slice(),
+            meeples: meeples.slice(),
+            players: players.slice()
         };
     }
 

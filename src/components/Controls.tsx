@@ -52,7 +52,8 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 .terrains[positionToIndex(meeple.position, props.game.boardSize)])
                             .filter(({construction}) =>
                                 construction.type === "city"
-                                && construction.team !== player.team)
+                                && construction.team !== player.team
+                                && player.cities.every((cityKey) => cityKey !== construction.key))
                             .map((terrain) => ({ city: terrain.construction as City, spaceLeft: terrain.spaceLeft }))
                     )}
                 setup={props.setup}

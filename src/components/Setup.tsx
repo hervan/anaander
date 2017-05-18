@@ -114,17 +114,17 @@ export default class Setup extends React.Component<IProps, {}> {
         guide =
             <div>
                 <p>
-                    <a className="is-link" onClick={() => this.props.setup("-player")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("-player")}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("rearrange")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("rearrange")}>
                         {this.props.playerCount}
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("+player")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("+player")}>
                         <span className="icon">
                             <i className="fa fa-plus"></i>
                         </span>
@@ -133,17 +133,17 @@ export default class Setup extends React.Component<IProps, {}> {
                     human players
                 </p>
                 <p>
-                    <a className="is-link" onClick={() => this.props.setup("-computer")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("-computer")}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("rearrange")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("rearrange")}>
                         {this.props.computerCount}
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("+computer")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("+computer")}>
                         <span className="icon">
                             <i className="fa fa-plus"></i>
                         </span>
@@ -152,17 +152,17 @@ export default class Setup extends React.Component<IProps, {}> {
                     automatic players
                 </p>
                 <p>
-                    <a className="is-link" onClick={() => this.props.setup("-size")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("-size")}>
                         <span className="icon">
                             <i className="fa fa-minus"></i>
                         </span>
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("rearrange")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("rearrange")}>
                         {this.props.boardSize}
                     </a>
                     &nbsp;
-                    <a className="is-link" onClick={() => this.props.setup("+size")}>
+                    <a style={{textDecoration: "none"}} onClick={() => this.props.setup("+size")}>
                         <span className="icon">
                             <i className="fa fa-plus"></i>
                         </span>
@@ -173,10 +173,9 @@ export default class Setup extends React.Component<IProps, {}> {
             </div>;
         guideDetail =
             <p>
-                click <a className="is-link" onClick={() => this.props.setup("begin")}>here</a> to begin.
+                click <a onClick={() => this.props.setup("begin")}>here</a> to begin.
                 <br />
-                (or click <a className="is-link"
-                    onClick={() => this.props.setup("tutorial")}>here</a> for a short tutorial.)
+                (or click <a onClick={() => this.props.setup("tutorial")}>here</a> for a short tutorial.)
             </p>;
 
         return (
