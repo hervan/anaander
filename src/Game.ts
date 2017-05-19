@@ -207,6 +207,7 @@ type Building = {
     readonly name: string;
     readonly blueprint: string;
     readonly team: Team;
+    readonly side: Side;
 };
 
 const Buildings: { [key: string]: string } = {
@@ -222,17 +223,21 @@ type BuildingPhase =
 | "blueprint"
 | "built";
 
+type EmptySite = {
+    readonly type: "emptysite";
+    resources: number[];
+};
+
 export type Construction =
 | Building
 | City
-| { type: "emptysite" };
+| EmptySite;
 
 export type Terrain = {
     readonly position: Position;
     readonly geography: Geography;
     readonly spaceLeft: number;
     readonly topMeeple: number;
-    readonly resources: number[];
     readonly construction: Construction;
 };
 
@@ -256,9 +261,10 @@ const InvalidPlays: { [key: string]: string } = {
     OutOfBoard: "keep your meeples inside the board.",
     NotYourTurn: "wait for your turn to begin.",
     TerrainIsCrowded: "move to a terrain with space available.",
-    NotOnGround: "only meeples on the ground can explore the terrain",
-    NoSelection: "please select meeples before choosing the action",
-    NoActions: "you need to control more cities to perform more actions"
+    NotOnGround: "only meeples on the ground can explore the terrain.",
+    NoSelection: "please select meeples before choosing the action.",
+    NoActions: "you need to control more cities to perform more actions.",
+    BuildingCooldown: "you just activated this building, please wait another turn."
 };
 
 type Turn = {
@@ -690,7 +696,8 @@ function build(game: Game, position: Position): Game {
                                 type: "building",
                                 team: game.turn.team,
                                 blueprint: piece,
-                                name: Buildings[piece]
+                                name: Buildings[piece],
+                                side: Side.none
                             }
                         };
 
@@ -737,15 +744,22 @@ function exploreTerrain(game: Game, position: Position): Game {
         const player = gamePlayers[game.turn.team];
         const terrain = game.terrains[positionToIndex(position, game.boardSize)];
 
-        gamePlayers[game.turn.team] = {
-            ...player,
-            resources: terrain.resources
-                .map((amount, i) => player.resources[i] + amount)
-        };
-        gameTerrains[positionToIndex(position, game.boardSize)] = {
-            ...terrain,
-            resources: player.resources.map((amount, i) => 0)
-        };
+        if (terrain.construction.type === "emptysite") {
+
+            gamePlayers[game.turn.team] = {
+                ...player,
+                resources: terrain.construction.resources
+                    .map((amount, i) => player.resources[i] + amount)
+            };
+
+            gameTerrains[positionToIndex(position, game.boardSize)] = {
+                ...terrain,
+                construction: {
+                    ...terrain.construction,
+                    resources: terrain.construction.resources.map((amount, i) => 0)
+                }
+            };
+        }
 
         return build({
             ...game,
@@ -961,6 +975,36 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
     return game;
 }
 
+function activateBuilding(game: Game, meeple: Meeple, building: Building): Game {
+
+    switch (building.blueprint) {
+
+        case "i":
+
+        break;
+
+        case "l":
+
+        break;
+
+        case "o":
+
+        break;
+
+        case "s":
+
+        break;
+
+        case "t":
+
+        break;
+    }
+
+    return {
+        ...game
+    };
+}
+
 function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
 
     const from = {...meeple.position};
@@ -999,6 +1043,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     const terrainFrom: Terrain = game.terrains[positionToIndex(from, game.boardSize)];
     let topMeepleFrom = terrainFrom.topMeeple;
     let spaceLeftFrom = terrainFrom.spaceLeft;
+    let constructionFrom: Construction = terrainFrom.construction;
 
     const terrainTo: Terrain = game.terrains[positionToIndex(to, game.boardSize)];
     let topMeepleTo = terrainTo.topMeeple;
@@ -1025,7 +1070,17 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         side: flipSide(meeple.side)
     };
 
-    const resoucesFrom = terrainFrom.resources.slice();
+    if (terrainTo.construction.type === "building"
+        && terrainTo.construction.side !== meeple.side) {
+
+        return {
+            ...game,
+            outcome: [...game.outcome, {
+                type: "invalid",
+                explanation: InvalidPlays.BuildingCooldown
+            }]
+        };
+    }
 
     if (topMeepleFrom !== -1) {
 
@@ -1040,8 +1095,22 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         }
     } else {
 
-        GeographyInfo[terrainFrom.geography].resources
-            .forEach((resource) => resoucesFrom[resource]++);
+        if (constructionFrom.type === "building") {
+
+            constructionFrom = {
+                ...constructionFrom,
+                side: flipSide(meeple.side)
+            };
+        } else if (constructionFrom.type === "emptysite") {
+
+            constructionFrom = {
+                ...constructionFrom,
+                resources: constructionFrom.resources
+                    .map((amount, i) => amount
+                        + (GeographyInfo[terrainFrom.geography].resources
+                            .some((resource) => resource === i) ? 1 : 0))
+            };
+        }
     }
 
     meeple = {
@@ -1058,9 +1127,11 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     const gameTerrains = game.terrains.slice();
     gameTerrains[positionToIndex(from, game.boardSize)] = {
         ...terrainFrom,
+        construction: {
+            ...constructionFrom
+        },
         topMeeple: topMeepleFrom,
-        spaceLeft: spaceLeftFrom,
-        resources: resoucesFrom.slice()
+        spaceLeft: spaceLeftFrom
     };
     gameTerrains[positionToIndex(to, game.boardSize)] = {
         ...terrainTo,
@@ -1078,21 +1149,30 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         }]
     };
 
-    let conflictGame = stepGame;
+    let conflictGame = {
+        ...stepGame
+    };
     if (meeple.topsMeeple !== -1 && gameMeeples[meeple.key].team !== gameMeeples[meeple.topsMeeple].team) {
 
         conflictGame = solveMeepleConflict(stepGame, to);
     }
 
-    let marchIntoCityGame = conflictGame;
-    if (terrainTo.construction.type === "city"
-        && terrainTo.construction.team !== meeple.team
-        && teamControls(conflictGame, meeple.position)) {
+    let enterConstructionGame = {
+        ...conflictGame
+    };
+    if (terrainTo.construction.type === "city") {
 
-        marchIntoCityGame = marchInto(conflictGame, meeple, to);
+        if (terrainTo.construction.team !== meeple.team
+            && teamControls(conflictGame, meeple.position)) {
+
+            enterConstructionGame = marchInto(conflictGame, meeple, to);
+        }
+    } else if (terrainTo.construction.type === "building") {
+
+        enterConstructionGame = activateBuilding(conflictGame, meeple, terrainTo.construction);
     }
 
-    return marchIntoCityGame;
+    return enterConstructionGame;
 }
 
 function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
@@ -1294,7 +1374,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             patch.forEach((position) => {
 
                 let spaceLeft = geographyIndex;
-                let construction: Construction = { type: "emptysite" };
+                let construction: Construction = {
+                    type: "emptysite",
+                    resources: [...Array(4).keys()].map((o) => 0)
+                };
 
                 if (position.row === cityPosition.row
                     && position.col === cityPosition.col) {
@@ -1314,7 +1397,6 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     position: position,
                     spaceLeft: spaceLeft,
                     topMeeple: -1,
-                    resources: [...Array(4).keys()].map((o) => 0),
                     construction: construction
                 };
 
@@ -1330,8 +1412,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     position: position,
                     spaceLeft: 1,
                     topMeeple: -1,
-                    resources: [...Array(4).keys()].map((o) => 0),
-                    construction: { type: "emptysite" }
+                    construction: {
+                        type: "emptysite",
+                        resources: [...Array(4).keys()].map((o) => 0)
+                    }
                 };
             });
         }
@@ -1364,8 +1448,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     position: position,
                     spaceLeft: 1,
                     topMeeple: -1,
-                    resources: [...Array(4).keys()].map((o) => 0),
-                    construction: { type: "emptysite" }
+                    construction: {
+                        type: "emptysite",
+                        resources: [...Array(4).keys()].map((o) => 0)
+                    }
                 };
 
             const geographyIndex = terrain.geography;
@@ -1475,8 +1561,10 @@ export function tutorial(index: number): Game {
             geography: geographyIndex,
             spaceLeft: geographyIndex,
             topMeeple: topMeeple,
-            resources: [...Array(4).keys()].map((o) => 0),
-            construction: { type: "emptysite" }
+            construction: {
+                type: "emptysite",
+                resources: [...Array(4).keys()].map((o) => 0)
+            }
         };
     };
 

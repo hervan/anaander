@@ -162,12 +162,13 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                         </span> : null
                                     }
                                     {
-                                        terrain.resources
+                                        terrain.construction.type === "emptysite" ?
+                                        terrain.construction.resources
                                         .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
                                         .filter(({amount}) => amount > 0)
                                         .map(({index, icon, amount}) =>
                                             <span key={index} style={{margin: "2px"}}>{icon}&#xFE0F;{amount}</span>
-                                        )
+                                        ) : null
                                     }
                                 </div>
                             </div>
