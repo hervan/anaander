@@ -33,12 +33,12 @@ interface IProps {
 function geographyIcon(geography: Geography): string {
     switch (geography) {
         case Geography.sea: return "🌊";
-        case Geography.swamp: return "🕳";
-        case Geography.mountain: return "🏔";
+        case Geography.swamp: return "🕳️";
+        case Geography.mountain: return "🏔️";
         case Geography.forest: return "🌳";
-        case Geography.valley: return "🏞";
+        case Geography.valley: return "🏞️";
         case Geography.plains: return "🛣️";
-        case Geography.desert: return "🏜";
+        case Geography.desert: return "🏜️";
     }
 }
 
@@ -124,7 +124,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     .map(({meeple, terrain}) =>
                         <div key={meeple.key} style={{ display: "inline-block" }}>
                             <div style={{ display: "inline-block" }}>
-                                <div>
+                                <div style={{ verticalAlign: "top" }}>
                                     <a onClick={() => props.select(meeple.position)}
                                         onDoubleClick={() => props.select(meeple.position, "swarm")}
                                         className="button is-large is-outlined"
@@ -146,7 +146,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                             ⚔️&#xFE0F;{meeple.strength}
                                         </div>
                                         <div>
-                                            🛡&#xFE0F;{meeple.resistance}
+                                            🛡️&#xFE0F;{meeple.resistance}
                                         </div>
                                         <div>
                                             🙏&#xFE0F;{meeple.faith}
@@ -189,11 +189,11 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 <span className={"icon is-large"
                                     + " is-" + Team[city.team]}
                                     style={{ opacity: 0.5 + (city.defense / 20) }}>
-                                    🏙&#xFE0F;
+                                    🏙️&#xFE0F;
                                 </span>
                             </a>
                             <div style={{ textAlign: "center" }}>
-                                🛡&#xFE0F;{city.defense}
+                                🛡️&#xFE0F;{city.defense}
                                 👥&#xFE0F;{spaceLeft}
                             </div>
                             <div style={{ textAlign: "center" }}>

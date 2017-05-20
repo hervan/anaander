@@ -69,12 +69,12 @@ mountain: research facility
         - buildings produce sided tokens with the ability, then it gets harvested
         - patterns are applied to the meeples in the formation
         ability                 from        where       token
-        enhance meeple          valley      pattern     no
+    x   enhance meeple          valley      pattern     no
         split/join meeple       plains      pattern     no
         re-attack               forest      pattern     no
-        hold defense            mountain    pattern     no
+    x   hold defense            mountain    pattern     no
         remote attack           swamp       pattern     no
-        breed meeple            valley      building    no
+    x   breed meeple            valley      building    no
         strengthen city         plains      building    no
         hidden bonuses          forest      building    yes (cards)
         double play             mountain    building    no
