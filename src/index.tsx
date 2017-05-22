@@ -15,83 +15,72 @@ ReactDOM.render(
 
 /*
 ------x-x-x------
-   future work
+       TBA
 ------x-x-x------
 
----------------------------------------------
-CREATE TASKS FOR EACH SUBJECT REFERENCED HERE
----------------------------------------------
-
-tier 0 resources testing
-tier 1 resources generation by exploration, and storage
-buildings construction
-tier 2 resources generation by building visitation or pattern formation
-tier 2 resource powers activation
-objectives testing
-objectives handling (receiving, showing, scoring, game ending)
-swarms constraints
-swarms reach
+change terrain analogy to some space analogy? planets? systems? galaxies?
+tier 2 resource powers remote activation by patterns
+    - should the pattern change each time it's activated?
+    - can they be defined by something else in the game?
+        - the current terrain? (terrain-building affinity)
+        - then forbid the reactivation on the same terrain?
+        - patterns rotated or patterns refilled as a pool once it's empty?
+    - how pattern roles (positions) can play a role in this?
+effects
+    - over swarms
+    - over cities
+    - over meeples on a terrain patch
+    - over terrain specs themselves
+        - speed
+        - production
+        - penalties
+            - desert that doesn't deal a damage is thematic for agricultural advances
+                - but also won't increase faith
+player profiles
+    - more chips for the player who has less faith
+    - more energy for the player who is greedy for power (more cities)
+    - more ore for the player who believes in hard work (more meeples)
 terrain modifiers
+    - move into mountain: wait one turn
+    - leave mountain: move twice
+    - desert deals damage to resistance
+    - leaving desert increases faith
+meeple stats
+    - movement
+swarm restraints
+    - must it be fed?
+abilities
+    - remote attack
+    - double play
+    - activation applied to neighbours
+bonuses
+    - give victory points once it's revealed
+    - if game ends and it's in hand, penalizes player
+objectives
+    - must be revealed for game ending
+    - may also give vp
+1.  eliminate n meeples from m players
+2.  convert n meeples from m players
+3.  control n cities
+4.  take over n cities from m players
+5.  build n buildings of m types
+6.  swarm with n meeples
+7.  n swarms
+8.  meeple with trait at least n
+9.  produced n units of given resource during one round
+10. stocked n units of given resource at a moment
+11. consecutive damage/kill by a meeple (to reward swarm clashes, variable)
 
--------------------------------------------------------------
-USE THE SEQUENCE BELOW TO VALIDATE THE HYPOTHESES THAT FOLLOW
--------------------------------------------------------------
+----------------------------------------------------------
+DEFINE A SEQUENCE TO VALIDATE THE GAME PROGRESS HYPOTHESIS
+----------------------------------------------------------
 
-game progress - figure out how to point to each - draw a graph showing interdependencies
+figure out how to point to each step
+draw a graph showing interdependencies
 1.  increase swarm
 2.  capture city
 3.  explore for resources
 4.  build a building
 5.  activate building benefit
 
-terrains: special powers?
-    move into mountain: wait one turn
-    leave mountain: move twice
-    desert only allows moves on heads side turns
-    leaving desert increases faith
-    change terrain analogy to some space analogy? planets? systems? galaxies?
-
-multi-tier economy
-    tier 0: produced by exploration
-          fuel    food    ore    silicon
-  desert: fuel                   silicon
-   swamp: fuel            ore
-mountain:                 ore    silicon
-  forest:         food    ore
-  plains: fuel    food
-  valley:         food           silicon
-    tier 1: used for specific powers
-   swamp: power plant
-mountain: research facility
-  forest: silo
-  plains: port
-  valley: hospital
-        - buildings produce sided tokens with the ability, then it gets harvested
-        - patterns are applied to the meeples in the formation
-        ability                 from        where       token
-    x   enhance meeple          valley      pattern     no
-        split/join meeple       plains      pattern     no
-        re-attack               forest      pattern     no
-    x   hold defense            mountain    pattern     no
-        remote attack           swamp       pattern     no
-    x   breed meeple            valley      building    no
-        strengthen city         plains      building    no
-        hidden bonuses          forest      building    yes (cards)
-        double play             mountain    building    no
-        hidden objectives       swamp       building    yes (cards)
-
-hidden objectives
-    a) consider whether one of these can be used as game end if presented at the time the condition is fulfilled, or
-    b) if they represent something that must be achieved in a single turn, remaining on the table for reactivation
-    option (a) requires more complex conditions, (b) requires simpler conditions
-1. destroy n enemy buildings from m players
-2. gather n (unbuilt) blueprints
-3. eliminate n meeples from m players
-4. convert n meeples from m players
-5. control n cities
-6. build n buildings of m types
-7. swarm with n meeples
-8. n swarms
-9. meeple with trait at least n
-10. produced n units of given resource during one round
 */

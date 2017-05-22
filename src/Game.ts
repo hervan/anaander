@@ -1,124 +1,3 @@
-/*
-------x-x-x------
-      basic
-------x-x-x------
-
-meeple
-    strength
-    resistance
-    faith
-movement
-swarm
-tile
-conversion
-combat
-
-abilities
-    solo action
-    fusion
-    fission
-    meeple improvement
-    swarm reach
-    swarm size
-
-variations
-    resource consumption/production
-    special powers
-    patterns
-    artifacts
-    exploration
-    city conquest
-    benefits from neighbours
-    terrains
-    meeple breeding
-*/
-
-/*
-------x-x-x------
-     complex
-------x-x-x------
-
-meeple
-    strength
-    faith
-    resistance
-    reach - how far it propagates actions, benefits and special powers
-    influence - how strongly actions, benefits and special powers are carried onto neighbours
-    profiles - stats will follow a curve better suited for a specific role
-
-swarm
-    size - constrained by resource production
-    reach - defined by meeple attributes
-    swarm benefits - defined by less than tetramino patterns
-        triminos - I or L
-        neighbour - adjacent or diagonal
-        swarm size - if it makes sense for something that would benefit from collectivity
-            faith - constrains ease of conversion, or number of conversions per action/turn/round
-                ease of conversion is a good option because it makes it easier to convert,
-                but remains unrelated to other already favorable situations
-            technology - constrains number of buildings
-
-tile
-    terrain
-    terrain effects
-    terrain-artifact affinity
-    cities
-    resource production of one kind
-
-solo action
-    a small number of actions guaranteed by some entity (cities?)
-    further actions by stray meeples
-        to compensate the benefit of extra actions
-        implement a hindrance of making harder to feed
-        no changes in combat because it's naturally harder for being alone
-
-special powers
-    fusion - combine stats
-    fission - spread stats
-    meeple breeding
-    remote attack, teleportation
-
-resources
-    food - for meeple attributes
-    energy - for abilities
-    a meeple exploring a terrain produces resources of the kind produced by the terrain
-    meeple strength may make it produce more
-    consider swarm benefits for better production
-
-patterns
-    tetraminos define artifact activation and should give the best special powers
-    tetraminos are blueprints for buildings (found upon exploration)
-    the player position the meeples, pay resources and place the buildinds
-    the buildings give the benefits upon visiting, or maybe just for existing (for permanent benefits)
-    exploration still makes sense? patterns will become harder if they are buildings, requiring:
-        spending an action
-        spending resources
-        moving to the location
-    triminos should provide benefits to stimulate larger swarms, and should be inherent to larger swarms as well
-    dominos/diagonals should provide the most basic needs
-    swarm size should be used as a parameter for larger things, related to collectivity
-
-artifacts
-    work on activation
-    work on possession
-    maybe both, each giving a different benefit
-
-exploration
-    acquire artifacts
-    produce resources
-    improve city?
-
-cities
-    one meeple from your team can enter a city you own, and only one.
-    no one else can enter it, so that meeple is protected (like a garrison).
-    your meeples can enter a city you don't own to conquer it, but they'll leave only after finishing the conquest.
-    the conquest is over when their total stregth is greater than the city's defense, or you moved four meeples there.
-    while the conquest is not over, the city owner (and only him) can enter the city and battle the top meeple.
-    give a permanent benefit to the player, like one extra action
-    give benefits upon visiting by friendly player, like healing
-    after conquest, explore improves city - like a stronger defense
-*/
-
 export enum Team {
     info,
     warning,
@@ -163,6 +42,14 @@ export const GeographyInfo = [
     { type: "plains", piece: "s", resources: [Resource.fuel, Resource.food] },
     { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] }
 ];
+
+enum Piece {
+    i,
+    l,
+    o,
+    s,
+    t
+}
 
 const pieceShapes: Array<{ i: number, piece: string, shape: Position[] }> = [
     { i: 0, piece: "i", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}] },
@@ -646,86 +533,95 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
         .reduce((acc, meepleIndex) => playMeeple(acc, action, meepleIndex), {...game, outcome: [] as Outcome[]});
 }
 
-function build(game: Game, position: Position): Game {
+function patternMatch(game: Game, position: Position, shape: Position[]): Position[] {
+
+    let shapeHandling = shape.slice();
+
+    for (let flip = 0; flip < 2; flip++) {
+        for (let rotate = 0; rotate < 4; rotate++) {
+            for (let shapeAt = 0; shapeAt < 4; shapeAt++) {
+
+                const firstPosition: Position = {
+                    row: position.row - shapeHandling[shapeAt].row,
+                    col: position.col - shapeHandling[shapeAt].col
+                };
+
+                const shapeOnMap = shapeHandling.map((pos) => ({
+                    row: firstPosition.row + pos.row,
+                    col: firstPosition.col + pos.col
+                }));
+
+                if (shapeOnMap.every((pos) =>
+                    insideBoard(pos, game.boardSize)
+                    && isMeepleAvailable(game, pos)
+                    && game.terrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
+                    && teamControls(game, pos))) {
+
+                    return shapeOnMap.slice();
+                }
+            }
+            shapeHandling = rotateShape(shapeHandling);
+        }
+        shapeHandling = flipShape(shapeHandling);
+    }
+
+    return [];
+}
+
+function activatePattern(game: Game, position: Position, piece: Piece): Game {
+
+    return game;
+}
+
+function build(game: Game, position: Position, piece: Piece): Game {
 
     const player = game.players[game.turn.team];
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
     const meeple = game.meeples[terrain.topMeeple];
 
-    for (let pieceShape of pieceShapes.filter((o, n) => player.buildingPhase[n] === "blueprint")) {
+    const shape = pieceShapes[piece].shape;
+    const shapeOnMap = patternMatch(game, position, shape.slice());
 
-        const i = pieceShape.i;
-        const piece = pieceShape.piece;
-        const shape = pieceShape.shape;
+    if (shapeOnMap.length === 4) {
 
-        let shapeHandling: Position[] = [...shape];
-
-        const gameSteps: Game[] = [game];
-
-        for (let flip = 0; flip < 2; flip++) {
-            for (let rotate = 0; rotate < 4; rotate++) {
-                for (let shapeAt = 0; shapeAt < 4; shapeAt++) {
-
-                    const firstPosition: Position = {
-                        row: position.row - shapeHandling[shapeAt].row,
-                        col: position.col - shapeHandling[shapeAt].col
-                    };
-
-                    const shapeOnMap = shapeHandling.map((pos) => ({
-                        row: firstPosition.row + pos.row,
-                        col: firstPosition.col + pos.col
-                    }));
-
-                    if (shapeOnMap.every((pos) =>
-                        insideBoard(pos, game.boardSize)
-                        && isMeepleAvailable(game, pos)
-                        && game.terrains[positionToIndex(pos, game.boardSize)].construction.type === "emptysite"
-                        && teamControls(game, pos))) {
-
-                        return {
-                            ...game,
-                            players: game.players.map((p) =>
-                                p.team === player.team ?
-                                {
-                                    ...p,
-                                    buildingPhase: player.buildingPhase.map((bPhase, bIndex) =>
-                                        bIndex === i ? "built" : bPhase
-                                    )
-                                } : p
-                            ),
-                            terrains: game.terrains.map((t) =>
-                                t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
-                                ({
-                                    ...terrain,
-                                    spaceLeft: piece === "s" ? 1 : 0,
-                                    construction: {
-                                        type: "building",
-                                        team: game.turn.team,
-                                        blueprint: piece,
-                                        name: Buildings[piece],
-                                        side: Side.none
-                                    }
-                                } as Terrain) : t
-                            ),
-                            meeples: game.meeples.map((m) =>
-                                shapeOnMap.some((p) =>
-                                    m.key === game.terrains[positionToIndex(p, game.boardSize)].topMeeple) ?
-                                {
-                                    ...m,
-                                    side: flipSide(meeple.side)
-                                } : {...m}
-                            ),
-                            outcome: [...game.outcome, {
-                                type: "action",
-                                action: Action.explore
-                            }]
-                        };
+        return {
+            ...game,
+            players: game.players.map((p) =>
+                p.team === player.team ?
+                {
+                    ...p,
+                    buildingPhase: player.buildingPhase.map((bPhase, bIndex) =>
+                        bIndex === piece ? "built" : bPhase
+                    )
+                } : p
+            ),
+            terrains: game.terrains.map((t) =>
+                t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
+                ({
+                    ...terrain,
+                    spaceLeft: Piece[piece] === "s" ? 1 : 0,
+                    construction: {
+                        type: "building",
+                        team: game.turn.team,
+                        blueprint: Piece[piece],
+                        name: Buildings[Piece[piece]],
+                        side: Side.none
                     }
-                }
-                shapeHandling = rotateShape(shapeHandling);
-            }
-            shapeHandling = flipShape(shapeHandling);
-        }
+                } as Terrain) : t
+            ),
+            meeples: game.meeples.map((m) =>
+                shapeOnMap.some((p) =>
+                    m.key === game.terrains[positionToIndex(p, game.boardSize)].topMeeple) ?
+                {
+                    ...m,
+                    side: flipSide(meeple.side)
+                } : {...m}
+            ),
+            outcome: [...game.outcome, {
+                type: "action",
+                action: Action.explore
+            }]
+        };
     }
 
     return {
@@ -767,7 +663,33 @@ function exploreTerrain(game: Game, position: Position): Game {
             };
         }
 
-        return build({
+        for (let pieceShape of pieceShapes.filter((o, n) => player.buildingPhase[n] === "blueprint")) {
+
+            return build({
+                ...game,
+                terrains: gameTerrains.slice(),
+                players: gamePlayers.slice(),
+                outcome: [...game.outcome, {
+                    type: "action",
+                    action: Action.explore
+                }]
+            }, position, pieceShape.i);
+        }
+
+        for (let pieceShape of pieceShapes.filter((o, n) => player.buildingPhase[n] === "built")) {
+
+            return activatePattern({
+                ...game,
+                terrains: gameTerrains.slice(),
+                players: gamePlayers.slice(),
+                outcome: [...game.outcome, {
+                    type: "action",
+                    action: Action.explore
+                }]
+            }, position, pieceShape.i);
+        }
+
+        return {
             ...game,
             terrains: gameTerrains.slice(),
             players: gamePlayers.slice(),
@@ -775,7 +697,7 @@ function exploreTerrain(game: Game, position: Position): Game {
                 type: "action",
                 action: Action.explore
             }]
-        }, position);
+        };
     } else {
 
         return {
@@ -1425,8 +1347,8 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
         "Mytilene"
     ];
 
-    const terrains: Terrain[] = new Array<Terrain>();
-    const patchesPerDimension = Math.ceil(Math.sqrt(5 * playerCount));
+    const terrains = new Array<Terrain>();
+    const patchesPerDimension = Math.ceil(Math.sqrt(5 * (playerCount + 1)));
     const patchLength = boardSize / patchesPerDimension;
     const defaultPatchArea = Math.PI * ((patchLength - 0.5) / 2) ** 2;
 
@@ -1437,6 +1359,8 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                 col: Math.round((patchLength / 2) + (patchLength * (idx % patchesPerDimension)))
             })
         );
+
+    const requiredGeography = [...Array(5 * (playerCount + 1)).keys()].map((i) => (i % 5) + 2);
 
     let patchIndex = 0;
 
@@ -1486,7 +1410,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             patch.push(...neighbours(cityPosition, boardSize)
                 .filter((pos) => patch.every((p) => p.row !== pos.row || p.col !== pos.col)));
 
-            const geographyIndex = Math.ceil(Math.random() * 5) + 1;
+            const geographyIndex =
+                requiredGeography.length > 0 ?
+                requiredGeography.splice(Math.random() * requiredGeography.length, 1)[0] :
+                Math.ceil(Math.random() * 5) + 1;
             const boundaries: Position[] = [];
 
             patch.forEach((position) => {
@@ -1505,7 +1432,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                         type: "city",
                         key: positionToIndex(position, boardSize),
                         name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
-                        defense: 10 + (spaceLeft * Math.ceil(Math.random() * 5)),
+                        defense: 15 + Math.ceil(Math.random() * 20),
                         team: Team.default
                     };
                 }

@@ -230,7 +230,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
 const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action]>]> = [
     [
         <div>
-            welcome to anaander, a game about post-human armies with a shared mind&mdash;veeeeeeery loosely based on
+            welcome to anaander, a game about post-human armies with a shared mind&mdash;looooosely based on
             Ancillary Justice, first novel in the Imperial Radch series by Ann Leckie, where multiple bodies and
             soldiers form a shared consciousness for single entities, like spaceships, or like the Lord of the Radch
             herself.

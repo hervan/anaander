@@ -183,11 +183,11 @@ export class Table extends React.Component<{}, IState> {
 
             case "-size":
 
-            if (this.state.boardSize > (this.state.playerCount + this.state.computerCount + 1) * 5) {
+            if (this.state.boardSize > 20) {
 
                 this.setState((prevState, props) => {
 
-                    const boardSize = prevState.boardSize - 5;
+                    const boardSize = prevState.boardSize - 4;
 
                     return ({
                         game: setup(prevState.playerCount + prevState.computerCount, boardSize),
@@ -209,7 +209,7 @@ export class Table extends React.Component<{}, IState> {
 
             this.setState((prevState, props) => {
 
-                const boardSize = prevState.boardSize + 5;
+                const boardSize = prevState.boardSize + 4;
 
                 return ({
                     game: setup(prevState.playerCount + prevState.computerCount, boardSize),
@@ -432,15 +432,15 @@ export class Table extends React.Component<{}, IState> {
         const meeples = availableMeeples(this.state.game);
         if (meeples.length > 0) {
 
-            const maxSwarm = meeples.map((meeple) =>
-                ({ p: meeple.position, s: selectSwarm(this.state.game, meeple.position).length }))
-                .reduce((a, b) => b.s > a.s ? b :
-                    this.state.game.terrains[positionToIndex(b.p, this.state.game.boardSize)]
-                        .construction.type !== "city"
-                    && this.state.game.terrains[positionToIndex(a.p, this.state.game.boardSize)]
-                        .construction.type === "city" ? b : a);
-
             this.setState((prevState, props) => {
+
+                const maxSwarm = meeples.map((meeple) =>
+                    ({ p: meeple.position, s: selectSwarm(prevState.game, meeple.position).length }))
+                    .reduce((a, b) => b.s > a.s ? b :
+                        prevState.game.terrains[positionToIndex(b.p, prevState.game.boardSize)]
+                            .construction.type !== "city"
+                        && prevState.game.terrains[positionToIndex(a.p, prevState.game.boardSize)]
+                            .construction.type === "city" ? b : a);
 
                 const selection = selectSwarm(prevState.game, maxSwarm.p);
 
