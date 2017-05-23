@@ -78,6 +78,7 @@ export type Meeple = {
     readonly strength: number;
     readonly resistance: number;
     readonly faith: number;
+    readonly speed: number;
     readonly topsMeeple: number;
 };
 
@@ -975,6 +976,7 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
                                     strength: meeple.strength + meepleUnder.strength,
                                     resistance: meeple.resistance + meepleUnder.resistance,
                                     faith: meeple.faith + meepleUnder.faith,
+                                    speed: meeple.speed + meepleUnder.speed,
                                     topsMeeple: meepleUnder.topsMeeple
                                 } :
                                 m.key === meeple.topsMeeple ?
@@ -1006,8 +1008,10 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
                             m.key === meeple.key ?
                             {
                                 ...meeple,
+                                strength: Math.ceil(meeple.strength / 2),
                                 resistance: Math.ceil(meeple.resistance / 2),
                                 faith: Math.ceil(meeple.faith / 2),
+                                speed: Math.ceil(meeple.speed / 2),
                                 topsMeeple: game.meeples.length
                             } : m
                         ),
@@ -1019,6 +1023,7 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
                             strength: Math.ceil(meeple.strength / 2),
                             resistance: Math.ceil(meeple.resistance / 2),
                             faith: Math.ceil(meeple.faith / 2),
+                            speed: Math.ceil(meeple.speed / 2),
                             topsMeeple: -1
                         }
                     ]
@@ -1050,77 +1055,101 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
 function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
 
     const from = {...meeple.position};
-    const to = {...meeple.position};
-
-    switch (action) {
-
-        case Action.up:
-        to.row = from.row - 1;
-        break;
-
-        case Action.left:
-        to.col = from.col - 1;
-        break;
-
-        case Action.down:
-        to.row = from.row + 1;
-        break;
-
-        case Action.right:
-        to.col = from.col + 1;
-        break;
-    }
-
-    if (!adjacent(from, game.boardSize).some((pos) => pos.row === to.row && pos.col === to.col)) {
-
-        return {
-            ...game,
-            outcome: [...game.outcome, {
-                type: "invalid",
-                explanation: InvalidPlays.OutOfBoard
-            }]
-        };
-    }
+    let to = {...meeple.position};
 
     const terrainFrom: Terrain = game.terrains[positionToIndex(from, game.boardSize)];
-    let topMeepleFrom = terrainFrom.topMeeple;
-    let constructionFrom: Construction = terrainFrom.construction;
+    let terrainTo: Terrain = game.terrains[positionToIndex(to, game.boardSize)];
 
-    const terrainTo: Terrain = game.terrains[positionToIndex(to, game.boardSize)];
-    let topMeepleTo = terrainTo.topMeeple;
-    let spaceLeftTo = terrainTo.spaceLeft;
+    for (let i = 0; i < meeple.speed; i++) {
 
-    if (terrainTo.spaceLeft < 1) {
+        const stepFrom = {...to};
 
-        return {
-            ...game,
-            outcome: [...game.outcome, {
-                type: "invalid",
-                explanation: InvalidPlays.TerrainIsCrowded
-            }]
-        };
+        switch (action) {
+
+            case Action.up:
+            to.row = stepFrom.row - 1;
+            break;
+
+            case Action.left:
+            to.col = stepFrom.col - 1;
+            break;
+
+            case Action.down:
+            to.row = stepFrom.row + 1;
+            break;
+
+            case Action.right:
+            to.col = stepFrom.col + 1;
+            break;
+        }
+
+        terrainTo = game.terrains[positionToIndex(to, game.boardSize)];
+
+        if (!adjacent(stepFrom, game.boardSize).some((pos) => pos.row === to.row && pos.col === to.col)) {
+
+            if (i === 0) {
+
+                return {
+                    ...game,
+                    outcome: [...game.outcome, {
+                        type: "invalid",
+                        explanation: InvalidPlays.OutOfBoard
+                    }]
+                };
+            } else {
+
+                to = {...stepFrom};
+                terrainTo = game.terrains[positionToIndex(to, game.boardSize)];
+            }
+        }
+
+        if (terrainTo.spaceLeft < 1) {
+
+            if (i === 0) {
+
+                return {
+                    ...game,
+                    outcome: [...game.outcome, {
+                        type: "invalid",
+                        explanation: InvalidPlays.TerrainIsCrowded
+                    }]
+                };
+            } else {
+
+                to = {...stepFrom};
+                terrainTo = game.terrains[positionToIndex(to, game.boardSize)];
+            }
+        }
+
+        if (terrainTo.construction.type === "building"
+            && terrainTo.construction.side !== flipSide(meeple.side)) {
+
+            if (i === 0) {
+
+                return {
+                    ...game,
+                    outcome: [...game.outcome, {
+                        type: "invalid",
+                        explanation: InvalidPlays.BuildingCooldown
+                    }]
+                };
+            } else {
+
+                to = {...stepFrom};
+                terrainTo = game.terrains[positionToIndex(to, game.boardSize)];
+            }
+        }
     }
-
-    topMeepleFrom = meeple.topsMeeple;
-
-    const gameMeeples = game.meeples.slice();
 
     meeple = {
         ...meeple,
         side: flipSide(meeple.side)
     };
 
-    if (terrainTo.construction.type === "building"
-        && terrainTo.construction.side !== meeple.side) {
+    const gameMeeples = game.meeples.slice();
 
-        return {
-            ...game,
-            outcome: [...game.outcome, {
-                type: "invalid",
-                explanation: InvalidPlays.BuildingCooldown
-            }]
-        };
-    }
+    const topMeepleFrom = meeple.topsMeeple;
+    let constructionFrom: Construction = terrainFrom.construction;
 
     if (topMeepleFrom !== -1) {
 
@@ -1161,7 +1190,8 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
 
     gameMeeples[meeple.key] = meeple;
 
-    topMeepleTo = meeple.key;
+    const topMeepleTo = meeple.key;
+    let spaceLeftTo = terrainTo.spaceLeft;
     spaceLeftTo--;
 
     const gameTerrains = game.terrains.slice();
@@ -1514,6 +1544,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
                     faith: Math.ceil(Math.random() * 15),
+                    speed: Math.random() > 0.8 ? 2 : 1,
                     topsMeeple: -1
                 };
 
@@ -1555,6 +1586,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             strength: 10 + Math.ceil(Math.random() * 5),
             resistance: 20 + Math.ceil(Math.random() * 10),
             faith: 20 + Math.ceil(Math.random() * 10),
+            speed: 1,
             topsMeeple: -1
         };
 
@@ -1644,6 +1676,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 }
             ],
@@ -1669,6 +1702,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1679,6 +1713,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1689,6 +1724,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1699,6 +1735,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1709,6 +1746,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1719,6 +1757,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -1753,6 +1792,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -1792,6 +1832,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1802,6 +1843,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -1841,6 +1883,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1851,6 +1894,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -1890,6 +1934,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1900,6 +1945,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 20,
                     faith: 20,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -1939,6 +1985,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1949,6 +1996,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 10,
                     faith: 20,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -1988,6 +2036,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -1998,6 +2047,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2008,6 +2058,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2018,6 +2069,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2028,6 +2080,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2038,6 +2091,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2048,6 +2102,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 }
             ],
@@ -2080,6 +2135,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2090,6 +2146,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2100,6 +2157,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2110,6 +2168,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2120,6 +2179,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2130,6 +2190,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2140,6 +2201,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2150,6 +2212,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2160,6 +2223,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2170,6 +2234,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2180,6 +2245,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2190,6 +2256,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2200,6 +2267,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2210,6 +2278,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2220,6 +2289,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2230,6 +2300,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
             ],
@@ -2269,6 +2340,7 @@ export function tutorial(index: number): Game {
                     strength: 10,
                     resistance: 30,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2279,6 +2351,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 10,
                     faith: 30,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2289,6 +2362,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 },
                 {
@@ -2299,6 +2373,7 @@ export function tutorial(index: number): Game {
                     strength: 5,
                     resistance: 15,
                     faith: 15,
+                    speed: 1,
                     topsMeeple: -1
                 }
             ],

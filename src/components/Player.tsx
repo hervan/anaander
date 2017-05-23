@@ -151,6 +151,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                         <div>
                                             🙏&#xFE0F;{meeple.faith}
                                         </div>
+                                        <div>
+                                            🏃&#xFE0F;{meeple.speed}
+                                        </div>
                                     </div>
                                 </div>
                                 <div style={{ textAlign: "center" }}>
