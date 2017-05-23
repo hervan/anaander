@@ -122,58 +122,59 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             <div key="meeple-view">
                 {props.swarm
                     .map(({meeple, terrain}) =>
-                        <div key={meeple.key} style={{ display: "inline-block" }}>
-                            <div style={{ display: "inline-block" }}>
-                                <div style={{ verticalAlign: "top" }}>
-                                    <a onClick={() => props.select(meeple.position)}
-                                        onDoubleClick={() => props.select(meeple.position, "swarm")}
-                                        className="button is-large is-outlined"
-                                        style={{ textDecoration: "none", borderColor: "transparent" }}>
-                                        <span className={"icon is-large"
-                                            + (props.selection
-                                                .some((meepleKey) => meeple.key === meepleKey) ? " selected" : "")
-                                            + " is-" + Team[meeple.team]}
-                                            style={{ opacity: 0.5 + (meeple.resistance / 20) }}>
-                                            <i className={"fa fa-user-circle"
-                                                + (meeple.side === Side.heads ? "-o" : "")}>
-                                            </i>
-                                        </span>
-                                    </a>
-                                    <div className="meeple-stats" style={{
-                                        display: "inline-block"
-                                    }}>
-                                        <div>
-                                            ⚔️&#xFE0F;{meeple.strength}
-                                        </div>
-                                        <div>
-                                            🛡️&#xFE0F;{meeple.resistance}
-                                        </div>
-                                        <div>
-                                            🙏&#xFE0F;{meeple.faith}
-                                        </div>
-                                        <div>
-                                            🏃&#xFE0F;{meeple.speed}
-                                        </div>
-                                    </div>
+                        <div key={meeple.key} style={{ display: "inline-block"}}
+                            onClick={() => props.select(meeple.position)}
+                            onDoubleClick={() => props.select(meeple.position, "swarm")}
+                            className={(props.selection
+                                .some((meepleKey) => meeple.key === meepleKey) ? "tableau-selected" : undefined) }>
+                            <div className="stats"
+                                style={{ display: "inline-block", verticalAlign: "top" }}>
+                                <div className={"icon is-small"
+                                    + " is-" + Team[meeple.team]}
+                                    style={{ opacity: 0.5 + (meeple.resistance / 20) }}>
+                                    <i className={"fa fa-user-circle"
+                                        + (meeple.side === Side.heads ? "-o" : "")}>
+                                    </i>
                                 </div>
-                                <div style={{ textAlign: "center" }}>
-                                    {
-                                        terrain.construction.type === "emptysite"
-                                            || terrain.construction.team === Team.default ?
-                                        <span style={{margin: "2px"}}>
-                                            {geographyIcon(terrain.geography)}&#xFE0F;
-                                        </span> : null
-                                    }
-                                    {
-                                        terrain.construction.type === "emptysite" ?
-                                        terrain.construction.resources
-                                        .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
-                                        .filter(({amount}) => amount > 0)
-                                        .map(({index, icon, amount}) =>
-                                            <span key={index} style={{margin: "2px"}}>{icon}&#xFE0F;{amount}</span>
-                                        ) : null
-                                    }
+                                <div>
+                                {
+                                    terrain.construction.type === "emptysite" ?
+                                    geographyIcon(terrain.geography) :
+                                    terrain.construction.type === "city" ?
+                                    "🏙️" :
+                                    buildingIcon(terrain.construction.blueprint)
+                                }&#xFE0F;
                                 </div>
+                            </div>
+                            <div className="stats"
+                                style={{ display: "inline-block", verticalAlign: "top" }}>
+                                <div>
+                                    ⚔️&#xFE0F;{meeple.strength}
+                                </div>
+                                <div>
+                                    🛡️&#xFE0F;{meeple.resistance}
+                                </div>
+                            </div>
+                            <div className="stats"
+                                style={{ display: "inline-block", verticalAlign: "top" }}>
+                                <div>
+                                    🙏&#xFE0F;{meeple.faith}
+                                </div>
+                                <div>
+                                    🏃&#xFE0F;{meeple.speed}
+                                </div>
+                            </div>
+                            <div className="stats"
+                                style={{ display: "inline-block", verticalAlign: "top" }}>
+                                {
+                                    terrain.construction.type === "emptysite" ?
+                                    terrain.construction.resources
+                                    .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
+                                    .filter(({amount}) => amount > 0)
+                                    .map(({index, icon, amount}) =>
+                                        <div key={index}>{icon}&#xFE0F;{amount}</div>
+                                    ) : null
+                                }
                             </div>
                         </div>
                     )
