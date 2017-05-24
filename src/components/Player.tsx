@@ -121,8 +121,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             </div>
             <div key="meeple-view">
                 {props.swarm
+                    .sort((a, b) => b.meeple.strength - a.meeple.strength)
                     .map(({meeple, terrain}) =>
-                        <div key={meeple.key} style={{ display: "inline-block"}}
+                        <div key={meeple.key} style={{ display: "inline-block", cursor: "pointer" }}
                             onClick={() => props.select(meeple.position)}
                             onDoubleClick={() => props.select(meeple.position, "swarm")}
                             className={(props.selection

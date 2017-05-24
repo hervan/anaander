@@ -162,25 +162,49 @@ type Turn = {
 };
 
 export type Outcome = {
-        type: "action"
-        action: Action
-    } | {
-        type: "invalid"
-        explanation: string;
-    } | {
-        type: "none"
-    } | {
-        type: "gameover"
-    };
+    type: "action"
+    action: Action
+} | {
+    type: "invalid"
+    explanation: string;
+} | {
+    type: "none"
+} | {
+    type: "gameover"
+};
 
 export type Game = {
     readonly boardSize: number;
     readonly players: Player[];
     readonly terrains: Terrain[];
     readonly meeples: Meeple[];
+    readonly deck: Card[];
+    readonly discardPile: Card[];
     readonly turn: Turn;
     readonly outcome: Outcome[];
 };
+
+type Card = {
+    readonly name: string;
+    readonly pattern: Piece;
+    readonly input: (param?: Player | Position) => number;
+    readonly cost: number[];
+    readonly effect: (target: Array<Meeple | Player | Position | Terrain>)
+        => Array<Meeple | Player | Position | Terrain>;
+};
+
+const cards: Card[] = [
+    {
+        name: "oil platform",
+        pattern: Piece.i, // which's the one producing energy?
+        input: () => 1, // always one, can't be multiplied
+        cost: [0, 0, 0, 0], // no cost
+        effect: (target: Terrain[]) => target
+            .map((terrain) => terrain)
+            // read production from GeographyInfo when instanced,
+            // so it can be changed here
+    } // how to deal with dynamic targets? should cost change dynamically?
+];
 
 export function logBoard(game: Game): void {
 
@@ -1054,8 +1078,8 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
 
 function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
 
-    const from = {...meeple.position};
-    let to = {...meeple.position};
+    const from: Position = {...meeple.position};
+    let to: Position = {...meeple.position};
 
     const terrainFrom: Terrain = game.terrains[positionToIndex(from, game.boardSize)];
     let terrainTo: Terrain = game.terrains[positionToIndex(to, game.boardSize)];
@@ -1067,19 +1091,31 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         switch (action) {
 
             case Action.up:
-            to.row = stepFrom.row - 1;
+            to = {
+                ...to,
+                row: stepFrom.row - 1
+            };
             break;
 
             case Action.left:
-            to.col = stepFrom.col - 1;
+            to = {
+                ...to,
+                col: stepFrom.col - 1
+            };
             break;
 
             case Action.down:
-            to.row = stepFrom.row + 1;
+            to = {
+                ...to,
+                row: stepFrom.row + 1
+            };
             break;
 
             case Action.right:
-            to.col = stepFrom.col + 1;
+            to = {
+                ...to,
+                col: stepFrom.col + 1
+            };
             break;
         }
 
@@ -1544,7 +1580,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     strength: Math.ceil(Math.random() * 5),
                     resistance: Math.ceil(Math.random() * 15),
                     faith: Math.ceil(Math.random() * 15),
-                    speed: Math.random() > 0.8 ? 2 : 1,
+                    speed: 1,
                     topsMeeple: -1
                 };
 
@@ -1616,6 +1652,8 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
         players: players,
         terrains: terrains,
         meeples: meeples,
+        deck: [],
+        discardPile: [],
         turn: {
             round: 0,
             team: Team.default,
@@ -1654,6 +1692,8 @@ export function tutorial(index: number): Game {
             terrains: [...Array(20).keys()].reduce((acc, row) =>
                 acc.concat([...Array(20).keys()].map((col) => t(row, col))), [] as Terrain[]),
             meeples: [],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -1680,6 +1720,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 }
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -1761,6 +1803,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -1796,6 +1840,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -1847,6 +1893,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -1898,6 +1946,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -1949,6 +1999,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -2000,6 +2052,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -2106,6 +2160,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 }
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -2304,6 +2360,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 },
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,
@@ -2377,6 +2435,8 @@ export function tutorial(index: number): Game {
                     topsMeeple: -1
                 }
             ],
+            deck: [],
+            discardPile: [],
             turn: {
                 round: 0,
                 team: Team.info,

@@ -74,6 +74,9 @@ abilities
         - penalties
             - desert that doesn't deal a damage is thematic for agricultural advances
                 - but also won't increase faith
+obstacles
+    - something that must be overcome with an ability or building of the previous terrain
+    - provides a sense of progress without a tech tree
 bonuses and abilities are the same thing?
     - for instance, if you force consumption on a terrain, both must pay,
       but only you get vps if you manage to do it
@@ -106,10 +109,11 @@ DEFINE A SEQUENCE TO VALIDATE THE GAME PROGRESS HYPOTHESIS
 
 figure out how to point to each step
 draw a graph showing interdependencies
-1.  increase swarm
-2.  capture city
-3.  explore for resources
-4.  build a building
-5.  activate building benefit
+1.  increase swarm (size of 5)
+2.  capture valley city (room for 5, easier)
+    (order of terrains -> order of buildings: must focus on each stage of the game)
+3.  build a school -> factory -> hospital -> station -> research facility
+4.  explore for resources
+5.  activate ability
 
 */
