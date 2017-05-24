@@ -162,15 +162,15 @@ type Turn = {
 };
 
 export type Outcome = {
-    type: "action"
-    action: Action
+    readonly type: "action"
+    readonly action: Action
 } | {
-    type: "invalid"
-    explanation: string;
+    readonly type: "invalid"
+    readonly explanation: string;
 } | {
-    type: "none"
+    readonly type: "none"
 } | {
-    type: "gameover"
+    readonly type: "gameover"
 };
 
 export type Game = {
