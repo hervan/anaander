@@ -12,14 +12,17 @@ import {
     neighbours,
     Play,
     play,
-    Position,
     positionToIndex,
     selectSwarm,
     setup,
-    Side,
-    Team,
     tutorial
-} from "../Game";
+} from "../logic/Game";
+
+import {
+    Position,
+    Side,
+    Team
+} from "../logic/Common";
 
 import Board from "./Board";
 import Controls from "./Controls";
@@ -294,7 +297,9 @@ export class Table extends React.Component<{}, IState> {
 
     dequeuePlay(): void {
 
-        if (this.state.game.players.length > 0 && this.state.game.turn.team !== Team.default) {
+        if (this.state.game.players.length > 0
+            && this.state.game.turn.team !== -1
+            && this.state.game.turn.team !== Team.default) {
 
             if (this.state.playQueue[this.state.game.turn.team].length > 0) {
 

@@ -14,7 +14,7 @@ import {
     Side,
     Team,
     Terrain
-} from "../Game";
+} from "../logic/Game";
 
 import { Control } from "./Table";
 import { buildingIcon } from "./Terrain";

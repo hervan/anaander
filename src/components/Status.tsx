@@ -10,7 +10,7 @@ import {
     Position,
     Side,
     Team
-} from "../Game";
+} from "../logic/Game";
 
 import {
     Control,

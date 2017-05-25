@@ -10,7 +10,7 @@ import {
     meeplesBelow,
     Position,
     Team
-} from "../Game";
+} from "../logic/Game";
 
 import Meeple from "./Meeple";
 import Terrain from "./Terrain";

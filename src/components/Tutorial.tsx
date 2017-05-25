@@ -5,7 +5,7 @@ import {
     Action,
     Play,
     Team
-} from "../Game";
+} from "../logic/Game";
 
 import { Control } from "Table";
 

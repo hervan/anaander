@@ -1,11 +1,4 @@
-export enum Team {
-    info,
-    warning,
-    success,
-    danger,
-    primary,
-    default
-};
+import { Position } from "../logic/Common";
 
 export enum Action {
     up,
@@ -14,16 +7,6 @@ export enum Action {
     right,
     explore,
     hold
-};
-
-export enum Geography {
-    sea,
-    desert,
-    swamp,
-    mountain,
-    forest,
-    plains,
-    valley
 };
 
 export enum Resource {
@@ -43,14 +26,6 @@ export const GeographyInfo = [
     { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] }
 ];
 
-enum Piece {
-    i,
-    l,
-    o,
-    s,
-    t
-}
-
 const pieceShapes: Array<{ i: number, piece: string, shape: Position[] }> = [
     { i: 0, piece: "i", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}] },
     { i: 1, piece: "l", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}] },
@@ -58,17 +33,6 @@ const pieceShapes: Array<{ i: number, piece: string, shape: Position[] }> = [
     { i: 3, piece: "s", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}] },
     { i: 4, piece: "t", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}] }
 ];
-
-export enum Side {
-    heads,
-    tails,
-    none
-};
-
-export type Position = {
-    readonly row: number;
-    readonly col: number;
-};
 
 export type Meeple = {
     readonly key: number;
@@ -80,53 +44,6 @@ export type Meeple = {
     readonly faith: number;
     readonly speed: number;
     readonly topsMeeple: number;
-};
-
-export type City = {
-    readonly type: "city";
-    readonly key: number;
-    readonly name: string;
-    readonly defense: number;
-    readonly team: Team;
-};
-
-type Building = {
-    readonly type: "building";
-    readonly name: string;
-    readonly blueprint: string;
-    readonly team: Team;
-    readonly side: Side;
-};
-
-const Buildings: { [key: string]: string } = {
-    i: "research facility",
-    l: "power plant",
-    o: "school",
-    s: "station",
-    t: "hospital"
-};
-
-type BuildingPhase =
-| "notbuilt"
-| "blueprint"
-| "built";
-
-type EmptySite = {
-    readonly type: "emptysite";
-    readonly resources: number[];
-};
-
-export type Construction =
-| Building
-| City
-| EmptySite;
-
-export type Terrain = {
-    readonly position: Position;
-    readonly geography: Geography;
-    readonly spaceLeft: number;
-    readonly topMeeple: number;
-    readonly construction: Construction;
 };
 
 export type Player = {
@@ -178,65 +95,11 @@ export type Game = {
     readonly players: Player[];
     readonly terrains: Terrain[];
     readonly meeples: Meeple[];
-    readonly deck: Array<Card<CardTarget, CardInput>>;
-    readonly discardPile: Array<Card<CardTarget, CardInput>>;
+    readonly deck: Array<Card<CardTarget>>;
+    readonly discardPile: Array<Card<CardTarget>>;
     readonly turn: Turn;
     readonly outcome: Outcome[];
 };
-
-type Card<T, U> = {
-    readonly name: string;
-    readonly pattern: Piece;
-    readonly input: (param?: U) => number;
-    readonly cost: number[];
-    readonly target: (param: T) => T[];
-    readonly effect: (param: T) => T;
-};
-
-type CardTarget =
-| Terrain
-| Player
-| Meeple
-| Position;
-
-type CardInput =
-| Player
-| Position;
-
-const cards: Array<Card<CardTarget, CardInput>> = [
-    {
-        name: "oil platform",
-        pattern: Piece.i, // which's the one producing energy?
-        input: () => 1, // always one, can't be multiplied
-        cost: [0, 0, 0, 0], // no cost
-        target: (param: Terrain) => [param],
-        effect: (param: Terrain) => param
-        // read production from GeographyInfo when instanced,
-        // so it can be changed here
-        // how to define (in code) what can be chosen as target?
-        // how to define (in code) the difference between applying now or later?
-            // now: no cost
-            // later: apply cost()
-    }
-];
-
-export function logBoard(game: Game): void {
-
-    const teamSymbol: { [key: string]: string } = {
-        info: "1",
-        warning: "2",
-        success: "3",
-        danger: "4",
-        primary: "5",
-        default: "o"
-    };
-
-    const board: string = game.terrains.reduce(((acc, terrain, index) =>
-        acc + (terrain.topMeeple === -1 ? "#" : teamSymbol[game.meeples[terrain.topMeeple].team])
-            + (index % game.boardSize === game.boardSize - 1 ? "\n" : "")), "");
-
-    console.log(board);
-}
 
 function flipSide(side: Side): Side {
 
@@ -294,11 +157,6 @@ function isOver(game: Game): boolean {
     }
 
     return false;
-}
-
-export function positionToIndex(position: Position, boardSize: number): number {
-
-    return (position.row * boardSize + position.col);
 }
 
 function teamControls(game: Game, position: Position, team: Team = game.turn.team): boolean {
@@ -1225,9 +1083,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
             constructionFrom = {
                 ...constructionFrom,
                 resources: constructionFrom.resources
-                    .map((amount, i) => amount
-                        + (GeographyInfo[terrainFrom.geography].resources
-                            .some((resource) => resource === i) ? 1 : 0))
+                    .map((amount, i) => amount + (constructionFrom as EmptySite).production[i])
             };
         }
     }
@@ -1501,6 +1357,9 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                 let spaceLeft = geographyIndex;
                 let construction: Construction = {
                     type: "emptysite",
+                    production: [...Array(4).keys()]
+                        .map((o, i) => GeographyInfo[geographyIndex].resources
+                            .some((resource) => resource === i) ? 1 : 0),
                     resources: [...Array(4).keys()].map((o) => 0)
                 };
 
@@ -1539,6 +1398,9 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     topMeeple: -1,
                     construction: {
                         type: "emptysite",
+                        production: [...Array(4).keys()]
+                            .map((o, i) => GeographyInfo[Geography.desert].resources
+                                .some((resource) => resource === i) ? 1 : 0),
                         resources: [...Array(4).keys()].map((o) => 0)
                     }
                 };
@@ -1560,21 +1422,26 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                 col: j
             };
 
+            const emptyTerrainGeoIndex: Geography = neighbours(position, boardSize)
+                .every((pos) =>
+                    terrains[positionToIndex(pos, boardSize)] === undefined
+                    || terrains[positionToIndex(pos, boardSize)].geography === Geography.sea
+                    || terrains[positionToIndex(pos, boardSize)].geography === Geography.desert) ?
+                Geography.sea :
+                Geography.desert;
+
             const terrain: Terrain = terrains[positionToIndex(position, boardSize)] ?
                 terrains[positionToIndex(position, boardSize)] :
                 {
-                    geography: neighbours(position, boardSize)
-                        .every((pos) =>
-                            terrains[positionToIndex(pos, boardSize)] === undefined
-                            || terrains[positionToIndex(pos, boardSize)].geography === Geography.sea
-                            || terrains[positionToIndex(pos, boardSize)].geography === Geography.desert) ?
-                        Geography.sea :
-                        Geography.desert,
+                    geography: emptyTerrainGeoIndex,
                     position: position,
                     spaceLeft: 1,
                     topMeeple: -1,
                     construction: {
                         type: "emptysite",
+                        production: [...Array(4).keys()]
+                            .map((o, ) => GeographyInfo[emptyTerrainGeoIndex].resources
+                                .some((resource) => resource === i) ? 1 : 0),
                         resources: [...Array(4).keys()].map((o) => 0)
                     }
                 };
@@ -1692,6 +1559,9 @@ export function tutorial(index: number): Game {
             topMeeple: topMeeple,
             construction: {
                 type: "emptysite",
+                production: [...Array(4).keys()]
+                    .map((o, i) => GeographyInfo[geographyIndex].resources
+                        .some((resource) => resource === i) ? 1 : 0),
                 resources: [...Array(4).keys()].map((o) => 0)
             }
         };

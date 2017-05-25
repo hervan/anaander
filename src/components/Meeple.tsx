@@ -5,7 +5,7 @@ import {
     Position,
     Side,
     Team
-} from "../Game";
+} from "../logic/Game";
 
 interface IProps {
     meeple: Meeple;

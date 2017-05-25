@@ -1,15 +1,14 @@
 // tslint:disable-next-line:no-unused-variable
 import * as React from "react";
+
+import { Position, Team } from "../logic/Common";
+import { Construction } from "../logic/Construction";
 import {
     Action,
-    Construction,
-    Geography,
     GeographyInfo,
-    Play,
-    Position,
-    Team,
-    Terrain
-} from "../Game";
+    Play
+} from "../logic/Game";
+import { Geography, Terrain } from "../logic/Terrain";
 
 interface IProps {
     terrain: Terrain;
