@@ -178,32 +178,46 @@ export type Game = {
     readonly players: Player[];
     readonly terrains: Terrain[];
     readonly meeples: Meeple[];
-    readonly deck: Card[];
-    readonly discardPile: Card[];
+    readonly deck: Array<Card<CardTarget, CardInput>>;
+    readonly discardPile: Array<Card<CardTarget, CardInput>>;
     readonly turn: Turn;
     readonly outcome: Outcome[];
 };
 
-type Card = {
+type Card<T, U> = {
     readonly name: string;
     readonly pattern: Piece;
-    readonly input: (param?: Player | Position) => number;
+    readonly input: (param?: U) => number;
     readonly cost: number[];
-    readonly effect: (target: Array<Meeple | Player | Position | Terrain>)
-        => Array<Meeple | Player | Position | Terrain>;
+    readonly target: (param: T) => T[];
+    readonly effect: (param: T) => T;
 };
 
-const cards: Card[] = [
+type CardTarget =
+| Terrain
+| Player
+| Meeple
+| Position;
+
+type CardInput =
+| Player
+| Position;
+
+const cards: Array<Card<CardTarget, CardInput>> = [
     {
         name: "oil platform",
         pattern: Piece.i, // which's the one producing energy?
         input: () => 1, // always one, can't be multiplied
         cost: [0, 0, 0, 0], // no cost
-        effect: (target: Terrain[]) => target
-            .map((terrain) => terrain)
-            // read production from GeographyInfo when instanced,
-            // so it can be changed here
-    } // how to deal with dynamic targets? should cost change dynamically?
+        target: (param: Terrain) => [param],
+        effect: (param: Terrain) => param
+        // read production from GeographyInfo when instanced,
+        // so it can be changed here
+        // how to define (in code) what can be chosen as target?
+        // how to define (in code) the difference between applying now or later?
+            // now: no cost
+            // later: apply cost()
+    }
 ];
 
 export function logBoard(game: Game): void {
