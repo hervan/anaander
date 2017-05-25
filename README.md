@@ -25,7 +25,7 @@ now that you have a swarm and know how to handle it, you can take a stab at conq
 
 #### (below this point is just a sketch) ####
 
-you may move meeples independently from the swarm, by with extra actions, you're able to do both.
+you may move meeples independently from the swarm, but with extra actions you're able to do both.
 
 rounds and meeples have **sides** (heads, a meeple with a painted head, or tails, a meeple with a painted background), and each round you can only move meeples on the same side ("phase").
 
