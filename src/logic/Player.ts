@@ -8,6 +8,7 @@ export type Player = {
     readonly resources: number[];
     readonly buildingPhase: BuildingPhase[];
     readonly usedActions: number;
+    readonly vp: number;
 };
 
 export enum Team {

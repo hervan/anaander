@@ -10,7 +10,8 @@
         "object-literal-sort-keys": false,
         "object-literal-shorthand": false,
         "trailing-comma": [ false ],
-        "switch-default": false
+        "switch-default": false,
+        "interface-name": [false]
     },
     "rulesDirectory": []
 }

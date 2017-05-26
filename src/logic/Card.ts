@@ -1,38 +1,108 @@
 import {EmptySite, Piece} from "./Construction";
+import {Game} from "./Game";
 import {Meeple} from "./Meeple";
 import {Player} from "./Player";
 import {Position, positionToIndex, Resource, Terrain} from "./Terrain";
 
-export type Card<T> = {
+export type T = {
     readonly name: string;
-    readonly pattern: Piece;
     readonly cost: number[];
-    readonly target: (position: Position, game: {}) => T[];
-    readonly effect: (param: T) => T;
+    readonly effect: (game: Game, position: Position) => Game;
 };
 
-export type CardTarget =
-| Terrain
-| Player
-| Meeple;
-
-const targetTerrain = (position: Position, game: {terrains: Terrain[], boardSize: number}) =>
-    [game.terrains[positionToIndex(position, game.boardSize)]];
-
-const cards: Array<Card<CardTarget>> = [
-    {
-        name: "oil refinery",
-        pattern: Piece.i, // which's the one producing energy?
-        cost: [0, 0, 0, 0], // no cost
-        target: targetTerrain,
-        effect: (param: Terrain) => ({
-            ...param,
-            construction: {
-                ...param.construction,
-                production: (param.construction as EmptySite).production.map((amount, i) =>
-                    i === Resource.fuel ? amount + 1 : amount
+export const decks: T[][] = [
+    [
+    ],
+    [
+    ],
+    [
+    ],
+    [
+    ],
+    [
+        {
+            name: "ferrosilicon mine",
+            cost: [0, 1, 1, 0],
+            effect: (game: Game, position: Position) => ({
+                ...game,
+                terrains: game.terrains.map((terrain) =>
+                    positionToIndex(terrain.position, game.boardSize) === positionToIndex(position, game.boardSize)
+                        && terrain.construction.type === "emptysite" ?
+                    {
+                        ...terrain,
+                        construction: {
+                            ...terrain.construction,
+                            production: terrain.construction.production.map((amount, i) =>
+                                i === Resource.silicon ? amount * 2 : amount
+                            )
+                        }
+                    } :
+                    terrain
                 )
-            }
-        })
-    }
+            })
+        },
+        {
+            name: "sonar probe",
+            cost: [1, 0, 0, 1],
+            effect: (game: Game, position: Position) => ({
+                ...game,
+                terrains: game.terrains.map((terrain) =>
+                    positionToIndex(terrain.position, game.boardSize) === positionToIndex(position, game.boardSize)
+                        && terrain.construction.type === "emptysite" ?
+                    {
+                        ...terrain,
+                        construction: {
+                            ...terrain.construction,
+                            production: terrain.construction.production.map((amount, i) =>
+                                i === Resource.ore ? amount * 2 : amount
+                            )
+                        }
+                    } :
+                    terrain
+                )
+            })
+        },
+        {
+            name: "mechanised agriculture",
+            cost: [0, 0, 1, 1],
+            effect: (game: Game, position: Position) => ({
+                ...game,
+                terrains: game.terrains.map((terrain) =>
+                    positionToIndex(terrain.position, game.boardSize) === positionToIndex(position, game.boardSize)
+                        && terrain.construction.type === "emptysite" ?
+                    {
+                        ...terrain,
+                        construction: {
+                            ...terrain.construction,
+                            production: terrain.construction.production.map((amount, i) =>
+                                i === Resource.food ? amount * 2 : amount
+                            )
+                        }
+                    } :
+                    terrain
+                )
+            })
+        },
+        {
+            name: "oil refinery",
+            cost: [1, 0, 1, 0],
+            effect: (game: Game, position: Position) => ({
+                ...game,
+                terrains: game.terrains.map((terrain) =>
+                    positionToIndex(terrain.position, game.boardSize) === positionToIndex(position, game.boardSize)
+                        && terrain.construction.type === "emptysite" ?
+                    {
+                        ...terrain,
+                        construction: {
+                            ...terrain.construction,
+                            production: terrain.construction.production.map((amount, i) =>
+                                i === Resource.fuel ? amount * 2 : amount
+                            )
+                        }
+                    } :
+                    terrain
+                )
+            })
+        }
+    ]
 ];

@@ -82,7 +82,7 @@ export default class Tutorial extends React.Component<IProps, IState> {
             autoplay: autoplay
         });
 
-        this.props.setup("tutorial", { index: index });
+        this.props.setup("setup", { index: index });
     }
 
     playStep(step: number): void {

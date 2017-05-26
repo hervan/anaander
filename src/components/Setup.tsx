@@ -85,13 +85,6 @@ export default class Setup extends React.Component<IProps, {}> {
             this.props.setup("begin");
 
             break;
-
-            case "/":
-            case "?":
-
-            this.props.setup("tutorial");
-
-            break;
         }
     }
 
@@ -168,8 +161,6 @@ export default class Setup extends React.Component<IProps, {}> {
         guideDetail =
             <p>
                 click <a onClick={() => this.props.setup("begin")}>here</a> to begin.
-                <br />
-                (or click <a onClick={() => this.props.setup("tutorial")}>here</a> for a short tutorial.)
             </p>;
 
         return (

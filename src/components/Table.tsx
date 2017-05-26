@@ -11,22 +11,17 @@ import {
     Play,
     play,
     selectSwarm,
-    setup,
-    tutorial
+    setup
 } from "../logic/Game";
 import {Team} from "../logic/Player";
 import {Position, positionToIndex} from "../logic/Terrain";
-
-import {Lesson} from "./Tutorial";
 
 import Board from "./Board";
 import Controls from "./Controls";
 import Setup from "./Setup";
 import Status from "./Status";
-import Tutorial from "./Tutorial";
 
 export enum Mode {
-    tutorial,
     setup,
     play,
     end
@@ -42,7 +37,7 @@ export type Control =
 | "-player"   | "+player"
 | "-computer" | "+computer"
 | "-size"     | "+size"
-| "begin"     | "tutorial";
+| "begin";
 
 interface IState {
     game: Game;
@@ -53,7 +48,6 @@ interface IState {
     selection: number[];
     zoom: Zoom;
     playQueue: Play[][];
-    param?: Lesson;
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -93,7 +87,7 @@ export class Table extends React.Component<{}, IState> {
         window.addEventListener("mousewheel", this.wheel);
     }
 
-    setup(control: Control, param?: Lesson): void {
+    setup(control: Control): void {
 
         switch (control) {
 
@@ -239,30 +233,6 @@ export class Table extends React.Component<{}, IState> {
             }));
 
             this.autoselect();
-
-            break;
-
-            case "tutorial":
-
-            const p = param ? param as Lesson : { index: 0 };
-
-            this.setState((prevState, props) => {
-
-                const tutorialGame = tutorial(p.index);
-
-                return ({
-                    game: tutorialGame,
-                    mode: Mode.tutorial,
-                    zoom: {
-                        scale: tutorialGame.boardSize,
-                        position: {
-                            row: Math.floor(tutorialGame.boardSize / 2),
-                            col: Math.floor(tutorialGame.boardSize / 2)
-                        }
-                    },
-                    param: p
-                });
-            });
 
             break;
         }
@@ -473,8 +443,7 @@ export class Table extends React.Component<{}, IState> {
                 terrains: this.state.game.terrains.slice(),
                 players: this.state.game.players.slice(),
                 meeples: this.state.game.meeples.slice(),
-                deck: [],
-                discardPile: [],
+                decks: [],
                 turn: {
                     ...this.state.game.turn
                 },
@@ -524,13 +493,6 @@ export class Table extends React.Component<{}, IState> {
         let leftPanel: JSX.Element;
 
         switch (this.state.mode) {
-
-            case Mode.tutorial:
-            leftPanel = <Tutorial
-                setup={this.setup.bind(this)}
-                enqueuePlay={this.enqueuePlay.bind(this)}
-                lesson={this.state.param as Lesson} />;
-            break;
 
             case Mode.setup:
             leftPanel = <Setup
