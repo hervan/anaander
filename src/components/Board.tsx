@@ -1,21 +1,14 @@
-// tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import {
-    Action,
-    Game,
-    Geography,
-    GeographyInfo,
-    Meeple as MeepleType,
-    meeplesBelow,
-    Position,
-    Team
-} from "../logic/Game";
+import {Action, Game, meeplesBelow} from "../logic/Game";
+import {Meeple as MeepleType} from "../logic/Meeple";
+import {Team} from "../logic/Player";
+import {Position} from "../logic/Terrain";
+
+import {Control, Zoom} from "Table";
 
 import Meeple from "./Meeple";
 import Terrain from "./Terrain";
-
-import { Control, Zoom } from "Table";
 
 interface IProps {
     setup: (control: Control) => void;

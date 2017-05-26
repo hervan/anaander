@@ -1,19 +1,11 @@
-// tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import {
-    Action,
-    City,
-    Game,
-    Meeple,
-    Play,
-    Position,
-    positionToIndex,
-    Side,
-    Team
-} from "../logic/Game";
+import {City} from "../logic/Construction";
+import {Action, Game, Play} from "../logic/Game";
+import {Team} from "../logic/Player";
+import {Position, positionToIndex} from "../logic/Terrain";
 
-import { Control } from "Table";
+import {Control} from "./Table";
 
 import Player from "./Player";
 

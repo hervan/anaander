@@ -1,13 +1,9 @@
-// tslint:disable-next-line:no-unused-variable
 import * as React from "react";
 
-import {
-    Action,
-    Play,
-    Team
-} from "../logic/Game";
+import {Action, Play} from "../logic/Game";
+import {Team} from "../logic/Player";
 
-import { Control } from "Table";
+import {Control} from "./Table";
 
 export type Lesson = {
     index: number;

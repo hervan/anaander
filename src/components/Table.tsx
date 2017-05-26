@@ -1,6 +1,5 @@
 import * as React from "react";
-
-import { CSSProperties } from "react";
+import {CSSProperties} from "react";
 
 import {
     Action,
@@ -8,27 +7,23 @@ import {
     begin,
     Game,
     isMeepleAvailable,
-    Meeple,
     neighbours,
     Play,
     play,
-    positionToIndex,
     selectSwarm,
     setup,
     tutorial
 } from "../logic/Game";
+import {Team} from "../logic/Player";
+import {Position, positionToIndex} from "../logic/Terrain";
 
-import {
-    Position,
-    Side,
-    Team
-} from "../logic/Common";
+import {Lesson} from "./Tutorial";
 
 import Board from "./Board";
 import Controls from "./Controls";
 import Setup from "./Setup";
 import Status from "./Status";
-import Tutorial, { Lesson } from "./Tutorial";
+import Tutorial from "./Tutorial";
 
 export enum Mode {
     tutorial,

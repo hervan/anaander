@@ -1,4 +1,16 @@
-import { Position } from "../logic/Common";
+import {Card, CardTarget} from "./Card";
+import {
+    BuildingPhase,
+    Buildings,
+    City,
+    Construction,
+    EmptySite,
+    Piece,
+    pieceShapes
+} from "./Construction";
+import {Meeple, Side} from "./Meeple";
+import {Player, Team} from "./Player";
+import {Geography, GeographyInfo, Position, positionToIndex, Terrain} from "./Terrain";
 
 export enum Action {
     up,
@@ -7,52 +19,6 @@ export enum Action {
     right,
     explore,
     hold
-};
-
-export enum Resource {
-    fuel,
-    food,
-    ore,
-    silicon
-}
-
-export const GeographyInfo = [
-    { type: "sea", piece: null, resources: [] },
-    { type: "desert", piece: null, resources: [Resource.fuel, Resource.silicon] },
-    { type: "swamp", piece: "i", resources: [Resource.fuel, Resource.ore] },
-    { type: "mountain", piece: "l", resources: [Resource.ore, Resource.silicon] },
-    { type: "forest", piece: "o", resources: [Resource.food, Resource.ore] },
-    { type: "plains", piece: "s", resources: [Resource.fuel, Resource.food] },
-    { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] }
-];
-
-const pieceShapes: Array<{ i: number, piece: string, shape: Position[] }> = [
-    { i: 0, piece: "i", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 3, col: 0}] },
-    { i: 1, piece: "l", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 2, col: 1}] },
-    { i: 2, piece: "o", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 0, col: 1}] },
-    { i: 3, piece: "s", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 1, col: 1}, {row: 2, col: 1}] },
-    { i: 4, piece: "t", shape: [{row: 0, col: 0}, {row: 1, col: 0}, {row: 2, col: 0}, {row: 1, col: 1}] }
-];
-
-export type Meeple = {
-    readonly key: number;
-    readonly position: Position;
-    readonly team: Team;
-    readonly side: Side;
-    readonly strength: number;
-    readonly resistance: number;
-    readonly faith: number;
-    readonly speed: number;
-    readonly topsMeeple: number;
-};
-
-export type Player = {
-    readonly team: Team;
-    readonly swarmSize: number;
-    readonly cities: number[];
-    readonly resources: number[];
-    readonly buildingPhase: BuildingPhase[];
-    readonly usedActions: number;
 };
 
 export type Play = {

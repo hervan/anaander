@@ -1,21 +1,22 @@
-import { Position, positionToIndex } from "./Common";
-import { Piece } from "./Construction";
-import { Terrain } from "./Terrain";
+import {EmptySite, Piece} from "./Construction";
+import {Meeple} from "./Meeple";
+import {Player} from "./Player";
+import {Position, positionToIndex, Resource, Terrain} from "./Terrain";
 
-type Card<T> = {
+export type Card<T> = {
     readonly name: string;
     readonly pattern: Piece;
     readonly cost: number[];
-    readonly target: (game: Game, position: Position) => T[];
+    readonly target: (position: Position, game: {}) => T[];
     readonly effect: (param: T) => T;
 };
 
-type CardTarget =
+export type CardTarget =
 | Terrain
 | Player
 | Meeple;
 
-const targetTerrain = (game: Game, position: Position) =>
+const targetTerrain = (position: Position, game: {terrains: Terrain[], boardSize: number}) =>
     [game.terrains[positionToIndex(position, game.boardSize)]];
 
 const cards: Array<Card<CardTarget>> = [
@@ -33,6 +34,5 @@ const cards: Array<Card<CardTarget>> = [
                 )
             }
         })
-        // how to define (in code) what can be chosen as target?
     }
 ];
