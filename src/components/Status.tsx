@@ -184,6 +184,7 @@ export default class Status extends React.Component<IProps, {}> {
 
             guide =
                 <p>
+                    round {this.props.game.turn.round}.
                     it's general <span className={"is-" + Team[this.props.game.turn.team]}>
                         {Team[this.props.game.turn.team]}
                     </span>'s turn.

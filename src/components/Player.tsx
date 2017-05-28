@@ -110,6 +110,15 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                     )
                 }
             </div>
+            <div key="hand-view">
+                {props.player.hand
+                    .map((card, i) =>
+                        <div key={i} style={{ display: "inline-block", margin: "2px" }}>
+                            {card.name}
+                        </div>
+                    )
+                }
+            </div>
             <div key="meeple-view">
                 {props.swarm
                     .sort((a, b) => b.meeple.strength - a.meeple.strength)

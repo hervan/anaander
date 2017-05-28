@@ -1,4 +1,4 @@
-
+import Card from "./Card";
 import {BuildingPhase} from "./Construction";
 
 export type Player = {
@@ -6,6 +6,7 @@ export type Player = {
     readonly swarmSize: number;
     readonly cities: number[];
     readonly resources: number[];
+    readonly hand: Card[];
     readonly buildingPhase: BuildingPhase[];
     readonly usedActions: number;
     readonly vp: number;

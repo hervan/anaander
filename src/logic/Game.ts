@@ -1,5 +1,6 @@
-import * as Card from "./Card";
+import Card from "./Card";
 
+import {decks} from "./Card";
 import {
     BuildingPhase,
     Buildings,
@@ -61,9 +62,8 @@ export type Outcome = {
     readonly construction: string,
     readonly name: string
 } | {
-    readonly type: "card",
-    readonly pattern: Piece,
-    readonly name: string
+    readonly type: "pattern",
+    readonly pattern: Piece
 } | {
     readonly type: "invalid",
     readonly explanation: string
@@ -78,7 +78,8 @@ export type Game = {
     readonly players: Player[];
     readonly terrains: Terrain[];
     readonly meeples: Meeple[];
-    readonly decks: Card.T[][];
+    readonly decks: Card[][];
+    readonly discardPiles: Card[][];
     readonly turn: Turn;
     readonly outcome: Outcome[];
 };
@@ -476,28 +477,54 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
 
     if (shapeOnMap.length === 4) {
 
-        const buildingDeck: Card.T[] = game.decks[piece].slice();
-        const card: Card.T = buildingDeck.splice(Math.floor(Math.random() * buildingDeck.length), 1)[0];
+        const patternDeck: Card[] = game.decks[piece].slice();
 
-        const cardGame: Game = card.effect(game, position);
+        if (patternDeck.length > 0) {
 
-        return {
-            ...cardGame,
-            meeples: cardGame.meeples.map((m) =>
-                shapeOnMap.some((p) =>
-                    m.key === cardGame.terrains[positionToIndex(p, cardGame.boardSize)].topMeeple) ?
-                {
-                    ...m,
-                    side: flipSide(meeple.side)
-                } : {...m}
-            ),
-            decks: cardGame.decks.map((deck, i) => deck.length === 0 ? Card.decks[i].slice() : deck.slice()),
-            outcome: [...cardGame.outcome, {
-                type: "card",
-                pattern: piece,
-                name: card.name
-            }]
-        };
+            const card: Card = patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0];
+
+            const patternDiscard = game.discardPiles[piece].slice();
+            if (patternDeck.length === 0) {
+
+                patternDeck.concat(patternDiscard.splice(0, patternDiscard.length));
+            }
+
+            const hand: Card[] = player.hand.slice();
+            hand.push(card);
+
+            return {
+                ...game,
+                players: game.players.map((p) =>
+                    p.team === player.team ?
+                    {
+                        ...p,
+                        hand: hand.slice()
+                    } : {...p}
+                ),
+                meeples: game.meeples.map((m) =>
+                    shapeOnMap.some((p) =>
+                        m.key === game.terrains[positionToIndex(p, game.boardSize)].topMeeple) ?
+                    {
+                        ...m,
+                        side: flipSide(meeple.side)
+                    } : {...m}
+                ),
+                decks: game.decks.map((deck, i) =>
+                    i === piece ?
+                    patternDeck.slice() :
+                    deck.slice()
+                ),
+                discardPiles: game.decks.map((discard, i) =>
+                    i === piece ?
+                    patternDiscard.slice() :
+                    discard.slice()
+                ),
+                outcome: [...game.outcome, {
+                    type: "pattern",
+                    pattern: piece
+                }]
+            };
+        }
     }
 
     return {...game};
@@ -1255,7 +1282,7 @@ export function begin(game: Game): Game {
     return {
         ...game,
         turn: {
-            round: 0,
+            round: 1,
             side: Side.heads,
             team:
                 game.players.length > 0 ?
@@ -1566,6 +1593,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             buildingPhase: [...Array(5).keys()].map((o) => "notbuilt" as BuildingPhase),
             usedActions: 0,
             resources: [...Array(5).keys()].map((o) => 0),
+            hand: [],
             vp: 0
         };
     }
@@ -1576,7 +1604,8 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
         players: players,
         terrains: terrains,
         meeples: meeples,
-        decks: Card.decks.map((deck) => deck.slice()),
+        decks: decks.map((deck) => deck.slice()),
+        discardPiles: [...Array(5).keys()].map((o) => []),
         turn: {
             round: 0,
             team: Team.default,

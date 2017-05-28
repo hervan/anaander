@@ -4,13 +4,13 @@ import {Meeple} from "./Meeple";
 import {Player} from "./Player";
 import {Position, positionToIndex, Resource, Terrain} from "./Terrain";
 
-export type T = {
+interface Card {
     readonly name: string;
     readonly cost: number[];
     readonly effect: (game: Game, position: Position) => Game;
 };
 
-export const decks: T[][] = [
+export const decks: Card[][] = [
     [
     ],
     [
@@ -106,3 +106,5 @@ export const decks: T[][] = [
         }
     ]
 ];
+
+export default Card;

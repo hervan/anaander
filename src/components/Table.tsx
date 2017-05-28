@@ -443,7 +443,8 @@ export class Table extends React.Component<{}, IState> {
                 terrains: this.state.game.terrains.slice(),
                 players: this.state.game.players.slice(),
                 meeples: this.state.game.meeples.slice(),
-                decks: [],
+                decks: this.state.game.decks.slice(),
+                discardPiles: this.state.game.discardPiles.slice(),
                 turn: {
                     ...this.state.game.turn
                 },
