@@ -27,7 +27,7 @@ function geographyIcon(geography: Geography): string {
         case Geography.mountain: return "🏔️";
         case Geography.forest: return "🌳";
         case Geography.valley: return "🏞️";
-        case Geography.plains: return "🛣️";
+        case Geography.plains: return "🛤️";
         case Geography.desert: return "🏜️";
     }
 }
@@ -40,6 +40,7 @@ function resourceIcon(resource: Resource): string {
         case Resource.food: return "🍗";
         case Resource.ore: return "🌑";
         case Resource.silicon: return "💻";
+        case Resource.cubit: return "🛑";
     }
 }
 
@@ -158,13 +159,12 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             <div className="stats"
                                 style={{ display: "inline-block", verticalAlign: "top" }}>
                                 {
-                                    terrain.construction.type === "emptysite" ?
                                     terrain.construction.resources
-                                    .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
-                                    .filter(({amount}) => amount > 0)
-                                    .map(({index, icon, amount}) =>
-                                        <div key={index}>{icon}&#xFE0F;{amount}</div>
-                                    ) : null
+                                        .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
+                                        .filter(({amount}) => amount > 0)
+                                        .map(({index, icon, amount}) =>
+                                            <div key={index}>{icon}&#xFE0F;{amount}</div>
+                                        )
                                 }
                             </div>
                         </div>

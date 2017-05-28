@@ -11,7 +11,14 @@ import {
 } from "./Construction";
 import {Meeple, Side} from "./Meeple";
 import {Player, Team} from "./Player";
-import {Geography, GeographyInfo, Position, positionToIndex, Terrain} from "./Terrain";
+import {
+    Geography,
+    GeographyInfo,
+    Position,
+    positionToIndex,
+    Resource,
+    Terrain
+} from "./Terrain";
 
 export enum Action {
     up,
@@ -35,8 +42,7 @@ const InvalidPlays: { [key: string]: string } = {
     TerrainIsCrowded: "move to a terrain with space available.",
     NotOnGround: "only meeples on the ground can explore the terrain.",
     NoSelection: "please select meeples before choosing the action.",
-    NoActions: "you need to control more cities to perform more actions.",
-    BuildingCooldown: "you just activated this building, please wait another turn."
+    NoActions: "you need to control more cities to perform more actions."
 };
 
 type Turn = {
@@ -401,9 +407,27 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
         meeplePositionIndices.reverse();
     }
 
-    return meeplePositionIndices
+    const stepGame: Game = meeplePositionIndices
         .map((mpi) => game.terrains[mpi].topMeeple)
         .reduce((acc, meepleIndex) => playMeeple(acc, action, meepleIndex), {...game, outcome: [] as Outcome[]});
+
+    const freedPositionIndices = meeplePositionIndices
+        .filter((mpi) => stepGame.terrains[mpi].topMeeple === -1);
+
+    return {
+        ...stepGame,
+        terrains: stepGame.terrains.map(
+            (terrain, i) => freedPositionIndices.some((fpi) => i === fpi) ?
+            {
+                ...terrain,
+                construction: {
+                    ...terrain.construction,
+                    resources: terrain.construction.resources.map((amount, resourceIndex) =>
+                        amount + terrain.construction.production[resourceIndex])
+                }
+            } : terrain
+        )
+    };
 }
 
 function patternMatch(game: Game, position: Position, shape: Position[]): Position[] {
@@ -476,16 +500,7 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
         };
     }
 
-    return {
-        ...game,
-        meeples: game.meeples.map((m) =>
-            m.key === meeple.key ?
-            {
-                ...meeple,
-                side: flipSide(meeple.side)
-            } : m
-        )
-    };
+    return {...game};
 }
 
 function build(game: Game, position: Position, piece: Piece): Game {
@@ -520,7 +535,8 @@ function build(game: Game, position: Position, piece: Piece): Game {
                         team: game.turn.team,
                         blueprint: Piece[piece],
                         name: Buildings[Piece[piece]],
-                        side: Side.none
+                        resources: [...Array(5).keys()].map((o) => 0),
+                        production: [...Array(5).keys()].map((o, i) => i === Resource.cubit ? 1 : 0)
                     }
                 } as Terrain) : t
             ),
@@ -556,40 +572,50 @@ function exploreTerrain(game: Game, position: Position): Game {
 
     if (teamControls(game, position)) {
 
-        const gameTerrains = game.terrains.slice();
-        const gamePlayers = game.players.slice();
+        const construction = game.terrains[positionToIndex(position, game.boardSize)].construction;
+        let exploredGame: Game;
 
-        const player = gamePlayers[game.turn.team];
-        const terrain = game.terrains[positionToIndex(position, game.boardSize)];
+        if (construction.type === "emptysite") {
 
-        if (terrain.construction.type === "emptysite") {
+            const terrainIndex = positionToIndex(position, game.boardSize);
 
-            gamePlayers[game.turn.team] = {
-                ...player,
-                resources: terrain.construction.resources
-                    .map((amount, i) => player.resources[i] + amount)
+            exploredGame = {
+                ...game,
+                players: game.players.map(
+                    (player) => player.team === game.turn.team ?
+                    {
+                        ...player,
+                        resources: construction.resources
+                            .map((amount, i) => player.resources[i] + amount)
+                    } : player
+                ),
+                terrains: game.terrains.map(
+                    (terrain, i) => i === terrainIndex ?
+                    {
+                        ...terrain,
+                        construction: {
+                            ...construction,
+                            resources: construction.resources.map((amount) => 0)
+                        }
+                    } : terrain
+                )
             };
+        } else if (construction.type === "building") {
 
-            gameTerrains[positionToIndex(position, game.boardSize)] = {
-                ...terrain,
-                construction: {
-                    ...terrain.construction,
-                    resources: terrain.construction.resources.map((amount, i) => 0)
-                }
-            };
+            exploredGame = activateBuilding(game, position);
+
+        } else {
+
+            exploredGame = {...game};
         }
 
-        const cardsGame: Game = pieceShapes.filter((o, n) => player.buildingPhase[n] === "built")
-            .reduce((acc, pattern) => activatePattern(acc, position, pattern.i), {
-                ...game,
-                terrains: gameTerrains.slice(),
-                players: gamePlayers.slice(),
-                outcome: game.outcome.slice()
-            }
-        );
+        const cardsGame: Game = pieceShapes
+            .filter((o, i) => exploredGame.players[exploredGame.turn.team].buildingPhase[i] === "built")
+            .reduce((acc, pattern) => activatePattern(acc, position, pattern.i), exploredGame);
 
-        const buildingsGame: Game = pieceShapes.filter((o, n) => player.buildingPhase[n] === "blueprint")
-            .reduce((acc, pattern) => build(acc, position, pattern.i), {...cardsGame});
+        const buildingsGame: Game = pieceShapes
+            .filter((o, n) => cardsGame.players[cardsGame.turn.team].buildingPhase[n] === "blueprint")
+            .reduce((acc, pattern) => build(acc, position, pattern.i), cardsGame);
 
         return {
             ...buildingsGame,
@@ -778,6 +804,8 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
             ...terrain,
             construction: {
                 ...city,
+                resources: [...Array(5).keys()].map((o) => 0),
+                production: [...Array(5).keys()].map((o) => 0),
                 team: meeple.team
             }
         };
@@ -809,11 +837,15 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
     return game;
 }
 
-function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
+function activateBuilding(game: Game, position: Position): Game {
 
-    if (terrain.construction.type === "building") {
+    const terrain: Terrain = game.terrains[positionToIndex(position, game.boardSize)];
+    const meeple: Meeple = game.meeples[terrain.topMeeple];
+    const construction: Construction = terrain.construction;
 
-        switch (terrain.construction.blueprint) {
+    if (construction.type === "building") {
+
+        switch (construction.blueprint) {
 
             case "i":
 
@@ -823,13 +855,25 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
 
             return {
                 ...game,
+                terrains: game.terrains.map((t) =>
+                    t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
+                    {
+                        ...t,
+                        construction: {
+                            ...construction,
+                            resources: construction.resources.map(
+                                (amount, i) => i === Resource.cubit ?
+                                0 : amount
+                            )
+                        }
+                    } : {...t}
+                ),
                 meeples: game.meeples.map((m) =>
                     m.key === meeple.key ?
                     {
                         ...meeple,
-                        faith: meeple.team === game.turn.team ?
-                            Math.ceil(meeple.faith * 1.1) :
-                            Math.floor(meeple.faith * 0.9)
+                        faith: meeple.faith
+                            + (construction.resources[Resource.cubit] * (meeple.team === game.turn.team ? 1 : -1))
                     } : m
                 )
             };
@@ -838,20 +882,32 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
 
             return {
                 ...game,
+                terrains: game.terrains.map((t) =>
+                    t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
+                    {
+                        ...t,
+                        construction: {
+                            ...construction,
+                            resources: construction.resources.map(
+                                (amount, i) => i === Resource.cubit ?
+                                0 : amount
+                            )
+                        }
+                    } : {...t}
+                ),
                 meeples: game.meeples.map((m) =>
                     m.key === meeple.key ?
                     {
                         ...meeple,
-                        strength: meeple.team === game.turn.team ?
-                            Math.ceil(meeple.strength * 1.1) :
-                            Math.floor(meeple.strength * 0.9)
+                        strength: meeple.strength
+                            + (construction.resources[Resource.cubit] * (meeple.team === game.turn.team ? 1 : -1))
                     } : m
                 )
             };
 
             case "s":
 
-            if (terrain.construction.team === meeple.team) {
+            if (construction.team === meeple.team) {
 
                 if (meeple.topsMeeple !== -1
                     && game.meeples[meeple.topsMeeple].team === meeple.team) {
@@ -865,8 +921,11 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
                                 ...t,
                                 spaceLeft: terrain.spaceLeft + 1,
                                 construction: {
-                                    ...terrain.construction,
-                                    side: Side.none
+                                    ...construction,
+                                    resources: construction.resources.map(
+                                        (amount, i) => i === Resource.cubit ?
+                                        amount - 1 : amount
+                                    )
                                 }
                             } : {...t}
                         ),
@@ -900,8 +959,11 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
                             ...t,
                             spaceLeft: terrain.spaceLeft - 1,
                             construction: {
-                                ...terrain.construction,
-                                side: Side.none
+                                ...construction,
+                                resources: construction.resources.map(
+                                    (amount, i) => i === Resource.cubit ?
+                                    amount - 1 : amount
+                                )
                             }
                         } : {...t}
                     ),
@@ -936,13 +998,25 @@ function activateBuilding(game: Game, meeple: Meeple, terrain: Terrain): Game {
 
             return {
                 ...game,
+                terrains: game.terrains.map((t) =>
+                    t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
+                    {
+                        ...t,
+                        construction: {
+                            ...construction,
+                            resources: construction.resources.map(
+                                (amount, i) => i === Resource.cubit ?
+                                0 : amount
+                            )
+                        }
+                    } : {...t}
+                ),
                 meeples: game.meeples.map((m) =>
                     m.key === meeple.key ?
                     {
                         ...meeple,
-                        resistance: meeple.team === game.turn.team ?
-                            Math.ceil(meeple.resistance * 1.1) :
-                            Math.floor(meeple.resistance * 0.9)
+                        resistance: meeple.resistance
+                            + (construction.resources[Resource.cubit] * (meeple.team === game.turn.team ? 1 : -1))
                     } : m
                 )
             };
@@ -1015,9 +1089,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
                 to = {...stepFrom};
                 terrainTo = game.terrains[positionToIndex(to, game.boardSize)];
             }
-        }
-
-        if (terrainTo.spaceLeft < 1) {
+        } else if (terrainTo.spaceLeft < 1) {
 
             if (i === 0) {
 
@@ -1026,25 +1098,6 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
                     outcome: [...game.outcome, {
                         type: "invalid",
                         explanation: InvalidPlays.TerrainIsCrowded
-                    }]
-                };
-            } else {
-
-                to = {...stepFrom};
-                terrainTo = game.terrains[positionToIndex(to, game.boardSize)];
-            }
-        }
-
-        if (terrainTo.construction.type === "building"
-            && terrainTo.construction.side !== flipSide(meeple.side)) {
-
-            if (i === 0) {
-
-                return {
-                    ...game,
-                    outcome: [...game.outcome, {
-                        type: "invalid",
-                        explanation: InvalidPlays.BuildingCooldown
                     }]
                 };
             } else {
@@ -1074,22 +1127,6 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
             gameMeeples[terrainFrom.topMeeple] = {
                 ...freedMeeple,
                 side: freedMeeple.team > meeple.team ? game.turn.side : meeple.side
-            };
-        }
-    } else {
-
-        if (constructionFrom.type === "building") {
-
-            constructionFrom = {
-                ...constructionFrom,
-                side: flipSide(meeple.side)
-            };
-        } else if (constructionFrom.type === "emptysite") {
-
-            constructionFrom = {
-                ...constructionFrom,
-                resources: constructionFrom.resources
-                    .map((amount, i) => amount + (constructionFrom as EmptySite).production[i])
             };
         }
     }
@@ -1139,7 +1176,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         conflictGame = solveMeepleConflict(stepGame, to);
     }
 
-    let enterConstructionGame = {
+    let cityGame = {
         ...conflictGame
     };
     if (terrainTo.construction.type === "city") {
@@ -1147,14 +1184,11 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         if (terrainTo.construction.team !== meeple.team
             && teamControls(conflictGame, meeple.position)) {
 
-            enterConstructionGame = marchInto(conflictGame, meeple, to);
+            cityGame = marchInto(conflictGame, meeple, to);
         }
-    } else if (terrainTo.construction.type === "building") {
-
-        enterConstructionGame = activateBuilding(conflictGame, meeple, terrainTo);
     }
 
-    return enterConstructionGame;
+    return cityGame;
 }
 
 function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
@@ -1363,10 +1397,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                 let spaceLeft = geographyIndex;
                 let construction: Construction = {
                     type: "emptysite",
-                    production: [...Array(4).keys()]
+                    production: [...Array(5).keys()]
                         .map((o, i) => GeographyInfo[geographyIndex].resources
                             .some((resource) => resource === i) ? 1 : 0),
-                    resources: [...Array(4).keys()].map((o) => 0)
+                    resources: [...Array(5).keys()].map((o) => 0)
                 };
 
                 if (position.row === cityPosition.row
@@ -1378,7 +1412,9 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                         key: positionToIndex(position, boardSize),
                         name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
                         defense: 15 + Math.ceil(Math.random() * 20),
-                        team: Team.default
+                        team: Team.default,
+                        resources: [...Array(5).keys()].map((o) => 0),
+                        production: [...Array(5).keys()].map((o) => 0)
                     };
                 }
 
@@ -1404,10 +1440,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     topMeeple: -1,
                     construction: {
                         type: "emptysite",
-                        production: [...Array(4).keys()]
+                        production: [...Array(5).keys()]
                             .map((o, i) => GeographyInfo[Geography.desert].resources
                                 .some((resource) => resource === i) ? 1 : 0),
-                        resources: [...Array(4).keys()].map((o) => 0)
+                        resources: [...Array(5).keys()].map((o) => 0)
                     }
                 };
             });
@@ -1445,10 +1481,10 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     topMeeple: -1,
                     construction: {
                         type: "emptysite",
-                        production: [...Array(4).keys()]
+                        production: [...Array(5).keys()]
                             .map((o, ) => GeographyInfo[emptyTerrainGeoIndex].resources
                                 .some((resource) => resource === i) ? 1 : 0),
-                        resources: [...Array(4).keys()].map((o) => 0)
+                        resources: [...Array(5).keys()].map((o) => 0)
                     }
                 };
 
@@ -1529,7 +1565,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             swarmSize: meeples.filter((m) => m.team === team).length,
             buildingPhase: [...Array(5).keys()].map((o) => "notbuilt" as BuildingPhase),
             usedActions: 0,
-            resources: [...Array(4).keys()].map((o) => 0),
+            resources: [...Array(5).keys()].map((o) => 0),
             vp: 0
         };
     }

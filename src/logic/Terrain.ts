@@ -30,7 +30,8 @@ export enum Resource {
     fuel,
     food,
     ore,
-    silicon
+    silicon,
+    cubit
 }
 
 export const GeographyInfo = [
