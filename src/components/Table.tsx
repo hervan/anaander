@@ -1,6 +1,7 @@
 import * as React from "react";
 import {CSSProperties} from "react";
 
+import Card from "../logic/Card";
 import {
     Action,
     availableMeeples,
@@ -238,7 +239,10 @@ export class Table extends React.Component<{}, IState> {
         }
     }
 
-    enqueuePlay(team: Team, action: Action): void {
+    enqueuePlay(team: Team, action:
+        | Action.hold | Action.explore
+        | Action.up | Action.left
+        | Action.down | Action.right): void {
 
         this.setState((prevState, props) => {
 
@@ -303,6 +307,34 @@ export class Table extends React.Component<{}, IState> {
                     }
                 }
             }
+        }
+    }
+
+    playCard(cardKey: number): void {
+
+        const team: Team = this.state.game.turn.team;
+
+        if (team !== -1 && this.state.game.players[team].hand.some((c) => c.key === cardKey)) {
+
+            this.setState((prevState, props) => {
+
+                const queue: Play[][] = prevState.playQueue.slice();
+
+                if (prevState.selection.length > 0) {
+
+                    queue[team].push({
+                        team: team,
+                        action: Action.card,
+                        selection: prevState.selection.slice(),
+                        cardKey: cardKey
+                    });
+                }
+
+                return ({
+                    playQueue: queue.slice(),
+                    selection: []
+                });
+            });
         }
     }
 
@@ -429,12 +461,22 @@ export class Table extends React.Component<{}, IState> {
 
         let playData: Play;
         let gameStep: Game;
-        let actions: Action[] = [...Array(5).keys()].map((o, i) => i as Action);
+        let actions: Action[] = [...Array(6).keys()].map((o, i) => i as Action);
 
         do {
-            playData = {
+            const action = actions.splice(Math.floor(Math.random() * actions.length), 1)[0];
+            const hand = this.state.game.players[this.state.game.turn.team].hand;
+
+            playData = (action === Action.card) ? {
                 team: this.state.game.turn.team,
-                action: actions.splice(Math.floor(Math.random() * actions.length), 1)[0],
+                action: action,
+                selection: this.state.selection.slice(),
+                cardKey: hand.length > 0 ?
+                    hand[Math.floor(Math.random() * hand.length)].key :
+                    -1
+            } : {
+                team: this.state.game.turn.team,
+                action: action,
                 selection: this.state.selection.slice()
             };
 
@@ -457,6 +499,10 @@ export class Table extends React.Component<{}, IState> {
         if (gameStep.outcome[gameStep.outcome.length - 1].type === "invalid") {
 
             this.enqueuePlay(this.state.game.turn.team, Action.hold);
+
+        } else if (playData.action === Action.card) {
+
+            this.playCard(playData.cardKey);
 
         } else {
 
@@ -527,6 +573,7 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 select={this.select.bind(this)}
                 selection={this.state.selection}
+                playCard={this.playCard.bind(this)}
                 game={this.state.game} /> : null;
 
         return (

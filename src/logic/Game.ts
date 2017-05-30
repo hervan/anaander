@@ -27,14 +27,22 @@ export enum Action {
     down,
     right,
     explore,
+    card,
     hold
 };
 
 export type Play = {
     readonly team: Team;
-    readonly action: Action;
     readonly selection: number[];
-};
+} & ({
+    readonly action:
+    | Action.explore | Action.hold
+    | Action.up | Action.left
+    | Action.down | Action.right;
+} | {
+    readonly action: Action.card;
+    readonly cardKey: number;
+});
 
 const InvalidPlays: { [key: string]: string } = {
     MeepleNotAvailable: "choose a meeple of your own team and with the current turn side up.",
@@ -43,7 +51,8 @@ const InvalidPlays: { [key: string]: string } = {
     TerrainIsCrowded: "move to a terrain with space available.",
     NotOnGround: "only meeples on the ground can explore the terrain.",
     NoSelection: "please select meeples before choosing the action.",
-    NoActions: "you need to control more cities to perform more actions."
+    NoActions: "you need to control more cities to perform more actions.",
+    NotYourCard: "you can play only cards that are in your hand."
 };
 
 type Turn = {
@@ -348,7 +357,10 @@ export function play(game: Game, play: Play): Game {
         }
     }
 
-    const gameStep = playSwarm(game, play.action, play.selection);
+    const gameStep =
+        play.action === Action.card ?
+        playCard(game, play.cardKey, play.selection) :
+        playSwarm(game, play.action, play.selection);
 
     if (gameStep.outcome.some((oc) => oc.type !== "invalid")) {
 
@@ -395,6 +407,41 @@ export function play(game: Game, play: Play): Game {
             }]
         };
     }
+}
+
+function playCard(game: Game, cardKey: number, selection: number[]): Game {
+
+    const hand: Card[] = game.players[game.turn.team].hand;
+    const card: Card = hand.splice(hand.findIndex((c: Card) => c.key === cardKey), 1)[0];
+
+    if (!card) {
+
+        return {
+            ...game,
+            outcome: [...game.outcome, {
+                type: "invalid",
+                explanation: InvalidPlays.NotYourCard
+            }]
+        };
+    }
+
+    return {
+        ...game,
+        players: game.players.map(
+            (player) =>
+            player.team === game.turn.team ?
+            {
+                ...player,
+                hand: hand.map((c) => ({...c}))
+            } : {...player}
+        ),
+        discardPiles: game.discardPiles.map(
+            (pile, i) =>
+            i === card.pattern ?
+            [...pile.slice(), card] :
+            pile.slice()
+        )
+    };
 }
 
 function playSwarm(game: Game, action: Action, swarm: number[]): Game {
@@ -477,20 +524,21 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
 
     if (shapeOnMap.length === 4) {
 
-        const patternDeck: Card[] = game.decks[piece].slice();
+        const patternDiscard = game.discardPiles[piece].slice();
+        const patternDeck: Card[] =
+            game.decks[piece].length > 0 ?
+            game.decks[piece].slice() :
+            patternDiscard.splice(0, patternDiscard.length).slice();
 
         if (patternDeck.length > 0) {
 
             const card: Card = patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0];
 
-            const patternDiscard = game.discardPiles[piece].slice();
-            if (patternDeck.length === 0) {
-
-                patternDeck.concat(patternDiscard.splice(0, patternDiscard.length));
-            }
-
             const hand: Card[] = player.hand.slice();
-            hand.push(card);
+            hand.push({
+                ...card,
+                acquisitionRound: game.turn.round
+            });
 
             return {
                 ...game,
@@ -514,7 +562,7 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
                     patternDeck.slice() :
                     deck.slice()
                 ),
-                discardPiles: game.decks.map((discard, i) =>
+                discardPiles: game.discardPiles.map((discard, i) =>
                     i === piece ?
                     patternDiscard.slice() :
                     discard.slice()
@@ -1248,7 +1296,19 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
 
     switch (action) {
 
+        case Action.explore:
+
+        return exploreTerrain(game, meeple.position);
+
+        case Action.up:
+        case Action.left:
+        case Action.down:
+        case Action.right:
+
+        return moveMeeple(game, action, meeple);
+
         case Action.hold:
+        default:
 
         gameMeeples[meepleIndex] = {
             ...meeple,
@@ -1263,17 +1323,6 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
                 action: action
             }]
         };
-
-        case Action.explore:
-
-        return exploreTerrain(game, meeple.position);
-
-        case Action.up:
-        case Action.left:
-        case Action.down:
-        case Action.right:
-
-        return moveMeeple(game, action, meeple);
     }
 }
 

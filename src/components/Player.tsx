@@ -1,7 +1,9 @@
 import * as React from "react";
 
+import Card from "../logic/Card";
+
 import {City} from "../logic/Construction";
-import {Action, Play} from "../logic/Game";
+import {Action, Game, Play} from "../logic/Game";
 import {Meeple, Side} from "../logic/Meeple";
 import {Player, Team} from "../logic/Player";
 import {Geography, GeographyInfo, Position, Resource, Terrain} from "../logic/Terrain";
@@ -13,9 +15,11 @@ interface IProps {
     player: Player;
     swarm: Array<{ meeple: Meeple, terrain: Terrain }>;
     empire: Array<{ city: City, spaceLeft: number }>;
+    game: Game;
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position, selectmode?: "swarm" | "meeple") => void;
+    playCard: (cardKey: number) => void;
     selection: number[];
     active: boolean;
 }
@@ -112,9 +116,31 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             </div>
             <div key="hand-view">
                 {props.player.hand
-                    .map((card, i) =>
-                        <div key={i} style={{ display: "inline-block", margin: "2px" }}>
-                            {card.name}
+                    .map((card, index) =>
+                        <div
+                            key={index}
+                            style={{ cursor: "pointer" }}
+                            onClick={() => props.playCard(card.key)}>
+                            {
+                                props.selection.length > 0 ?
+                                <span className="costs" style={{margin: "2px"}}>
+                                {
+                                    card.cost
+                                        .map((amount, i) => ({ i: i, icon: resourceIcon(i), amount: amount }))
+                                        .filter(({amount}) => amount > 0)
+                                        .map(({i, icon, amount}) =>
+                                            <span key={i}>
+                                                {icon}&#xFE0F;
+                                                {amount * card.target(props.game,
+                                                    props.game.meeples[props.selection[0]].position).length}
+                                            </span>
+                                        )
+                                }
+                                </span> : null
+                            }
+                            <span style={{margin: "2px"}}>
+                                {card.name}
+                            </span>
                         </div>
                     )
                 }
