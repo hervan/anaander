@@ -187,10 +187,11 @@ export function availableMeeples(game: Game, team: Team = game.turn.team): Meepl
 export function isMeepleAvailable(game: Game, position: Position, team: Team = game.turn.team): boolean {
 
     const terrain = game.terrains[positionToIndex(position, game.boardSize)];
-    const meepleIndex = terrain.topMeeple;
-    const meeple = game.meeples[meepleIndex];
+    const topMeeple = terrain.topMeeple;
+    const meeple = game.meeples[topMeeple];
 
-    return meepleIndex !== -1
+    return topMeeple !== -1
+        && meeple.key !== -1
         && meeple.team === team
         && meeple.side === game.turn.side;
 }
@@ -424,6 +425,7 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
             }]
         };
     }
+    console.log(`used ${card.name}, took from hand to discard pile`);
 
     return {
         ...game,
@@ -528,12 +530,17 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
         const patternDeck: Card[] =
             game.decks[piece].length > 0 ?
             game.decks[piece].slice() :
-            patternDiscard.splice(0, patternDiscard.length).slice();
+            patternDiscard.splice(0, patternDiscard.length) // .slice();
+                .map((card) => {
+                    console.log(`reshuffled ${card.name} from discard pile to deck`);
+                    return card;
+                });
 
         if (patternDeck.length > 0) {
 
             const card: Card = patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0];
 
+            console.log(`bought ${card.name}, took from deck to hand`);
             const hand: Card[] = player.hand.slice();
             hand.push({
                 ...card,

@@ -55,7 +55,7 @@
       "js"
     ],
     "testMatch": [
-      "<rootDir>/tests/*.(ts|tsx|js)"
+      "<rootDir>/src/tests/*.(ts|tsx|js)"
     ]
   }
 }
