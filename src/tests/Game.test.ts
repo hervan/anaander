@@ -4,9 +4,9 @@ import {
     Game,
     play,
     selectSwarm,
-    setup,
-    Team
-} from "../src/logic/Game";
+    setup
+} from "../logic/Game";
+import {Team} from "../logic/Player";
 
 function logBoard(game: Game): void {
 

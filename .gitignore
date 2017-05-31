@@ -3,6 +3,7 @@ node_modules
 .c9
 .DS_Store
 Thumbs.db
+npm-debug.log
 
 # files used in this project
 dist
