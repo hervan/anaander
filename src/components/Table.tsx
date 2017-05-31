@@ -564,7 +564,8 @@ export class Table extends React.Component<{}, IState> {
             margin: "1vmin",
             width: "36vmin",
             height: "95vmin",
-            overflow: "hidden"
+            overflowX: "hidden",
+            overflowY: "auto"
         };
 
         const rightPanel = this.state.mode === Mode.play || this.state.mode === Mode.end ?
