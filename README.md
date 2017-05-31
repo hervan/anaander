@@ -15,11 +15,11 @@ when you move to a tile where there's a meeple who's not on your **team** (you c
 - if your meeple has a stronger **faith** than the other, you'll **convert** it to your team -- your **swarm** just increased!
 - otherwise they'll **battle**, just taking from each other's **resistance** an amount equal to the attacker's **strength**.
 
-notice how your first meeple is a little stronger than the neutral meeples around&mdash;these numbers are listed on each player's **tableau**, a space for each player in a board game where players control their resources and actions.
+notice how your first meeple is a little stronger than the neutral meeples around&mdash;these numbers are listed on each player's **tableau** (a space for each player in a board game where players control their resources and actions).
 
 after converting a meeple, both meeples remain on the same tile, the last to enter being **on top** of the meeple who was there before. a meeple below another can't take an action until the top meeple leaves the tile.
 
-now every action chosen for you meeple is repeated by other meeples in the swarm&mdash;neighbours to a meeple, and their neighbours. this is the core [mechanic](https://en.wikipedia.org/wiki/Game_mechanics) of the game, and you'll have to deal with its benefits and liabilities to succeed in the game.
+now every action chosen for you meeple is repeated by other meeples in the swarm&mdash;a meeple's neighbours, and their neighbours. this is the core [mechanic](https://en.wikipedia.org/wiki/Game_mechanics) of the game, and you'll have to deal with its benefits and liabilities in order to succeed in the game.
 
 now that you have a swarm and know how to handle it, you can take a stab at conquering a **city**&mdash;cities don't attack you back, but you have to enter it with enough meeples that the sum of their strengths is greater than the city's defense. a city's defense is also shown in the tableau, if you happen to be on a tile with a city in it; conquered cities are also shown constantly in your tableau, because they're a part of your empire now and, surprise, they give you an **extra** action!
 
