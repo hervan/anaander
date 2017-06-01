@@ -63,7 +63,7 @@ export class Table extends React.Component<{}, IState> {
         this.dequeuePlay = this.dequeuePlay.bind(this);
         this.autoselect = this.autoselect.bind(this);
         this.autoplay = this.autoplay.bind(this);
-        this.refresher = window.setInterval(() => this.dequeuePlay(), 20);
+        this.refresher = window.setInterval(() => this.dequeuePlay(), 0);
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
