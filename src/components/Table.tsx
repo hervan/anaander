@@ -459,54 +459,63 @@ export class Table extends React.Component<{}, IState> {
 
     autoplay(): void {
 
-        let playData: Play;
-        let gameStep: Game;
+        let playData = {};
+        let gameStep = {};
         let actions: Action[] = [...Array(6).keys()].map((o, i) => i as Action);
 
         do {
-            const action = actions.splice(Math.floor(Math.random() * actions.length), 1)[0];
-            const hand = this.state.game.players[this.state.game.turn.team].hand;
+            this.setState((prevState, props) => {
 
-            playData = (action === Action.card) ? {
-                team: this.state.game.turn.team,
-                action: action,
-                selection: this.state.selection.slice(),
-                cardKey: hand.length > 0 ?
-                    hand[Math.floor(Math.random() * hand.length)].key :
-                    -1
-            } : {
-                team: this.state.game.turn.team,
-                action: action,
-                selection: this.state.selection.slice()
-            };
+                const action = actions.splice(Math.floor(Math.random() * actions.length), 1)[0];
+                const prevGame = prevState.game;
+                const hand = prevGame.players[prevGame.turn.team].hand;
 
-            const game: Game = {
-                boardSize: this.state.game.boardSize,
-                terrains: this.state.game.terrains.slice(),
-                players: this.state.game.players.slice(),
-                meeples: this.state.game.meeples.slice(),
-                decks: this.state.game.decks.slice(),
-                discardPiles: this.state.game.discardPiles.slice(),
-                turn: {
-                    ...this.state.game.turn
-                },
-                outcome: this.state.game.outcome.slice()
-            };
-            gameStep = play(game, playData);
+                playData = (action === Action.card) ? {
+                    team: prevGame.turn.team,
+                    action: action,
+                    selection: prevState.selection.slice(),
+                    cardKey: hand.length > 0 ?
+                        hand[Math.floor(Math.random() * hand.length)].key :
+                        -1
+                } : {
+                    team: prevGame.turn.team,
+                    action: action,
+                    selection: prevState.selection.slice()
+                };
 
-        } while (actions.length > 0 && gameStep.outcome[gameStep.outcome.length - 1].type === "invalid");
+                const game: Game = {
+                    boardSize: prevGame.boardSize,
+                    terrains: prevGame.terrains.slice(),
+                    players: prevGame.players.slice(),
+                    meeples: prevGame.meeples.slice(),
+                    decks: prevGame.decks.slice(),
+                    discardPiles: prevGame.discardPiles.slice(),
+                    turn: {
+                        ...prevGame.turn
+                    },
+                    outcome: prevGame.outcome.slice()
+                };
+                gameStep = play(game, (playData as Play));
 
-        if (gameStep.outcome[gameStep.outcome.length - 1].type === "invalid") {
+                return {};
+            });
+        } while (actions.length > 0
+            && (gameStep as Game).outcome[(gameStep as Game).outcome.length - 1].type === "invalid");
+
+        const gameStepT = gameStep as Game;
+        const playDataT = playData as Play;
+
+        if (gameStepT.outcome[gameStepT.outcome.length - 1].type === "invalid") {
 
             this.enqueuePlay(this.state.game.turn.team, Action.hold);
 
-        } else if (playData.action === Action.card) {
+        } else if (playDataT.action === Action.card) {
 
-            this.playCard(playData.cardKey);
+            this.playCard(playDataT.cardKey);
 
         } else {
 
-            this.enqueuePlay(this.state.game.turn.team, playData.action);
+            this.enqueuePlay(this.state.game.turn.team, playDataT.action);
         }
     }
 

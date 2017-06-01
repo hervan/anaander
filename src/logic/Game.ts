@@ -116,19 +116,27 @@ function nextTurn(game: Game): Game {
 
     if (availableTeams.length === 0) {
         // no more actions left this round
-        round++;
-        team = -1;
-        side = flipSide(side);
-    } else {
+        return nextTurn({
+            ...game,
+            players: game.players.map((player) => ({
+                ...player,
+                usedActions: 0
+            })),
+            turn: {
+                round: round + 1,
+                team: -1,
+                side: flipSide(side)
+            }
+        });
+    }
 
-        do {
-            team = rotateTeam({
-                round: round,
-                team: team,
-                side: side
-            }, game.players.length);
+    while (!availableTeams.some((t) => t === team)) {
 
-        } while (!availableTeams.some((t) => t === team));
+        team = rotateTeam({
+            round: round,
+            team: team,
+            side: side
+        }, game.players.length);
     }
 
     return {
@@ -381,39 +389,19 @@ export function play(game: Game, play: Play): Game {
 
     const gameTurn = nextTurn(gameStep);
 
-    if (gameTurn.turn.side !== gameStep.turn.side) {
-
-        const players = gameTurn.players.map((player) => { return {
-            ...player,
-            usedActions: 0
-        }; });
-
-        return {
-            ...nextTurn({
-                ...gameTurn,
-                players: players
-            }),
-            outcome: [{
-                type: "action",
-                action: play.action
-            }]
-        };
-    } else {
-
-        return {
-            ...gameTurn,
-            outcome: [{
-                type: "action",
-                action: play.action
-            }]
-        };
-    }
+    return {
+        ...gameTurn,
+        outcome: [{
+            type: "action",
+            action: play.action
+        }]
+    };
 }
 
 function playCard(game: Game, cardKey: number, selection: number[]): Game {
 
-    const hand: Card[] = game.players[game.turn.team].hand;
-    const card: Card = hand.splice(hand.findIndex((c: Card) => c.key === cardKey), 1)[0];
+    const hand: ReadonlyArray<Card> = game.players[game.turn.team].hand;
+    const card: Card = hand[hand.findIndex((c: Card) => c.key === cardKey)];
 
     if (!card) {
 
@@ -425,7 +413,6 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
             }]
         };
     }
-    console.log(`used ${card.name}, took from hand to discard pile`);
 
     return {
         ...game,
@@ -434,7 +421,7 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
             player.team === game.turn.team ?
             {
                 ...player,
-                hand: hand.map((c) => ({...c}))
+                hand: hand.filter((c) => c.key !== card.key)
             } : {...player}
         ),
         discardPiles: game.discardPiles.map(
@@ -530,17 +517,12 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
         const patternDeck: Card[] =
             game.decks[piece].length > 0 ?
             game.decks[piece].slice() :
-            patternDiscard.splice(0, patternDiscard.length) // .slice();
-                .map((card) => {
-                    console.log(`reshuffled ${card.name} from discard pile to deck`);
-                    return card;
-                });
+            patternDiscard.splice(0, patternDiscard.length).slice();
 
         if (patternDeck.length > 0) {
 
             const card: Card = patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0];
 
-            console.log(`bought ${card.name}, took from deck to hand`);
             const hand: Card[] = player.hand.slice();
             hand.push({
                 ...card,
@@ -1494,7 +1476,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                         type: "city",
                         key: positionToIndex(position, boardSize),
                         name: cityNames.splice(Math.floor(Math.random() * cityNames.length), 1)[0],
-                        defense: 15 + Math.ceil(Math.random() * 20),
+                        defense: 5 + Math.ceil(Math.random() * 20),
                         team: Team.default,
                         resources: [...Array(5).keys()].map((o) => 0),
                         production: [...Array(5).keys()].map((o) => 0)
