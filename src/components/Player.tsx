@@ -116,9 +116,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             </div>
             <div key="hand-view">
                 {props.player.hand
-                    .map((card, index) =>
+                    .map((card) =>
                         <div
-                            key={index}
+                            key={card.key}
                             style={{ cursor: "pointer" }}
                             onClick={() => props.playCard(card.key)}>
                             {

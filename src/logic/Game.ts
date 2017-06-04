@@ -996,12 +996,12 @@ function activateBuilding(game: Game, position: Position): Game {
                 terrains: gameStep.terrains.map(
                     (t) => t.key === terrain.key ?
                     {
-                        ...terrain,
+                        ...t,
                         construction: {
-                            ...terrain.construction,
-                            resources: terrain.construction.resources.map((amount, i) => amount - cost[i])
+                            ...t.construction,
+                            resources: t.construction.resources.map((amount, i) => amount - cost[i])
                         }
-                    } : {...terrain}
+                    } : {...t}
                 ),
                 meeples: gameStep.meeples.map(
                     (m) => m.key === meeple.key ?
