@@ -1,5 +1,5 @@
 import {EmptySite, Piece} from "./Construction";
-import {Game, terrainPatch as tp} from "./Game";
+import {Game, terrainPatch} from "./Game";
 import {Meeple} from "./Meeple";
 import {Player, Team} from "./Player";
 import {Geography, Position, positionToIndex, Resource, Terrain} from "./Terrain";
@@ -22,9 +22,6 @@ const currentTerrain =
     (game: Game, position: Position) =>
     [game.terrains[positionToIndex(position, game.boardSize)].key];
 
-const terrainPatch: (game: Game, position: Position) => number[] = (game, position) =>
-    tp(game, position).map((p) => game.terrains[positionToIndex(p, game.boardSize)].key);
-
 const gameTerrains =
     (game: Game, effect: (terrain: Terrain) => Terrain, targets: number[]) =>
     ({
@@ -43,14 +40,27 @@ export const initialHand = (team: Team) => [
         name: "found city",
         pattern: Piece.i,
         cost: [1, 0, 0, 0, 0],
-        target: terrainPatch,
+        target: (game: Game, position: Position) => {
+            const construction = game.terrains[positionToIndex(position, game.boardSize)].construction;
+            return construction.type === "city" && construction.team === game.turn.team ?
+                terrainPatch(game, position)
+                    .map((p) => game.terrains[positionToIndex(p, game.boardSize)].key) :
+                [];
+        },
         effect: (terrain: Terrain): Terrain => ({
             ...terrain,
             geography: Geography.sprawl,
-            spaceLeft: terrain.spaceLeft + (Geography.sprawl - terrain.geography)
+            spaceLeft: terrain.spaceLeft + (Geography.sprawl - terrain.geography),
+            construction: {
+                ...terrain.construction,
+                production:
+                    terrain.construction.type === "emptysite" ?
+                    [...Array(5).keys()].map((o) => 0) :
+                    terrain.construction.production
+            }
         }),
         apply: gameTerrains,
-        acquisitionRound: 1
+        acquisitionRound: 0
     }
 ];
 
@@ -58,7 +68,7 @@ export const decks: Card[][] = [
     [
         {
             key: 5,
-            name: "iferrosilicon mine",
+            name: "ferrosilicon mine I",
             pattern: Piece.i,
             cost: [0, 1, 1, 0, 0],
             target: currentTerrain,
@@ -76,7 +86,7 @@ export const decks: Card[][] = [
         },
         {
             key: 6,
-            name: "isonar probe",
+            name: "sonar probe I",
             pattern: Piece.i,
             cost: [1, 0, 0, 1, 0],
             target: currentTerrain,
@@ -94,7 +104,7 @@ export const decks: Card[][] = [
         },
         {
             key: 7,
-            name: "imechanised agriculture",
+            name: "mechanised agriculture I",
             pattern: Piece.i,
             cost: [0, 0, 1, 1, 0],
             target: currentTerrain,
@@ -112,7 +122,7 @@ export const decks: Card[][] = [
         },
         {
             key: 8,
-            name: "ioil refinery",
+            name: "oil refinery I",
             pattern: Piece.i,
             cost: [1, 0, 1, 0, 0],
             target: currentTerrain,
@@ -132,7 +142,7 @@ export const decks: Card[][] = [
     [
         {
             key: 9,
-            name: "lferrosilicon mine",
+            name: "ferrosilicon mine L",
             pattern: Piece.l,
             cost: [0, 1, 1, 0, 0],
             target: currentTerrain,
@@ -150,7 +160,7 @@ export const decks: Card[][] = [
         },
         {
             key: 10,
-            name: "lsonar probe",
+            name: "sonar probe L",
             pattern: Piece.l,
             cost: [1, 0, 0, 1, 0],
             target: currentTerrain,
@@ -168,7 +178,7 @@ export const decks: Card[][] = [
         },
         {
             key: 11,
-            name: "lmechanised agriculture",
+            name: "mechanised agriculture L",
             pattern: Piece.l,
             cost: [0, 0, 1, 1, 0],
             target: currentTerrain,
@@ -186,7 +196,7 @@ export const decks: Card[][] = [
         },
         {
             key: 12,
-            name: "loil refinery",
+            name: "oil refinery L",
             pattern: Piece.l,
             cost: [1, 0, 1, 0, 0],
             target: currentTerrain,
@@ -206,7 +216,7 @@ export const decks: Card[][] = [
     [
         {
             key: 13,
-            name: "oferrosilicon mine",
+            name: "ferrosilicon mine O",
             pattern: Piece.o,
             cost: [0, 1, 1, 0, 0],
             target: currentTerrain,
@@ -224,7 +234,7 @@ export const decks: Card[][] = [
         },
         {
             key: 14,
-            name: "osonar probe",
+            name: "sonar probe O",
             pattern: Piece.o,
             cost: [1, 0, 0, 1, 0],
             target: currentTerrain,
@@ -242,7 +252,7 @@ export const decks: Card[][] = [
         },
         {
             key: 15,
-            name: "omechanised agriculture",
+            name: "mechanised agriculture O",
             pattern: Piece.o,
             cost: [0, 0, 1, 1, 0],
             target: currentTerrain,
@@ -260,7 +270,7 @@ export const decks: Card[][] = [
         },
         {
             key: 16,
-            name: "ooil refinery",
+            name: "oil refinery O",
             pattern: Piece.o,
             cost: [1, 0, 1, 0, 0],
             target: currentTerrain,
@@ -280,7 +290,7 @@ export const decks: Card[][] = [
     [
         {
             key: 17,
-            name: "sferrosilicon mine",
+            name: "ferrosilicon mine S",
             pattern: Piece.s,
             cost: [0, 1, 1, 0, 0],
             target: currentTerrain,
@@ -298,7 +308,7 @@ export const decks: Card[][] = [
         },
         {
             key: 18,
-            name: "ssonar probe",
+            name: "sonar probe S",
             pattern: Piece.s,
             cost: [1, 0, 0, 1, 0],
             target: currentTerrain,
@@ -316,7 +326,7 @@ export const decks: Card[][] = [
         },
         {
             key: 19,
-            name: "smechanised agriculture",
+            name: "mechanised agriculture S",
             pattern: Piece.s,
             cost: [0, 0, 1, 1, 0],
             target: currentTerrain,
@@ -334,7 +344,7 @@ export const decks: Card[][] = [
         },
         {
             key: 20,
-            name: "soil refinery",
+            name: "oil refinery S",
             pattern: Piece.s,
             cost: [1, 0, 1, 0, 0],
             target: currentTerrain,
@@ -354,7 +364,7 @@ export const decks: Card[][] = [
     [
         {
             key: 21,
-            name: "tferrosilicon mine",
+            name: "ferrosilicon mine T",
             pattern: Piece.t,
             cost: [0, 1, 1, 0, 0],
             target: currentTerrain,
@@ -372,7 +382,7 @@ export const decks: Card[][] = [
         },
         {
             key: 22,
-            name: "tsonar probe",
+            name: "sonar probe T",
             pattern: Piece.t,
             cost: [1, 0, 0, 1, 0],
             target: currentTerrain,
@@ -390,7 +400,7 @@ export const decks: Card[][] = [
         },
         {
             key: 23,
-            name: "tmechanised agriculture",
+            name: "mechanised agriculture T",
             pattern: Piece.t,
             cost: [0, 0, 1, 1, 0],
             target: currentTerrain,
@@ -408,7 +418,7 @@ export const decks: Card[][] = [
         },
         {
             key: 24,
-            name: "toil refinery",
+            name: "oil refinery T",
             pattern: Piece.t,
             cost: [1, 0, 1, 0, 0],
             target: currentTerrain,

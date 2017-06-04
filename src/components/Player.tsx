@@ -122,7 +122,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             style={{ cursor: "pointer" }}
                             onClick={() => props.playCard(card.key)}>
                             {
-                                props.selection.length > 0 ?
+                                props.selection.length > 0 && props.active ?
                                 <span className="costs" style={{margin: "2px"}}>
                                 {
                                     card.cost
