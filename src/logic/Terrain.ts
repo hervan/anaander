@@ -11,14 +11,15 @@ export const positionToIndex = (position: Position, boardSize: number) =>
 export enum Geography {
     sea,
     desert,
-    swamp,
     mountain,
     forest,
     plains,
-    valley
+    valley,
+    sprawl
 };
 
 export type Terrain = {
+    readonly key: number;
     readonly position: Position;
     readonly geography: Geography;
     readonly spaceLeft: number;
@@ -35,11 +36,11 @@ export enum Resource {
 }
 
 export const GeographyInfo = [
-    { type: "sea", piece: null, resources: [] },
-    { type: "desert", piece: null, resources: [Resource.fuel, Resource.silicon] },
-    { type: "swamp", piece: "i", resources: [Resource.fuel, Resource.ore] },
+    { type: "sea", piece: null, resources: [Resource.fuel, Resource.silicon] },
+    { type: "desert", piece: "i", resources: [Resource.fuel, Resource.ore] },
     { type: "mountain", piece: "l", resources: [Resource.ore, Resource.silicon] },
     { type: "forest", piece: "o", resources: [Resource.food, Resource.ore] },
     { type: "plains", piece: "s", resources: [Resource.fuel, Resource.food] },
-    { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] }
+    { type: "valley", piece: "t", resources: [Resource.food, Resource.silicon] },
+    { type: "sprawl", piece: null, resources: [Resource.cubit] }
 ];

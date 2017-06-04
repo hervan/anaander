@@ -27,12 +27,12 @@ interface IProps {
 function geographyIcon(geography: Geography): string {
     switch (geography) {
         case Geography.sea: return "🌊";
-        case Geography.swamp: return "🕳️";
+        case Geography.desert: return "🏜️";
         case Geography.mountain: return "🏔️";
         case Geography.forest: return "🌳";
         case Geography.valley: return "🏞️";
         case Geography.plains: return "🛤️";
-        case Geography.desert: return "🏜️";
+        case Geography.sprawl: return "🏘️";
     }
 }
 
@@ -131,8 +131,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                         .map(({i, icon, amount}) =>
                                             <span key={i}>
                                                 {icon}&#xFE0F;
-                                                {amount * card.target(props.game,
-                                                    props.game.meeples[props.selection[0]].position).length}
+                                                {props.game.turn.round > card.acquisitionRound ?
+                                                    amount * card.target(props.game,
+                                                    props.game.meeples[props.selection[0]].position).length : 0}
                                             </span>
                                         )
                                 }

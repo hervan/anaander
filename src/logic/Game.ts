@@ -1,6 +1,6 @@
 import Card from "./Card";
 
-import {decks} from "./Card";
+import {decks, initialHand} from "./Card";
 import {
     BuildingPhase,
     Buildings,
@@ -52,7 +52,9 @@ const InvalidPlays: { [key: string]: string } = {
     NotOnGround: "only meeples on the ground can explore the terrain.",
     NoSelection: "please select meeples before choosing the action.",
     NoActions: "you need to control more cities to perform more actions.",
-    NotYourCard: "you can play only cards that are in your hand."
+    NotYourCard: "you can play only cards that are in your hand.",
+    NoValidTarget: "you must choose a meeple with a valid target.",
+    NotEnoughResources: "you need more resources to activate this card."
 };
 
 type Turn = {
@@ -371,14 +373,6 @@ export function play(game: Game, play: Play): Game {
         playCard(game, play.cardKey, play.selection) :
         playSwarm(game, play.action, play.selection);
 
-    if (gameStep.outcome.some((oc) => oc.type !== "invalid")) {
-
-        gameStep.players[gameStep.turn.team] = {
-            ...gameStep.players[gameStep.turn.team],
-            usedActions: gameStep.players[gameStep.turn.team].usedActions + 1
-        };
-    }
-
     if (isOver(gameStep)) {
 
         return {
@@ -401,8 +395,8 @@ export function play(game: Game, play: Play): Game {
 function playCard(game: Game, cardKey: number, selection: number[]): Game {
 
     const hand: ReadonlyArray<Card> = game.players[game.turn.team].hand;
-    const card: Card = hand[hand.findIndex((c: Card) => c.key === cardKey)];
 
+    const card: Card = hand[hand.findIndex((c: Card) => c.key === cardKey)];
     if (!card) {
 
         return {
@@ -414,21 +408,57 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
         };
     }
 
+    const targets = card.target(game, game.meeples[selection[0]].position);
+    if (targets.length === 0) {
+
+        return {
+            ...game,
+            outcome: [...game.outcome, {
+                type: "invalid",
+                explanation: InvalidPlays.NoValidTarget
+            }]
+        };
+    }
+
+    const cost = card.cost.map((amount) =>
+        game.turn.round > card.acquisitionRound ?
+        targets.length * amount : 0);
+    if (cost.some((amount, i) => amount > game.players[game.turn.team].resources[i])) {
+
+        return {
+            ...game,
+            outcome: [...game.outcome, {
+                type: "invalid",
+                explanation: InvalidPlays.NotEnoughResources
+            }]
+        };
+    }
+
+    const gameStep = card.apply(game, card.effect, targets);
+
     return {
-        ...game,
-        players: game.players.map(
-            (player) =>
-            player.team === game.turn.team ?
+        ...gameStep,
+        players: gameStep.players.map(
+            (player) => player.team === gameStep.turn.team ?
             {
                 ...player,
+                resources: player.resources.map((amount, i) => amount - cost[i]),
                 hand: hand.filter((c) => c.key !== card.key)
             } : {...player}
         ),
-        discardPiles: game.discardPiles.map(
-            (pile, i) =>
-            i === card.pattern ?
-            [...pile.slice(), card] :
-            pile.slice()
+        meeples: gameStep.meeples.map(
+            (meeple) => meeple.key === selection[0] ?
+            {
+                ...meeple,
+                side: flipSide(meeple.side)
+            } : {...meeple}
+        ),
+        discardPiles: gameStep.discardPiles.map(
+            (pile, i) => i === card.pattern ?
+            [
+                ...pile.slice(),
+                card
+            ] : pile.slice()
         )
     };
 }
@@ -453,6 +483,14 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
     return {
         ...stepGame,
+        players: stepGame.players.map((player) =>
+            player.team === stepGame.turn.team ?
+            {
+                ...player,
+                usedActions: player.usedActions
+                    + (stepGame.outcome.some((oc) => oc.type !== "invalid") ? 1 : 0)
+            } : {...player}
+        ),
         terrains: stepGame.terrains.map(
             (terrain, i) => freedPositionIndices.some((fpi) => i === fpi) ?
             {
@@ -574,7 +612,8 @@ function build(game: Game, position: Position, piece: Piece): Game {
     const meeple = game.meeples[terrain.topMeeple];
 
     const shape = pieceShapes[piece].shape;
-    const shapeOnMap = patternMatch(game, position, shape.slice());
+    const shapeOnMap = patternMatch(game, position, shape.slice())
+        .filter((pos) => game.terrains[positionToIndex(pos, game.boardSize)].geography === Geography.sprawl);
 
     if (shapeOnMap.length === 4) {
 
@@ -844,7 +883,7 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
         return game;
     }
 
-    const city: City = terrain.construction;
+    const city = terrain.construction;
     const attack = meeplesBelow(game, meeple.key)
         .reduce((acc, m) => acc + m.strength, 0);
 
@@ -868,8 +907,6 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
             ...terrain,
             construction: {
                 ...city,
-                resources: [...Array(5).keys()].map((o) => 0),
-                production: [...Array(5).keys()].map((o) => 0),
                 team: meeple.team
             }
         };
@@ -881,7 +918,7 @@ function marchInto(game: Game, meeple: Meeple, position: Position): Game {
             ...players[meeple.team],
             cities: playerCities.slice(),
             buildingPhase: players[meeple.team].buildingPhase
-                .map((phase, i) => i === terrain.geography - 2 && phase === "notbuilt" ? "blueprint" : phase)
+                .map((phase, i) => i === terrain.geography - 1 && phase === "notbuilt" ? "blueprint" : phase)
         };
 
         const meeples = game.meeples.slice();
@@ -1340,6 +1377,24 @@ function rotateShape(positions: Position[]): Position[] {
     return positions.map(({row, col}) => ({row: -1 * col, col: row}));
 }
 
+export function terrainPatch(
+    game: Game,
+    position: Position,
+    continent: boolean = false,
+    patch: Position[] = []): Position[] {
+
+    const newTerrain = game.terrains[positionToIndex(position, game.boardSize)];
+
+    if (newTerrain.geography < (continent ? 1 : 2)
+        || patch.some((t) => positionToIndex(t, game.boardSize) === newTerrain.key)) {
+
+        return patch;
+    }
+
+    return adjacent(position, game.boardSize)
+        .reduce((acc, pos) => terrainPatch(game, pos, continent, acc), [...patch, position]);
+}
+
 export function setup(playerCount: number = 0, boardSize: number = 20): Game {
 
     const cityNames = [
@@ -1389,19 +1444,19 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
     ];
 
     const terrains = new Array<Terrain>();
-    const patchesPerDimension = Math.ceil(Math.sqrt(5 * (playerCount + 1)));
+    const patchesPerDimension = Math.ceil(Math.sqrt(4 * playerCount));
     const patchLength = boardSize / patchesPerDimension;
-    const defaultPatchArea = Math.PI * ((patchLength - 0.5) / 2) ** 2;
+    const defaultPatchArea = ((patchLength - 1) / 2) ** 2;
 
     const patchSeeds: Position[] =
-        [...Array(patchesPerDimension ** 2).keys()].map((idx) =>
+        [...Array(patchesPerDimension ** 2).keys()].map((i) =>
             ({
-                row: Math.round((patchLength / 2) + (patchLength * Math.floor(idx / patchesPerDimension))),
-                col: Math.round((patchLength / 2) + (patchLength * (idx % patchesPerDimension)))
+                row: Math.round((patchLength / 2) + (patchLength * Math.floor(i / patchesPerDimension))),
+                col: Math.round((patchLength / 2) + (patchLength * (i % patchesPerDimension)))
             })
         );
 
-    const requiredGeography = [...Array(5 * (playerCount + 1)).keys()].map((i) => (i % 5) + 2);
+    const requiredGeography = [...Array(4 * playerCount).keys()].map((i) => (i % 4) + 2);
 
     let patchIndex = 0;
 
@@ -1454,7 +1509,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             const geographyIndex =
                 requiredGeography.length > 0 ?
                 requiredGeography.splice(Math.random() * requiredGeography.length, 1)[0] :
-                Math.ceil(Math.random() * 5) + 1;
+                Math.ceil(Math.random() * 4) + 1;
             const boundaries: Position[] = [];
 
             patch.forEach((position) => {
@@ -1484,6 +1539,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                 }
 
                 terrains[positionToIndex(position, boardSize)] = {
+                    key: positionToIndex(position, boardSize),
                     geography: geographyIndex,
                     position: position,
                     spaceLeft: spaceLeft,
@@ -1499,6 +1555,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
 
             boundaries.forEach((position) => {
                 terrains[positionToIndex(position, boardSize)] = {
+                    key: positionToIndex(position, boardSize),
                     geography: Geography.desert,
                     position: position,
                     spaceLeft: 1,
@@ -1540,6 +1597,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             const terrain: Terrain = terrains[positionToIndex(position, boardSize)] ?
                 terrains[positionToIndex(position, boardSize)] :
                 {
+                    key: positionToIndex(position, boardSize),
                     geography: emptyTerrainGeoIndex,
                     position: position,
                     spaceLeft: 1,
@@ -1547,8 +1605,8 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
                     construction: {
                         type: "emptysite",
                         production: [...Array(5).keys()]
-                            .map((o, ) => GeographyInfo[emptyTerrainGeoIndex].resources
-                                .some((resource) => resource === i) ? 1 : 0),
+                            .map((o, index) => GeographyInfo[emptyTerrainGeoIndex].resources
+                                .some((resource) => resource === index) ? 1 : 0),
                         resources: [...Array(5).keys()].map((o) => 0)
                     }
                 };
@@ -1631,7 +1689,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             buildingPhase: [...Array(5).keys()].map((o) => "notbuilt" as BuildingPhase),
             usedActions: 0,
             resources: [...Array(5).keys()].map((o) => 0),
-            hand: [],
+            hand: initialHand(team),
             vp: 0
         };
     }

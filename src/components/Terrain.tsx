@@ -17,13 +17,13 @@ function terrainColor(terrain: Terrain): string {
     if (terrain.construction.type === "emptysite" || terrain.construction.team === Team.default) {
         switch (terrain.geography) {
             case Geography.sea: return "info";
-            case Geography.swamp: return "default";
+            case Geography.desert: return "warning";
             case Geography.mountain: return "danger";
             case Geography.forest: return "success";
+            case Geography.plains: return "default";
             case Geography.valley: return "primary";
-            case Geography.plains: return "nocolor";
-            case Geography.desert:
-            default: return "warning";
+            case Geography.sprawl: return "nocolor";
+            default: return "nocolor";
         }
     } else {
         return Team[terrain.construction.team];
