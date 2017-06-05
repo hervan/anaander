@@ -11,6 +11,8 @@ interface IProps {
     setup: (control: Control) => void;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
+    rewind: (step: number) => void;
+    history: Game[];
     game: Game;
     mode: Mode;
 };
@@ -217,14 +219,26 @@ export default class Status extends React.Component<IProps, {}> {
         }
 
         return (
-            <div className="notification">
-                <h1 className="title is-2">anaander</h1>
-                <h2 className="subtitle is-4">
-                    {guide}
-                </h2>
-                <span>
-                    {guideDetail}
-                </span>
+            <div>
+                <div className="notification">
+                    <h1 className="title is-2">anaander</h1>
+                    <h2 className="subtitle is-4">
+                        {guide}
+                    </h2>
+                    <span>
+                        {guideDetail}
+                    </span>
+                </div>
+                <h2>history</h2>
+                <div>
+                    {this.props.history.map((game, i) =>
+                        <div key={i}>
+                            <a className="is-link" onClick={() => this.props.rewind(i)}>
+                                {game.outcome.reduce((acc, oc) => acc + oc.type + " ", "")}
+                            </a>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }

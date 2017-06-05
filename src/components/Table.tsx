@@ -49,6 +49,7 @@ interface IState {
     selection: number[];
     zoom: Zoom;
     playQueue: Play[][];
+    history: Game[];
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -63,7 +64,7 @@ export class Table extends React.Component<{}, IState> {
         this.dequeuePlay = this.dequeuePlay.bind(this);
         this.autoselect = this.autoselect.bind(this);
         this.autoplay = this.autoplay.bind(this);
-        this.refresher = window.setInterval(() => this.dequeuePlay(), 0);
+        this.refresher = window.setInterval(() => this.dequeuePlay(), 1);
 
         const defaultPlayerCount = 1;
         const defaultComputerCount = 1;
@@ -80,7 +81,8 @@ export class Table extends React.Component<{}, IState> {
                 scale: defaultBoardSize,
                 position: { row: Math.floor(defaultBoardSize / 2), col: Math.floor(defaultBoardSize / 2) }
             },
-            playQueue: [[], [], [], [], [], []]
+            playQueue: [[], [], [], [], [], []],
+            history: []
         };
 
         this.wheel = this.wheel.bind(this);
@@ -287,7 +289,11 @@ export class Table extends React.Component<{}, IState> {
                         game: gameStep,
                         mode: mode,
                         playQueue: queue.slice(),
-                        selection: []
+                        selection: [],
+                        history: gameStep.outcome.some((oc) => oc.type !== "invalid") ? [
+                            gameStep,
+                            ...prevState.history.slice()
+                        ] : prevState.history.slice()
                     });
                 });
 
@@ -308,6 +314,16 @@ export class Table extends React.Component<{}, IState> {
                 }
             }
         }
+    }
+
+    rewind(step: number): void {
+
+        this.setState((prevState, props) => {
+            return ({
+                game: {...prevState.history[step]},
+                history: prevState.history.slice(step)
+            });
+        });
     }
 
     playCard(cardKey: number): void {
@@ -564,6 +580,8 @@ export class Table extends React.Component<{}, IState> {
                 setup={this.setup.bind(this)}
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 select={this.select.bind(this)}
+                rewind={this.rewind.bind(this)}
+                history={this.state.history}
                 game={this.state.game}
                 mode={this.state.mode} />;
         }
