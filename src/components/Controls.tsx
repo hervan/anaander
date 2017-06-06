@@ -21,7 +21,7 @@ interface IProps {
 };
 
 const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div>
+    <div style={{overflowY: "auto"}}>
         {props.game.players.filter((player) => player.team >= props.game.turn.team)
             .concat(props.game.players.filter((player) => player.team < props.game.turn.team))
             .map((player) =>

@@ -12,7 +12,8 @@ interface IProps {
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position) => void;
     rewind: (step: number) => void;
-    history: Game[];
+    saveGame: (step: number) => string;
+    history: Outcome[][];
     game: Game;
     mode: Mode;
 };
@@ -192,19 +193,12 @@ export default class Status extends React.Component<IProps, {}> {
                     </span>'s turn.
                 </p>;
 
-            let outcome: Outcome = this.props.game.outcome[0];
+            if (this.props.game.outcome.length > 0) {
 
-            switch (outcome.type) {
+                let outcome: Outcome = this.props.game.outcome[0];
+                guideDetail = <p>{outcome.detail}</p>;
 
-                case "invalid":
-
-                guideDetail = <p>{outcome.explanation}</p>;
-
-                break;
-
-                case "action":
-                case "none":
-                default:
+            } else {
 
                 const side: JSX.Element =
                     <span className="icon">
@@ -213,8 +207,6 @@ export default class Status extends React.Component<IProps, {}> {
                             + " is-" + Team[this.props.game.turn.team]}></i>
                     </span>;
                 guideDetail = <p>choose an action for these meeples: {side}</p>;
-
-                break;
             }
         }
 
@@ -229,13 +221,21 @@ export default class Status extends React.Component<IProps, {}> {
                         {guideDetail}
                     </span>
                 </div>
-                <h2>history</h2>
-                <div>
-                    {this.props.history.map((game, i) =>
-                        <div key={i}>
-                            <a className="is-link" onClick={() => this.props.rewind(i)}>
-                                {game.outcome.reduce((acc, oc) => acc + oc.type + " ", "")}
-                            </a>
+                <div style={{height: "100%", overflowY: "auto"}}>
+                    <h1 className="title is-4">history</h1>
+                    {this.props.history.map((historyItem, i) =>
+                        <div className="history" key={i}>
+                            <span>
+                                {historyItem
+                                    .map((oc) => `${Team[oc.team]}: ${oc.type} ${oc.detail}`).join(", ")}
+                                <a className="is-link history-action"
+                                    onClick={() => this.props.rewind(i)}>↩️&#xFE0F;</a>
+                                <a download="anaander.save" id={`history${i}`} className="is-link history-action"
+                                    onClick={() => {
+                                        let link = document.getElementById(`history${i}`);
+                                        (link as HTMLAnchorElement).href = this.props.saveGame(i);
+                                    }}>💾&#xFE0F;</a>
+                            </span>
                         </div>
                     )}
                 </div>

@@ -172,3 +172,25 @@
     font-size: 24px;
     color: grey;
 }
+
+.history .history-action {
+    float: right;
+    text-decoration: none;
+    display: none;
+}
+
+.history:hover .history-action {
+    text-decoration: none;
+    display: inline;
+}
+
+.title .title-load {
+    float: right;
+    text-decoration: none;
+    display: none;
+}
+
+.title:hover .title-load {
+    text-decoration: none;
+    display: inline;
+}

@@ -64,26 +64,15 @@ type Turn = {
     readonly side: Side;
 };
 
-export type Outcome = {
-    readonly type: "action",
-    readonly action: Action
-} | {
-    readonly type: "harvest"
-} | {
-    readonly type: "construction",
-    readonly construction: string,
-    readonly name: string
-} | {
-    readonly type: "pattern",
-    readonly pattern: Piece
-} | {
-    readonly type: "invalid",
-    readonly explanation: string
-} | {
-    readonly type: "none"
-} | {
-    readonly type: "gameover"
-};
+export type Outcome = ({
+    readonly team: Team
+    readonly type:
+        | "action"
+        | "harvest" | "construction"
+        | "building" | "pattern"
+        | "invalid" | "gameover",
+    readonly detail: string
+});
 
 export type Game = {
     readonly boardSize: number;
@@ -335,8 +324,9 @@ export function play(game: Game, play: Play): Game {
         return {
             ...game,
             outcome: [{
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NotYourTurn
+                detail: InvalidPlays.NotYourTurn
             }]
         };
     } else if (game.players[game.turn.team].usedActions > game.players[game.turn.team].cities.length) {
@@ -344,8 +334,9 @@ export function play(game: Game, play: Play): Game {
         return {
             ...game,
             outcome: [{
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NoActions
+                detail: InvalidPlays.NoActions
             }]
         };
     } else if (play.selection.length === 0) {
@@ -353,8 +344,9 @@ export function play(game: Game, play: Play): Game {
         return {
             ...game,
             outcome: [{
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NoSelection
+                detail: InvalidPlays.NoSelection
             }]
         };
     } else {
@@ -367,8 +359,9 @@ export function play(game: Game, play: Play): Game {
             return {
                 ...game,
                 outcome: [{
+                    team: game.turn.team,
                     type: "invalid",
-                    explanation: InvalidPlays.NoSelection
+                    detail: InvalidPlays.NoSelection
                 }]
             };
         }
@@ -383,7 +376,11 @@ export function play(game: Game, play: Play): Game {
 
         return {
             ...gameStep,
-            outcome: [{ type: "gameover" }]
+            outcome: [{
+                team: game.turn.team,
+                type: "gameover",
+                detail: "won"
+            }]
         };
     }
 
@@ -392,8 +389,9 @@ export function play(game: Game, play: Play): Game {
     return {
         ...gameTurn,
         outcome: [{
+            team: game.turn.team,
             type: "action",
-            action: play.action
+            detail: Action[play.action]
         }]
     };
 }
@@ -408,8 +406,9 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
         return {
             ...game,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NotYourCard
+                detail: InvalidPlays.NotYourCard
             }]
         };
     }
@@ -420,8 +419,9 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
         return {
             ...game,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NoValidTarget
+                detail: InvalidPlays.NoValidTarget
             }]
         };
     }
@@ -434,8 +434,9 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
         return {
             ...game,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NotEnoughResources
+                detail: InvalidPlays.NotEnoughResources
             }]
         };
     }
@@ -609,8 +610,9 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
                     discard.slice()
                 ),
                 outcome: [...game.outcome, {
+                    team: game.turn.team,
                     type: "pattern",
-                    pattern: piece
+                    detail: Piece[piece]
                 }]
             };
         }
@@ -666,9 +668,9 @@ function build(game: Game, position: Position, piece: Piece): Game {
                 } : {...m}
             ),
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "construction",
-                construction: "building",
-                name: Buildings[Piece[piece]]
+                detail: Buildings[Piece[piece]]
             }]
         };
     }
@@ -730,8 +732,9 @@ function exploreTerrain(game: Game, position: Position): Game {
             outcome: [
                 ...buildingsGame.outcome,
                 {
+                    team: game.turn.team,
                     type: "action",
-                    action: Action.explore
+                    detail: Action[Action.explore]
                 }
             ]
         };
@@ -740,8 +743,9 @@ function exploreTerrain(game: Game, position: Position): Game {
         return {
             ...game,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.NotOnGround
+                detail: InvalidPlays.NotOnGround
             }]
         };
     }
@@ -972,8 +976,9 @@ function activateBuilding(game: Game, position: Position): Game {
                 return {
                     ...game,
                     outcome: [...game.outcome, {
+                        team: game.turn.team,
                         type: "invalid",
-                        explanation: InvalidPlays.NoPreviousCard
+                        detail: InvalidPlays.NoPreviousCard
                     }]
                 };
             }
@@ -984,8 +989,9 @@ function activateBuilding(game: Game, position: Position): Game {
                 return {
                     ...game,
                     outcome: [...game.outcome, {
+                        team: game.turn.team,
                         type: "invalid",
-                        explanation: InvalidPlays.NotEnoughResources
+                        detail: InvalidPlays.NotEnoughResources
                     }]
                 };
             }
@@ -1247,8 +1253,9 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
                 return {
                     ...game,
                     outcome: [...game.outcome, {
+                        team: game.turn.team,
                         type: "invalid",
-                        explanation: InvalidPlays.OutOfBoard
+                        detail: InvalidPlays.OutOfBoard
                     }]
                 };
             } else {
@@ -1263,8 +1270,9 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
                 return {
                     ...game,
                     outcome: [...game.outcome, {
+                        team: game.turn.team,
                         type: "invalid",
-                        explanation: InvalidPlays.TerrainIsCrowded
+                        detail: InvalidPlays.TerrainIsCrowded
                     }]
                 };
             } else {
@@ -1329,9 +1337,10 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
         ...game,
         terrains: gameTerrains.slice(),
         meeples: gameMeeples.slice(),
-            outcome: [...game.outcome, {
+        outcome: [...game.outcome, {
+            team: game.turn.team,
             type: "action",
-            action: action
+            detail: Action[action]
         }]
     };
 
@@ -1365,8 +1374,9 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
         return {
             ...game,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.MeepleNotAvailable
+                detail: InvalidPlays.MeepleNotAvailable
             }]
         };
     }
@@ -1378,8 +1388,9 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
         return {
             ...game,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "invalid",
-                explanation: InvalidPlays.MeepleNotAvailable
+                detail: InvalidPlays.MeepleNotAvailable
             }]
         };
     }
@@ -1411,8 +1422,9 @@ function playMeeple(game: Game, action: Action, meepleIndex: number): Game {
             ...game,
             meeples: gameMeeples,
             outcome: [...game.outcome, {
+                team: game.turn.team,
                 type: "action",
-                action: action
+                detail: Action[action]
             }]
         };
     }
@@ -1773,7 +1785,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             team: Team.default,
             side: Side.none
         },
-        outcome: [{ type: "none" }]
+        outcome: []
     };
 
     return game;

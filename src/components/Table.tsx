@@ -49,7 +49,7 @@ interface IState {
     selection: number[];
     zoom: Zoom;
     playQueue: Play[][];
-    history: Game[];
+    history: IState[];
 };
 
 export class Table extends React.Component<{}, IState> {
@@ -88,6 +88,20 @@ export class Table extends React.Component<{}, IState> {
         this.wheel = this.wheel.bind(this);
         window.removeEventListener("mousewheel", this.wheel);
         window.addEventListener("mousewheel", this.wheel);
+
+        this.handleDrop = this.handleDrop.bind(this);
+        window.removeEventListener("drop", this.handleDrop);
+        window.addEventListener("drop", this.handleDrop, false);
+
+        window.addEventListener("dragenter", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+
+        window.addEventListener("dragover", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+        });
     }
 
     setup(control: Control): void {
@@ -285,13 +299,18 @@ export class Table extends React.Component<{}, IState> {
                         Mode.end :
                         prevState.mode;
 
-                    return ({
+                    const nextState = {
                         game: gameStep,
                         mode: mode,
                         playQueue: queue.slice(),
                         selection: [],
-                        history: gameStep.outcome.some((oc) => oc.type !== "invalid") ? [
-                            gameStep,
+                    };
+
+                    return ({
+                        ...nextState,
+                        history: prevState.game.turn.team < prevState.playerCount
+                            && gameStep.outcome.some((oc) => oc.type !== "invalid") ? [
+                            nextState,
                             ...prevState.history.slice()
                         ] : prevState.history.slice()
                     });
@@ -318,12 +337,36 @@ export class Table extends React.Component<{}, IState> {
 
     rewind(step: number): void {
 
-        this.setState((prevState, props) => {
-            return ({
-                game: {...prevState.history[step]},
-                history: prevState.history.slice(step)
-            });
-        });
+        this.setState((prevState, props) => ({
+            ...prevState.history[step],
+            history: prevState.history.slice(step)
+        }));
+    }
+
+    saveGame(step: number): string {
+
+        const data = new File([JSON.stringify(this.state.history[step])], "anaander.save", {type: "text/plain"});
+        return URL.createObjectURL(data);
+    }
+
+    handleDrop(e: DragEvent): void {
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        const reader: FileReader = new FileReader();
+        reader.onloadend = () => {
+
+            this.loadMatch(JSON.parse(reader.result));
+        };
+
+        const file = e.dataTransfer.files[0];
+        reader.readAsText(file);
+    }
+
+    loadMatch(state: IState): void {
+
+        this.setState((prevState, props) => ({...state}));
     }
 
     playCard(cardKey: number): void {
@@ -581,7 +624,8 @@ export class Table extends React.Component<{}, IState> {
                 enqueuePlay={this.enqueuePlay.bind(this)}
                 select={this.select.bind(this)}
                 rewind={this.rewind.bind(this)}
-                history={this.state.history}
+                saveGame={this.saveGame.bind(this)}
+                history={this.state.history.map((h) => h.game.outcome)}
                 game={this.state.game}
                 mode={this.state.mode} />;
         }
@@ -591,8 +635,7 @@ export class Table extends React.Component<{}, IState> {
             margin: "1vmin",
             width: "36vmin",
             height: "95vmin",
-            overflowX: "hidden",
-            overflowY: "auto"
+            overflowX: "hidden"
         };
 
         const rightPanel = this.state.mode === Mode.play || this.state.mode === Mode.end ?
