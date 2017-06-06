@@ -2,6 +2,7 @@ import * as React from "react";
 
 import Card from "../logic/Card";
 
+import {cards} from "../logic/Card";
 import {City} from "../logic/Construction";
 import {Action, Game, Play} from "../logic/Game";
 import {Meeple, Side} from "../logic/Meeple";
@@ -115,7 +116,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 }
             </div>
             <div key="hand-view">
-                {props.player.hand
+                {props.player.hand.map((card) => cards[card.key])
                     .map((card) =>
                         <div
                             key={card.key}

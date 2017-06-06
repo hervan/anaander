@@ -1,6 +1,6 @@
 import Card from "./Card";
 
-import {decks, initialHand} from "./Card";
+import {cards, decks, initialHand} from "./Card";
 import {
     BuildingPhase,
     Buildings,
@@ -79,10 +79,10 @@ export type Game = {
     readonly players: Player[];
     readonly terrains: Terrain[];
     readonly meeples: Meeple[];
-    readonly decks: Card[][];
-    readonly discardPiles: Card[][];
+    readonly decks: number[][];
+    readonly discardPiles: number[][];
     readonly lastCard?: {
-        readonly card: Card;
+        readonly key: number;
         readonly targets: number[];
         readonly cost: number[];
     }
@@ -398,10 +398,9 @@ export function play(game: Game, play: Play): Game {
 
 function playCard(game: Game, cardKey: number, selection: number[]): Game {
 
-    const hand: ReadonlyArray<Card> = game.players[game.turn.team].hand;
+    const hand = game.players[game.turn.team].hand;
 
-    const card: Card = hand[hand.findIndex((c: Card) => c.key === cardKey)];
-    if (!card) {
+    if (hand.find((card) => card.key === cardKey) === undefined) {
 
         return {
             ...game,
@@ -412,6 +411,8 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
             }]
         };
     }
+
+    const card: Card = {...cards[cardKey]};
 
     const targets = card.target(game, game.meeples[selection[0]].position);
     if (targets.length === 0) {
@@ -464,11 +465,11 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
             (pile, i) => i === card.pattern ?
             [
                 ...pile.slice(),
-                card
+                card.key
             ] : pile.slice()
         ),
         lastCard: {
-            card: card,
+            key: card.key,
             targets: targets,
             cost: [
                 ...[...Array(4).keys()].map((o) => 0),
@@ -567,18 +568,18 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
     if (shapeOnMap.length === 4) {
 
         const patternDiscard = game.discardPiles[piece].slice();
-        const patternDeck: Card[] =
+        const patternDeck: number[] =
             game.decks[piece].length > 0 ?
             game.decks[piece].slice() :
             patternDiscard.splice(0, patternDiscard.length).slice();
 
         if (patternDeck.length > 0) {
 
-            const card: Card = patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0];
+            const card: Card = {...cards[patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0]]};
 
-            const hand: Card[] = player.hand.slice();
+            const hand = player.hand.slice();
             hand.push({
-                ...card,
+                key: card.key,
                 acquisitionRound: game.turn.round
             });
 
@@ -983,7 +984,9 @@ function activateBuilding(game: Game, position: Position): Game {
                 };
             }
 
-            const {card, targets, cost} = game.lastCard;
+            const {key, targets, cost} = game.lastCard;
+            const card = {...cards[key]};
+
             if (cost.some((amount, i) => amount > terrain.construction.resources[i])) {
 
                 return {
