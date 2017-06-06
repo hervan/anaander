@@ -230,7 +230,7 @@ export default class Status extends React.Component<IProps, {}> {
                                     .map((oc) => `${Team[oc.team]}: ${oc.type} ${oc.detail}`).join(", ")}
                                 <a className="is-link history-action"
                                     onClick={() => this.props.rewind(i)}>↩️&#xFE0F;</a>
-                                <a download="anaander.save" id={`history${i}`} className="is-link history-action"
+                                <a download="anaander-save.json" id={`history${i}`} className="is-link history-action"
                                     onClick={() => {
                                         let link = document.getElementById(`history${i}`);
                                         (link as HTMLAnchorElement).href = this.props.saveGame(i);

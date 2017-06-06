@@ -300,17 +300,20 @@ export class Table extends React.Component<{}, IState> {
                         prevState.mode;
 
                     const nextState = {
+                        ...prevState,
                         game: gameStep,
                         mode: mode,
                         playQueue: queue.slice(),
                         selection: [],
                     };
 
+                    delete nextState.history;
+
                     return ({
                         ...nextState,
                         history: prevState.game.turn.team < prevState.playerCount
                             && gameStep.outcome.some((oc) => oc.type !== "invalid") ? [
-                            nextState,
+                            {...nextState},
                             ...prevState.history.slice()
                         ] : prevState.history.slice()
                     });
@@ -345,7 +348,7 @@ export class Table extends React.Component<{}, IState> {
 
     saveGame(step: number): string {
 
-        const data = new File([JSON.stringify(this.state.history[step])], "anaander.save", {type: "text/plain"});
+        const data = new File([JSON.stringify(this.state.history[step])], "anaander-save.json", {type: "text/plain"});
         return URL.createObjectURL(data);
     }
 
