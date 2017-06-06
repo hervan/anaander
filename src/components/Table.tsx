@@ -125,7 +125,8 @@ export class Table extends React.Component<{}, IState> {
                     scale: defaultBoardSize,
                     position: { row: Math.floor(defaultBoardSize / 2), col: Math.floor(defaultBoardSize / 2) }
                 },
-                playQueue: [[], [], [], [], [], []]
+                playQueue: [[], [], [], [], [], []],
+                history: []
             }));
 
             break;

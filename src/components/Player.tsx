@@ -118,10 +118,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
             <div key="hand-view">
                 {props.player.hand.map((card) => cards[card.key])
                     .map((card) =>
-                        <div
-                            key={card.key}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => props.playCard(card.key)}>
+                        <div key={card.key} style={{cursor: "pointer"}} onClick={() => props.playCard(card.key)}>
                             {
                                 props.selection.length > 0 && props.active ?
                                 <span className="costs" style={{margin: "2px"}}>

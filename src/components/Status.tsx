@@ -193,7 +193,7 @@ export default class Status extends React.Component<IProps, {}> {
                     </span>'s turn.
                 </p>;
 
-            if (this.props.game.outcome.length > 0) {
+            if (this.props.game.outcome.some((oc) => oc.type === "invalid")) {
 
                 let outcome: Outcome = this.props.game.outcome[0];
                 guideDetail = <p>{outcome.detail}</p>;
@@ -211,7 +211,7 @@ export default class Status extends React.Component<IProps, {}> {
         }
 
         return (
-            <div>
+            <div style={{display: "block", height: "100%", overflowY: "hidden"}}>
                 <div className="notification">
                     <h1 className="title is-2">anaander</h1>
                     <h2 className="subtitle is-4">
@@ -221,6 +221,7 @@ export default class Status extends React.Component<IProps, {}> {
                         {guideDetail}
                     </span>
                 </div>
+                {this.props.history.length > 0 ?
                 <div style={{height: "100%", overflowY: "auto"}}>
                     <h1 className="title is-4">history</h1>
                     {this.props.history.map((historyItem, i) =>
@@ -228,17 +229,18 @@ export default class Status extends React.Component<IProps, {}> {
                             <span>
                                 {historyItem
                                     .map((oc) => `${Team[oc.team]}: ${oc.type} ${oc.detail}`).join(", ")}
-                                <a className="is-link history-action"
-                                    onClick={() => this.props.rewind(i)}>↩️&#xFE0F;</a>
                                 <a download="anaander-save.json" id={`history${i}`} className="is-link history-action"
                                     onClick={() => {
                                         let link = document.getElementById(`history${i}`);
                                         (link as HTMLAnchorElement).href = this.props.saveGame(i);
                                     }}>💾&#xFE0F;</a>
+                                <a className="is-link history-action"
+                                    onClick={() => this.props.rewind(i)}>↩️&#xFE0F;</a>
                             </span>
                         </div>
                     )}
-                </div>
+                </div> :
+                null}
             </div>
         );
     }
