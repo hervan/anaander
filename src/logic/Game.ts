@@ -972,7 +972,7 @@ function activateBuilding(game: Game, position: Position): Game {
 
             case "i":
 
-            if (!game.lastCard) {
+            if (game.lastCard === undefined) {
 
                 return {
                     ...game,
@@ -1015,9 +1015,9 @@ function activateBuilding(game: Game, position: Position): Game {
                 meeples: gameStep.meeples.map(
                     (m) => m.key === meeple.key ?
                     {
-                        ...meeple,
-                        side: flipSide(meeple.side)
-                    } : {...meeple}
+                        ...m,
+                        side: flipSide(m.side)
+                    } : {...m}
                 ),
                 lastCard: undefined
             };
