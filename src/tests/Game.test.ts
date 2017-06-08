@@ -16,7 +16,7 @@ function logBoard(game: Game): void {
         success: "3",
         danger: "4",
         primary: "5",
-        default: "o"
+        default: "0"
     };
 
     const board: string = game.terrains.reduce(((acc, terrain, index) =>

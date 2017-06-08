@@ -52,10 +52,11 @@ const InvalidPlays: { [key: string]: string } = {
     NotOnGround: "only meeples on the ground can explore the terrain.",
     NoSelection: "please select meeples before choosing the action.",
     NoActions: "you need to control more cities to perform more actions.",
-    NotYourCard: "you can play only cards that are in your hand.",
+    NotYourCard: "you must play a card from your hand.",
     NoValidTarget: "you must choose a meeple with a valid target.",
     NotEnoughResources: "you need more resources to activate this card.",
-    NoPreviousCard: "you must play a card before reactivating it."
+    NoPreviousCard: "you must play a card before reactivating it.",
+    NotYourBuilding: "you must own a building to activate it."
 };
 
 type Turn = {
@@ -968,6 +969,18 @@ function activateBuilding(game: Game, position: Position): Game {
 
     if (construction.type === "building") {
 
+        if (construction.team !== meeple.team) {
+
+            return {
+                ...game,
+                outcome: [...game.outcome, {
+                    team: game.turn.team,
+                    type: "invalid",
+                    detail: InvalidPlays.NotYourBuilding
+                }]
+            };
+        }
+
         switch (construction.blueprint) {
 
             case "i":
@@ -1043,8 +1056,7 @@ function activateBuilding(game: Game, position: Position): Game {
                     m.key === meeple.key ?
                     {
                         ...meeple,
-                        faith: meeple.faith
-                            + (construction.resources[Resource.cubit] * (meeple.team === game.turn.team ? 1 : -1)),
+                        faith: meeple.faith + construction.resources[Resource.cubit],
                         side: flipSide(meeple.side)
                     } : m
                 )
@@ -1071,8 +1083,7 @@ function activateBuilding(game: Game, position: Position): Game {
                     m.key === meeple.key ?
                     {
                         ...meeple,
-                        strength: meeple.strength
-                            + (construction.resources[Resource.cubit] * (meeple.team === game.turn.team ? 1 : -1)),
+                        strength: meeple.strength + construction.resources[Resource.cubit],
                         side: flipSide(meeple.side)
                     } : m
                 )
@@ -1080,58 +1091,17 @@ function activateBuilding(game: Game, position: Position): Game {
 
             case "s":
 
-            if (construction.team === meeple.team) {
+            if (meeple.topsMeeple !== -1
+                && game.meeples[meeple.topsMeeple].team === meeple.team) {
 
-                if (meeple.topsMeeple !== -1
-                    && game.meeples[meeple.topsMeeple].team === meeple.team) {
-
-                    const meepleUnder = game.meeples[meeple.topsMeeple];
-                    return {
-                        ...game,
-                        terrains: game.terrains.map((t) =>
-                            t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
-                            {
-                                ...t,
-                                spaceLeft: terrain.spaceLeft + 1,
-                                construction: {
-                                    ...construction,
-                                    resources: construction.resources.map(
-                                        (amount, i) => i === Resource.cubit ?
-                                        amount - 1 : amount
-                                    )
-                                }
-                            } : {...t}
-                        ),
-                        meeples: game.meeples
-                            .map((m) =>
-                                m.key === meeple.key ?
-                                {
-                                    ...meeple,
-                                    strength: meeple.strength + meepleUnder.strength,
-                                    resistance: meeple.resistance + meepleUnder.resistance,
-                                    faith: meeple.faith + meepleUnder.faith,
-                                    speed: meeple.speed + meepleUnder.speed,
-                                    topsMeeple: meepleUnder.topsMeeple,
-                                    side: flipSide(meeple.side)
-                                } :
-                                m.key === meeple.topsMeeple ?
-                                {
-                                    ...m,
-                                    key: -1
-                                } :
-                                {...m}
-                            )
-                    };
-                }
-            } else if (terrain.spaceLeft > 0) {
-
+                const meepleUnder = game.meeples[meeple.topsMeeple];
                 return {
                     ...game,
                     terrains: game.terrains.map((t) =>
                         t.position.row === terrain.position.row && t.position.col === terrain.position.col ?
                         {
                             ...t,
-                            spaceLeft: terrain.spaceLeft - 1,
+                            spaceLeft: terrain.spaceLeft + 1,
                             construction: {
                                 ...construction,
                                 resources: construction.resources.map(
@@ -1141,31 +1111,25 @@ function activateBuilding(game: Game, position: Position): Game {
                             }
                         } : {...t}
                     ),
-                    meeples: [
-                        ...game.meeples.map((m) =>
+                    meeples: game.meeples
+                        .map((m) =>
                             m.key === meeple.key ?
                             {
                                 ...meeple,
-                                strength: Math.ceil(meeple.strength / 2),
-                                resistance: Math.ceil(meeple.resistance / 2),
-                                faith: Math.ceil(meeple.faith / 2),
-                                speed: Math.ceil(meeple.speed / 2),
-                                topsMeeple: game.meeples.length,
+                                strength: meeple.strength + meepleUnder.strength,
+                                resistance: meeple.resistance + meepleUnder.resistance,
+                                faith: meeple.faith + meepleUnder.faith,
+                                speed: meeple.speed + meepleUnder.speed,
+                                topsMeeple: meepleUnder.topsMeeple,
                                 side: flipSide(meeple.side)
-                            } : m
-                        ),
-                        {
-                            key: game.meeples.length,
-                            position: meeple.position,
-                            team: meeple.team,
-                            side: flipSide(meeple.side),
-                            strength: Math.ceil(meeple.strength / 2),
-                            resistance: Math.ceil(meeple.resistance / 2),
-                            faith: Math.ceil(meeple.faith / 2),
-                            speed: Math.ceil(meeple.speed / 2),
-                            topsMeeple: -1
-                        }
-                    ]
+                            } :
+                            m.key === meeple.topsMeeple ?
+                            {
+                                ...m,
+                                key: -1
+                            } :
+                            {...m}
+                        )
                 };
             }
 
@@ -1190,8 +1154,7 @@ function activateBuilding(game: Game, position: Position): Game {
                     m.key === meeple.key ?
                     {
                         ...meeple,
-                        resistance: meeple.resistance
-                            + (construction.resources[Resource.cubit] * (meeple.team === game.turn.team ? 1 : -1)),
+                        resistance: meeple.resistance + construction.resources[Resource.cubit],
                         side: flipSide(meeple.side)
                     } : m
                 )
