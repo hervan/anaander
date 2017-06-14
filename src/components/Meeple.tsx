@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {Meeple, Side} from "../logic/Meeple";
+import {Meeple, Phase} from "../logic/Meeple";
 import {Team} from "../logic/Player";
 import {Position} from "../logic/Terrain";
 
@@ -25,7 +25,7 @@ const Meeple: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 transform: `scale(${props.scale * props.size / 3.8})`,
                 opacity: 0.5 + (props.meeple.resistance / 20)
             }}>
-            <i className={"fa fa-user-circle" + (props.meeple.side === Side.heads ? "-o" : "")}>
+            <i className={"fa fa-user-circle" + (props.meeple.phase === Phase.high ? "-o" : "")}>
             </i>
         </span>
     </div>;

@@ -5,7 +5,7 @@ import Card from "../logic/Card";
 import {cards} from "../logic/Card";
 import {City} from "../logic/Construction";
 import {Action, Game, Play} from "../logic/Game";
-import {Meeple, Side} from "../logic/Meeple";
+import {Meeple, Phase} from "../logic/Meeple";
 import {Player, Team} from "../logic/Player";
 import {Geography, GeographyInfo, Position, Resource, Terrain} from "../logic/Terrain";
 
@@ -159,7 +159,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                     + " is-" + Team[meeple.team]}
                                     style={{ opacity: 0.5 + (meeple.resistance / 20) }}>
                                     <i className={"fa fa-user-circle"
-                                        + (meeple.side === Side.heads ? "-o" : "")}>
+                                        + (meeple.phase === Phase.high ? "-o" : "")}>
                                     </i>
                                 </div>
                                 <div>
@@ -193,7 +193,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                             <div className="stats"
                                 style={{ display: "inline-block", verticalAlign: "top" }}>
                                 {
-                                    terrain.construction.resources
+                                    terrain.construction.production
                                         .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
                                         .filter(({amount}) => amount > 0)
                                         .map(({index, icon, amount}) =>

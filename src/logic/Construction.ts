@@ -1,9 +1,9 @@
-import {Side} from "./Meeple";
+import {Phase} from "./Meeple";
 import {Team} from "./Player";
 import {Position} from "./Terrain";
 
 export type Construction = {
-    readonly resources: number[];
+    readonly phase: Phase;
     readonly production: number[];
 } & (Building | City | EmptySite);
 

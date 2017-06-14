@@ -397,13 +397,13 @@ const lessons: Array<[JSX.Element, JSX.Element, Array<[Team, Action]>]> = [
 /*
 players take alternate turns.
 in a round, each player can move their swarm once; after all players complete their swarm moves, a new round begins.
-meeples are two-sided, and in each turn you are allowed to move each meeple only if its current side up matches the
-current side of the turn.
-after each meeple is moved, its side is flipped too, so usually when a meeple is moved in a turn, it also gets to play
+meeples have phases, and in each turn you are allowed to move each meeple only if its current phase matches the
+current phase of the turn.
+after each meeple is moved, its phase is switched too, so usually when a meeple is moved in a turn, it also gets to play
 in the next turn.
 meeples can enter a terrain tile only if there is space available in it for the meeple to enter. if a swarm moves in a
 direction which would cause a meeple to enter a terrain with no space left, the swarm makes its move but the meeple
-stands still - also, not flipping its side, so it will miss the next turn.
+stands still - also, not switching its phase, so it will miss the next turn.
 the space available to meeples in the terrains ranges from 1 to 6, according to the terrain geography.
 you are the general who controls the team of your color. generals have silly names, like general info, general warning,
 general success, general danger and general primary (the last general's name doesn't even make sense).

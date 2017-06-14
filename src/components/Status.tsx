@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {Action, Game, Outcome, Play} from "../logic/Game";
-import {Meeple, Side} from "../logic/Meeple";
+import {Meeple, Phase} from "../logic/Meeple";
 import {Team} from "../logic/Player";
 import {Position} from "../logic/Terrain";
 
@@ -105,7 +105,7 @@ export default class Status extends React.Component<IProps, {}> {
             const currentPlayerMeeples: Meeple[] = this.props.game.meeples
                 .filter((meeple) => meeple.key !== -1
                     && meeple.team === this.props.game.turn.team
-                    && meeple.side === this.props.game.turn.side);
+                    && meeple.phase === this.props.game.turn.phase);
 
             if (currentPlayerMeeples.length > 0) {
 
@@ -147,13 +147,13 @@ export default class Status extends React.Component<IProps, {}> {
 
                         this.props.select(this.props.game.meeples
                             .find((meeple) => meeple.team === this.props.game.turn.team
-                                && meeple.side === this.props.game.turn.side)!.position);
+                                && meeple.phase === this.props.game.turn.phase)!.position);
                         this.props.enqueuePlay(this.props.game.turn.team, Action.explore);
                     } else {
 
                         this.props.select(this.props.game.meeples
                             .find((meeple) => meeple.team === this.props.game.turn.team
-                                && meeple.side === this.props.game.turn.side)!.position);
+                                && meeple.phase === this.props.game.turn.phase)!.position);
                         this.props.enqueuePlay(this.props.game.turn.team, action);
                     }
                 }
@@ -200,13 +200,13 @@ export default class Status extends React.Component<IProps, {}> {
 
             } else {
 
-                const side: JSX.Element =
+                const phase: JSX.Element =
                     <span className="icon">
                         <i className={"fa fa-user-circle"
-                            + (this.props.game.turn.side === Side.heads ? "-o" : "")
+                            + (this.props.game.turn.phase === Phase.high ? "-o" : "")
                             + " is-" + Team[this.props.game.turn.team]}></i>
                     </span>;
-                guideDetail = <p>choose an action for these meeples: {side}</p>;
+                guideDetail = <p>choose an action for these meeples: {phase}</p>;
             }
         }
 

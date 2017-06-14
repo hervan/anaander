@@ -5742,7 +5742,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 0,
+            "phase": 0,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5755,7 +5755,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5768,7 +5768,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5781,7 +5781,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5794,7 +5794,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5807,7 +5807,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5820,7 +5820,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5833,7 +5833,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5846,7 +5846,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5859,7 +5859,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5872,7 +5872,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5885,7 +5885,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5898,7 +5898,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5911,7 +5911,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5924,7 +5924,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5937,7 +5937,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5950,7 +5950,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5963,7 +5963,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5976,7 +5976,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -5989,7 +5989,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6002,7 +6002,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6015,7 +6015,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6028,7 +6028,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6041,7 +6041,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6054,7 +6054,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6067,7 +6067,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6080,7 +6080,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6093,7 +6093,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6106,7 +6106,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6119,7 +6119,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6132,7 +6132,7 @@
                 "col": 17
             },
             "team": 0,
-            "side": 1,
+            "phase": 1,
             "strength": 120,
             "resistance": 84,
             "faith": 23,
@@ -6156,7 +6156,7 @@
         "turn": {
             "round": 260,
             "team": 0,
-            "side": 1
+            "phase": 1
         },
         "outcome": [{
             "team": 0,

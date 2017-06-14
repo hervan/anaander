@@ -27,13 +27,13 @@ now that you have a swarm and know how to handle it, you can take a stab at conq
 
 you may move meeples independently from the swarm, but with extra actions you're able to do both.
 
-rounds and meeples have **sides** (heads, a meeple with a painted head, or tails, a meeple with a painted background), and each round you can only move meeples on the same side ("phase").
+rounds and meeples have **phases** (high, a meeple with a painted head, or low, a meeple with a painted background), and each round you can only move meeples on the same phase.
 
 you can use extra actions to form the tetramino pattern represented in your tableu - a **blueprint** taken from the technologies of the conquered city.
 
 after positioning your meeples in the formation specified by the blueprint, when you choose to explore on an empty terrain (no constructions or enemies), you'll build the **building** for that blueprint. the tile will change its color to make it clear who owns it.
 
-you can enter buildings and reap their benefits, but they also have sides and you'll only enter a building's tile if you obey its side.
+you can enter buildings and reap their benefits, but they also have phases and you'll only enter a building's tile if you obey its phase.
 
 if you enter an enemy's building, you'll get the opposite effect of that benefit - an hospital you own increases your meeple's resistance by ten percent, but it will take ten percent from the resistance of an enemy meeple.
 
