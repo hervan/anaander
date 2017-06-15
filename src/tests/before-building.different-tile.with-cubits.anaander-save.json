@@ -6,7 +6,6 @@
             "cities": [84, 89, 184, 256, 232],
             "swarmSize": 1,
             "buildingPhase": ["built", "built", "built", "built", "built"],
-            "usedActions": 1,
             "resources": [281, 151, 452, 102, 0],
             "hand": [{
                 "key": 9,
@@ -75,7 +74,6 @@
             "cities": [],
             "swarmSize": 1,
             "buildingPhase": ["notbuilt", "notbuilt", "notbuilt", "notbuilt", "notbuilt"],
-            "usedActions": 0,
             "resources": [56, 81, 137, 0, 0],
             "hand": [{
                 "key": 1,

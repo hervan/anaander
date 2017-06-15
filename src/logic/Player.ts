@@ -2,6 +2,7 @@ import Card from "./Card";
 import {BuildingPhase} from "./Construction";
 
 export type Player = {
+    readonly controller: Controller;
     readonly team: Team;
     readonly swarmSize: number;
     readonly cities: number[];
@@ -11,9 +12,10 @@ export type Player = {
         readonly acquisitionRound: number;
     }>;
     readonly buildingPhase: BuildingPhase[];
-    readonly usedActions: number;
     readonly vp: number;
 };
+
+type Controller = "human" | "computer" | "npc" | "network";
 
 export enum Team {
     info,

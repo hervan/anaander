@@ -51,7 +51,6 @@ const InvalidPlays: { [key: string]: string } = {
     TerrainIsCrowded: "move to a terrain with space available.",
     NotOnGround: "only meeples on the ground can explore the terrain.",
     NoSelection: "please select meeples before choosing the action.",
-    NoActions: "you need to control more cities to perform more actions.",
     NotYourCard: "you must play a card from your hand.",
     NoValidTarget: "you must choose a meeple with a valid target.",
     NotEnoughResources: "you need more resources to activate this card.",
@@ -108,18 +107,13 @@ function nextTurn(game: Game): Game {
     let { round, team, phase } = game.turn;
 
     let availableTeams = game.players
-        .filter((player) => player.usedActions < player.cities.length + 1
-            && availableMeeples(game, player.team).length > 0)
+        .filter((player) => availableMeeples(game, player.team).length > 0)
         .map((player) => player.team);
 
     if (availableTeams.length === 0) {
         // no more actions left this round
         return nextTurn({
             ...game,
-            players: game.players.map((player) => ({
-                ...player,
-                usedActions: 0
-            })),
             turn: {
                 round: round + 1,
                 team: -1,
@@ -330,16 +324,6 @@ export function play(game: Game, play: Play): Game {
                 detail: InvalidPlays.NotYourTurn
             }]
         };
-    } else if (game.players[game.turn.team].usedActions > game.players[game.turn.team].cities.length) {
-
-        return {
-            ...game,
-            outcome: [{
-                team: game.turn.team,
-                type: "invalid",
-                detail: InvalidPlays.NoActions
-            }]
-        };
     } else if (play.selection.length === 0) {
 
         return {
@@ -500,14 +484,6 @@ function playSwarm(game: Game, action: Action, swarm: number[]): Game {
 
     return {
         ...stepGame,
-        players: stepGame.players.map((player) =>
-            player.team === stepGame.turn.team ?
-            {
-                ...player,
-                usedActions: player.usedActions
-                    + (stepGame.outcome.some((oc) => oc.type !== "invalid") ? 1 : 0)
-            } : {...player}
-        ),
         terrains: stepGame.terrains.map(
             (terrain, i) => freedPositionIndices.some((fpi) => i === fpi) ?
             {
@@ -749,19 +725,6 @@ function convertMeeple(game: Game, meepleOver: Meeple, meepleUnder: Meeple): Gam
     const gamePlayers = game.players.slice();
     const gameMeeples = game.meeples.slice();
 
-    if (meepleUnder.team < gamePlayers.length) {
-
-        gamePlayers[meepleUnder.team] = {
-            ...gamePlayers[meepleUnder.team],
-            usedActions: gamePlayers[meepleUnder.team].swarmSize - 1
-        };
-    }
-
-    gamePlayers[meepleOver.team] = {
-        ...gamePlayers[meepleOver.team],
-        usedActions: gamePlayers[meepleOver.team].swarmSize + 1
-    };
-
     gameMeeples[meepleOver.key] = {
         ...meepleOver,
         resistance: meepleOver.resistance + meepleUnder.resistance
@@ -812,14 +775,6 @@ function fightMeeple(game: Game, meepleOver: Meeple, meepleUnder: Meeple): Game 
         };
 
         terrainSpaceLeft++;
-
-        if (meepleUnder.team < gamePlayers.length) {
-
-            gamePlayers[meepleUnder.team] = {
-                ...gamePlayers[meepleUnder.team],
-                usedActions: gamePlayers[meepleUnder.team].swarmSize - 1
-            };
-        }
     }
 
     const meepleOverKey = meepleOver.key;
@@ -835,11 +790,6 @@ function fightMeeple(game: Game, meepleOver: Meeple, meepleUnder: Meeple): Game 
             faith: meepleUnder.faith + meepleOver.faith
         };
         terrainSpaceLeft++;
-
-        gamePlayers[meepleOver.team] = {
-            ...gamePlayers[meepleOver.team],
-            usedActions: gamePlayers[meepleOver.team].swarmSize - 1
-        };
     }
 
     gameMeeples[meepleUnderKey] = {
@@ -1374,7 +1324,7 @@ export function terrainPatch(
         .reduce((acc, pos) => terrainPatch(game, pos, continent, acc), [...patch, position]);
 }
 
-export function setup(playerCount: number = 0, boardSize: number = 20): Game {
+export function setup(humanPlayerCount: number, computarPlayerCount: number, boardSize: number = 20): Game {
 
     const cityNames = [
         "Argos",
@@ -1423,7 +1373,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
     ];
 
     const terrains = new Array<Terrain>();
-    const patchesPerDimension = Math.ceil(Math.sqrt(4 * playerCount));
+    const patchesPerDimension = Math.ceil(Math.sqrt(4 * (humanPlayerCount + computarPlayerCount)));
     const patchLength = boardSize / patchesPerDimension;
     const defaultPatchArea = ((patchLength - 1) / 2) ** 2;
 
@@ -1435,7 +1385,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
             })
         );
 
-    const requiredGeography = [...Array(4 * playerCount).keys()].map((i) => (i % 4) + 2);
+    const requiredGeography = [...Array(4 * (humanPlayerCount + computarPlayerCount)).keys()].map((i) => (i % 4) + 2);
 
     let patchIndex = 0;
 
@@ -1553,7 +1503,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
         patchIndex++;
     }
 
-    let meepleKey: number = playerCount;
+    let meepleKey: number = (humanPlayerCount + computarPlayerCount);
     const meeples: Meeple[] = new Array<Meeple>();
 
     for (let i: number = 0; i < boardSize; i++) {
@@ -1626,7 +1576,7 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
     let i: number = 0;
     meepleKey = 0;
 
-    for (let team = Team.info; team < playerCount; team++) {
+    for (let team = Team.info; team < (humanPlayerCount + computarPlayerCount); team++) {
 
         let position: Position;
 
@@ -1662,11 +1612,11 @@ export function setup(playerCount: number = 0, boardSize: number = 20): Game {
         };
 
         players[team] = {
+            controller: team < humanPlayerCount ? "human" : "computer",
             team: team,
             cities: [],
             swarmSize: meeples.filter((m) => m.team === team).length,
             buildingPhase: [...Array(5).keys()].map((o) => "notbuilt" as BuildingPhase),
-            usedActions: 0,
             resources: [...Array(5).keys()].map((o) => 0),
             hand: initialHand(team),
             vp: 0
