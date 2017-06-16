@@ -32,7 +32,7 @@ describe("game setup with 2 players on a 4x4 board", () => {
 
     beforeAll(() => {
 
-        game = setup(2, 4);
+        game = setup(2, 0, 4);
     });
 
     it("find 2 players at the table", () => {
@@ -58,7 +58,7 @@ describe("first player move", () => {
 
     beforeAll(() => {
 
-        const setupGame: Game = setup(2, 4);
+        const setupGame: Game = setup(2, 0, 4);
 
         game = begin(setupGame);
 

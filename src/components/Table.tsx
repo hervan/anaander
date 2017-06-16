@@ -71,7 +71,7 @@ export class Table extends React.Component<{}, IState> {
         const defaultBoardSize = 20;
 
         this.state = {
-            game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
+            game: setup(defaultPlayerCount, defaultComputerCount, defaultBoardSize),
             mode: Mode.setup,
             playerCount: defaultPlayerCount,
             computerCount: defaultComputerCount,
@@ -115,7 +115,7 @@ export class Table extends React.Component<{}, IState> {
             const defaultBoardSize = 20;
 
             this.setState((prevState, props) => ({
-                game: setup(defaultPlayerCount + defaultComputerCount, defaultBoardSize),
+                game: setup(defaultPlayerCount, defaultComputerCount, defaultBoardSize),
                 mode: Mode.setup,
                 playerCount: defaultPlayerCount,
                 computerCount: defaultComputerCount,
@@ -134,7 +134,7 @@ export class Table extends React.Component<{}, IState> {
             case "rearrange":
 
             this.setState((prevState, props) => ({
-                game: setup(prevState.playerCount + prevState.computerCount, prevState.boardSize),
+                game: setup(prevState.playerCount, prevState.computerCount, prevState.boardSize),
                 zoom: {
                     scale: prevState.boardSize,
                     position: { row: Math.floor(prevState.boardSize / 2), col: Math.floor(prevState.boardSize / 2) }
@@ -148,7 +148,7 @@ export class Table extends React.Component<{}, IState> {
             if (this.state.playerCount > 0 && this.state.playerCount + this.state.computerCount > 1) {
 
                 this.setState((prevState, props) => ({
-                    game: setup((prevState.playerCount - 1) + prevState.computerCount, prevState.boardSize),
+                    game: setup(prevState.playerCount - 1, prevState.computerCount, prevState.boardSize),
                     playerCount: prevState.playerCount - 1,
                 }));
             }
@@ -160,7 +160,7 @@ export class Table extends React.Component<{}, IState> {
             if (this.state.playerCount + this.state.computerCount < 5) {
 
                 this.setState((prevState, props) => ({
-                    game: setup((prevState.playerCount + 1) + prevState.computerCount, prevState.boardSize),
+                    game: setup(prevState.playerCount + 1, prevState.computerCount, prevState.boardSize),
                     playerCount: prevState.playerCount + 1,
                 }));
             }
@@ -172,7 +172,7 @@ export class Table extends React.Component<{}, IState> {
             if (this.state.computerCount > 0 && this.state.playerCount + this.state.computerCount > 1) {
 
                 this.setState((prevState, props) => ({
-                    game: setup(prevState.playerCount + (prevState.computerCount - 1), prevState.boardSize),
+                    game: setup(prevState.playerCount, prevState.computerCount - 1, prevState.boardSize),
                     computerCount: prevState.computerCount - 1,
                 }));
             }
@@ -184,7 +184,7 @@ export class Table extends React.Component<{}, IState> {
             if (this.state.playerCount + this.state.computerCount < 5) {
 
                 this.setState((prevState, props) => ({
-                    game: setup(prevState.playerCount + (prevState.computerCount + 1), prevState.boardSize),
+                    game: setup(prevState.playerCount, prevState.computerCount + 1, prevState.boardSize),
                     computerCount: prevState.computerCount + 1,
                 }));
             }
@@ -200,7 +200,7 @@ export class Table extends React.Component<{}, IState> {
                     const boardSize = prevState.boardSize - 4;
 
                     return ({
-                        game: setup(prevState.playerCount + prevState.computerCount, boardSize),
+                        game: setup(prevState.playerCount, prevState.computerCount, boardSize),
                         boardSize: boardSize,
                         zoom: {
                             scale: boardSize,
@@ -222,7 +222,7 @@ export class Table extends React.Component<{}, IState> {
                 const boardSize = prevState.boardSize + 4;
 
                 return ({
-                    game: setup(prevState.playerCount + prevState.computerCount, boardSize),
+                    game: setup(prevState.playerCount, prevState.computerCount, boardSize),
                     boardSize: boardSize,
                     zoom: {
                         scale: boardSize,
