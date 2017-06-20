@@ -22,6 +22,8 @@ it just happens that code *and* game are able to receive these changes right now
   - leave mountain: move twice
   - desert deals damage to resistance
   - leaving desert increases faith
+- cards
+  - card effects last for the remaining of the round (while the phase is still active), so a player must time it properly if it wants to target an adversary with negative effects, or wants to prevent a player from benefitting from positive effects. this gets amplified by a rule change where you can only play cards if you still have meeples "on phase" (available meeples in general).
 
 # to be addressed #
 ideas that must be implemented in the **current** prototype.
