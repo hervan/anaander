@@ -104,9 +104,10 @@ function rotateTeam(turn: Turn, playerCount: number): Team {
 
 function nextTurn(game: Game): Game {
 
-    let { round, team, phase } = game.turn;
+    const { round, phase } = game.turn;
+    let team = game.turn.team;
 
-    let availableTeams = game.players
+    const availableTeams = game.players
         .filter((player) => availableMeeples(game, player.team).length > 0)
         .map((player) => player.team);
 
@@ -1142,7 +1143,7 @@ function moveMeeple(game: Game, action: Action, meeple: Meeple): Game {
     const gameMeeples = game.meeples.slice();
 
     const topMeepleFrom = meeple.topsMeeple;
-    let constructionFrom: Construction = terrainFrom.construction;
+    const constructionFrom: Construction = terrainFrom.construction;
 
     if (topMeepleFrom !== -1) {
 
@@ -1573,7 +1574,7 @@ export function setup(humanPlayerCount: number, computarPlayerCount: number, boa
     }
 
     const players: Player[] = new Array<Player>();
-    let i: number = 0;
+    const i: number = 0;
     meepleKey = 0;
 
     for (let team = Team.info; team < (humanPlayerCount + computarPlayerCount); team++) {

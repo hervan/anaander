@@ -37,6 +37,7 @@
     "react-dom": "*",
     "source-map-loader": "*",
     "style-loader": "*",
+    "tslint-config-prettier": "^1.1.0",
     "typescript": "*",
     "uglify-es": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
