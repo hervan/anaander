@@ -398,7 +398,7 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
         };
     }
 
-    const card: Card = {...cards[cardKey]};
+    const card = {...cards[cardKey]};
 
     const targets = card.target(game, game.meeples[selection[0]].position);
     if (targets.length === 0) {
@@ -552,7 +552,7 @@ function activatePattern(game: Game, position: Position, piece: Piece): Game {
 
         if (patternDeck.length > 0) {
 
-            const card: Card = {...cards[patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0]]};
+            const card = {...cards[patternDeck.splice(Math.floor(Math.random() * patternDeck.length), 1)[0]]};
 
             const hand = player.hand.slice();
             hand.push({
@@ -628,14 +628,14 @@ function build(game: Game, position: Position, piece: Piece): Game {
                     ...terrain,
                     spaceLeft: Piece[piece] === "s" ? 1 : 0,
                     construction: {
-                        type: "building",
+                        type: "building" as "building",
                         team: game.turn.team,
                         blueprint: Piece[piece],
                         name: Buildings[Piece[piece]],
                         phase: Phase.high,
                         production: [...Array(5).keys()].map((o, i) => i === Resource.cubit ? 1 : 0)
                     }
-                } as Terrain) : t
+                }) : t
             ),
             meeples: game.meeples.map((m) =>
                 shapeOnMap.some((p) =>
@@ -661,16 +661,13 @@ function exploreTerrain(game: Game, position: Position): Game {
     if (teamControls(game, position)) {
 
         const construction = game.terrains[positionToIndex(position, game.boardSize)].construction;
-        let exploredGame: Game;
 
-        if (construction.type === "emptysite") {
-
-            const terrainIndex = positionToIndex(position, game.boardSize);
-
-            exploredGame = {
+        const exploredGame: Game =
+            (construction.type === "emptysite") ?
+            {
                 ...game,
                 terrains: game.terrains.map(
-                    (terrain, i) => i === terrainIndex ?
+                    (terrain, i) => i === positionToIndex(position, game.boardSize) ?
                     {
                         ...terrain,
                         construction: {
@@ -679,15 +676,9 @@ function exploreTerrain(game: Game, position: Position): Game {
                         }
                     } : terrain
                 )
-            };
-        } else if (construction.type === "building") {
-
-            exploredGame = activateBuilding(game, position);
-
-        } else {
-
-            exploredGame = {...game};
-        }
+            } : (construction.type === "building") ?
+            activateBuilding(game, position) :
+            {...game};
 
         const cardsGame: Game = pieceShapes
             .filter((o, i) => exploredGame.players[exploredGame.turn.team].buildingPhase[i] === "built")

@@ -4,18 +4,19 @@ import {Meeple} from "./Meeple";
 import {Player, Team} from "./Player";
 import {Geography, Position, positionToIndex, Resource, Terrain} from "./Terrain";
 
-interface Card {
+interface Card<T> {
     readonly key: number;
     readonly name: string;
     readonly pattern: Piece;
     readonly cost: number[];
     readonly acquisitionRound: number;
     readonly target: (game: Game, position: Position) => number[];
-    readonly effect: <T>(param: T) => T;
-    readonly apply:
-        <T>(game: Game,
+    readonly effect: (param: T) => T;
+    readonly apply: (
+        game: Game,
         effect: (param: T) => T,
-        targets: T[]) => Game;
+        targets: number[]
+    ) => Game;
 };
 
 const currentTerrain =
@@ -69,10 +70,10 @@ const basicCards = (team: Team) => [
     }
 ];
 
-export const cards: Card[] = [
+export const cards = [
     ...[...Array(5).keys()]
         .map((cardKey) => basicCards(cardKey))
-        .reduce((acc, ih) => [...acc, ...ih], []),
+        .reduce((acc, bc) => [...acc, ...bc], []),
     {
         key: 5,
         name: "ferrosilicon mine I",
