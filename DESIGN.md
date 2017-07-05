@@ -24,6 +24,10 @@ it just happens that code *and* game are able to receive these changes right now
   - leaving desert increases faith
 - cards
   - card effects last for the remaining of the round (while the phase is still active), so a player must time it properly if it wants to target an adversary with negative effects, or wants to prevent a player from benefitting from positive effects. this gets amplified by a rule change where you can only play cards if you still have meeples "on phase" (available meeples in general).
+- swarm handling
+  - remove swarm/individual movement options for meeples; enable swarm splitting and other operations by cards - create a card with this option for a price proportional to the meeples moved (maybe those selected can just phase out in place - other options as well?). but this card needs to be relatively common, or keep returning frequently to a players hand, which in turn sounds a lot like deck building, so if it's not possible to create the proper frequency for these cards, create as an alternate option for a discarded card. regarding other options, it may as well be a sort of extra action provided by a card, where players may regularly opt to activate them only in selected meeples, potentially creating split swarms.
+- buildings
+  - return to the idea of tetramino-shaped buildings? because vehicles with tetramino shapes would be much larger than buildings and cities; rework these sizes a little.
 
 # to be addressed #
 ideas that must be implemented in the **current** prototype.
