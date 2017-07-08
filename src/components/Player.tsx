@@ -123,7 +123,10 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                                 props.selection.length > 0 && props.active ?
                                 <span className="costs" style={{margin: "2px"}}>
                                 {
-                                    card.cost
+                                    card.target(props.game,
+                                        props.game.meeples[props.selection[0]].position).length === 0 ?
+                                    <span>❌&#xFE0F;</span>
+                                    : card.cost
                                         .map((amount, i) => ({ i: i, icon: resourceIcon(i), amount: amount }))
                                         .filter(({amount}) => amount > 0)
                                         .map(({i, icon, amount}) =>
