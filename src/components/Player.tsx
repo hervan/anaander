@@ -4,7 +4,7 @@ import Card from "../logic/Card";
 
 import {cards} from "../logic/Card";
 import {City} from "../logic/Construction";
-import {Action, Game, Play} from "../logic/Game";
+import {Action, Game, Play, playerProduction, playerSwarm} from "../logic/Game";
 import {Meeple, Phase} from "../logic/Meeple";
 import {Player, Team} from "../logic/Player";
 import {Geography, GeographyInfo, Position, Resource, Terrain} from "../logic/Terrain";
@@ -14,7 +14,6 @@ import {buildingIcon} from "./Terrain";
 
 interface IProps {
     player: Player;
-    swarm: Array<{ meeple: Meeple, terrain: Terrain }>;
     empire: Array<{ city: City, spaceLeft: number }>;
     game: Game;
     setup: (control: Control) => void;
@@ -107,7 +106,9 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 </div>
             </div>
             <div key="resource-view">
-                {props.player.resources.map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
+                {
+                    playerProduction(props.game, props.player.team)
+                    .map((amount, i) => ({ index: i, icon: resourceIcon(i), amount: amount }))
                     .map(({index, icon, amount}) =>
                         <div key={index} style={{ display: "inline-block", margin: "2px" }}>
                             {icon}&#xFE0F;{amount}
@@ -148,7 +149,7 @@ const Player: ((props: IProps) => JSX.Element) = (props: IProps) =>
                 }
             </div>
             <div key="meeple-view">
-                {props.swarm
+                {playerSwarm(props.game, props.player.team)
                     .sort((a, b) => b.meeple.strength - a.meeple.strength)
                     .map(({meeple, terrain}) =>
                         <div key={meeple.key} style={{ display: "inline-block", cursor: "pointer" }}

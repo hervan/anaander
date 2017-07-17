@@ -28,12 +28,6 @@ const Controls: ((props: IProps) => JSX.Element) = (props: IProps) =>
             <Player
                 key={player.team}
                 player={player}
-                swarm={props.game.meeples
-                    .filter((meeple) => meeple.key !== -1 && meeple.team === player.team)
-                    .map((meeple) => ({
-                        meeple: meeple,
-                        terrain: props.game.terrains[positionToIndex(meeple.position, props.game.boardSize)]
-                    }))}
                 empire={player.cities
                     .map((cityKey) => props.game.terrains[cityKey])
                     .filter(({construction}) => construction.type === "city")

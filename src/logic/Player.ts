@@ -6,7 +6,6 @@ export type Player = {
     readonly team: Team;
     readonly swarmSize: number;
     readonly cities: number[];
-    readonly resources: number[];
     readonly hand: ReadonlyArray<{
         readonly key: number;
         readonly acquisitionRound: number;

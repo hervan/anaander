@@ -382,6 +382,26 @@ export function play(game: Game, play: Play): Game {
     };
 }
 
+export function playerSwarm(game: Game, team: Team = game.turn.team) {
+
+    return game.meeples
+        .filter((meeple) => meeple.key !== -1 && meeple.team === team)
+        .map((meeple) => ({
+            meeple: meeple,
+            terrain: game.terrains[positionToIndex(meeple.position, game.boardSize)]
+        }))
+        .sort((a, b) => a.terrain.key - b.terrain.key);
+}
+
+export function playerProduction(game: Game, team: Team = game.turn.team) {
+
+    return playerSwarm(game, team)
+        .filter(({meeple, terrain}) => meeple.key === terrain.topMeeple)
+        .reduce((acc, {meeple, terrain}) => terrain.construction.production
+            .map((amount, index) => acc[index] + (meeple.phase === game.turn.phase ? amount : 0)),
+            [0, 0, 0, 0, 0]);
+}
+
 function playCard(game: Game, cardKey: number, selection: number[]): Game {
 
     const hand = game.players[game.turn.team].hand;
@@ -416,7 +436,8 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
     const cost = card.cost.map((amount) =>
         game.turn.round > card.acquisitionRound ?
         targets.length * amount : 0);
-    if (cost.some((amount, i) => amount > game.players[game.turn.team].resources[i])) {
+
+    if (cost.some((amount, i) => amount > playerProduction(game)[i])) {
 
         return {
             ...game,
@@ -436,7 +457,7 @@ function playCard(game: Game, cardKey: number, selection: number[]): Game {
             (player) => player.team === gameStep.turn.team ?
             {
                 ...player,
-                resources: player.resources.map((amount, i) => amount - cost[i]),
+                resources: playerProduction(gameStep).map((amount, i) => amount - cost[i]),
                 hand: hand.filter((c) => c.key !== card.key)
             } : {...player}
         ),
@@ -1609,7 +1630,6 @@ export function setup(humanPlayerCount: number, computarPlayerCount: number, boa
             cities: [],
             swarmSize: meeples.filter((m) => m.team === team).length,
             buildingPhase: [...Array(5).keys()].map((o) => "notbuilt" as BuildingPhase),
-            resources: [...Array(5).keys()].map((o) => 0),
             hand: initialHand(team),
             vp: 0
         };
