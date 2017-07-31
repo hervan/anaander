@@ -2,11 +2,45 @@
 this is not a game design document, just a place to take notes regarding the current stage of the game design.
 there are notes elsewhere in the project (issues, Game.ts and index.tsx) that served this purpose; from now on this file should be the proper place for these musings.
 
+# general tabletop interface #
+the basic building block of the game rules is a **rule**, which in turn is compiled into a game **manual**. a rule must be
+- explained in plain language,
+- implement what it says it does, or
+- refer to other rules or definitions.
+
+components will be provided for common types of rules, for instance
+- setup steps,
+- turn/round structure,
+- round upkeep,
+- game end triggers,
+- scoring.
+
+a rule must refer to game items in terms of common **game components**:
+- card
+- deck
+- tile
+- meeple
+- token
+- dice
+- tracks
+- board
+- player boards
+
+and so on.
+
+a **definition** allows the creation of simple game concepts, as well as implicit rules that don't need explanation (or reinforced explanation); an example of basic definition is when you name a token after a resource, like "wood"; another example is for information provided by visual means, like a board showing a map where adjacent regions are obvious to the player.
+
+from this framework, the game engine will be able to show to a player the reasoning behind any applied rule; the game manual can be generated and validated automatically (every rule definition must occur in the manual, no matter the order).
+
 # tasks #
 these are well defined design ideas that are ready to become tasks (issues) in the project.
 it's not a maturity requirement because many ideas that must be implemented to be validated may end up discarded or evolved into something else;
 it just happens that code *and* game are able to receive these changes right now.
 
+- current major changes
+  - meeple movement propagation is mandatory
+    - swarms won't split or join by simple player choice anymore; they'll occur due to game constraints, like terrains or individual actions (usually related to cards providing an ability)
+  - resource consumption/generation is only tested, not requiring work/activation from meeples
 - pattern activation gives cards
   - patterns must cycle?
   - charge resources for activation? only pay if player wants to keep or activate?
