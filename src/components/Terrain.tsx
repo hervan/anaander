@@ -3,17 +3,17 @@ import * as React from "react";
 import {Construction} from "../logic/Construction";
 import {Action, Play} from "../logic/Game";
 import {Team} from "../logic/Player";
-import {Geography, Position, Terrain} from "../logic/Terrain";
+import {Geography, Position, Terrain as T} from "../logic/Terrain";
 
 interface IProps {
-    terrain: Terrain;
+    terrain: T;
     size: number;
     selected: boolean;
     enqueuePlay: (team: Team, action: Action) => void;
     select: (position: Position, selectmode?: "swarm" | "meeple") => void;
 };
 
-function terrainColor(terrain: Terrain): string {
+function terrainColor(terrain: T): string {
     if (terrain.construction.type === "emptysite" || terrain.construction.team === Team.default) {
         switch (terrain.geography) {
             case Geography.sea: return "info";
@@ -41,30 +41,46 @@ export function buildingIcon(blueprint: string): string {
     }
 }
 
-const Terrain: ((props: IProps) => JSX.Element) = (props: IProps) =>
-    <div
-        className={"terrain is-"
-            + terrainColor(props.terrain)
-            + (props.selected ? " selected" : "")}
-        style={{
-            width: `calc(${props.size}vmin - 1px)`,
-            height: `calc(${props.size}vmin - 1px)`,
-            top: `${props.terrain.position.row * props.size}vmin`,
-            left: `${props.terrain.position.col * props.size}vmin`,
-            opacity: 0.5
-        }}
-        onClick={() => props.select(props.terrain.position)}
-        onDoubleClick={() => props.select(props.terrain.position, "swarm")}>
-        {props.terrain.construction.type === "city" ?
-        <span className={"is-" + Team[props.terrain.construction.team]}
-            style={{ fontSize: `${props.size / 1.5}vmin`, color: Team[props.terrain.construction.team] }}>
-            🏙️&#xFE0F;
-        </span> :
-        props.terrain.construction.type === "building" ?
-        <span className={"building is-" + Team[props.terrain.construction.team]}
-            style={{ fontSize: `${props.size / 1.5}vmin` }}>
-            {buildingIcon(props.terrain.construction.blueprint)}&#xFE0F;
-        </span> : null}
-    </div>;
+class Terrain extends React.Component<IProps, {}> {
 
+    shouldComponentUpdate(nextProps: IProps) {
+
+        return nextProps.terrain.position !== this.props.terrain.position
+            || nextProps.terrain.geography !== this.props.terrain.geography
+            || nextProps.terrain.construction.type !== this.props.terrain.construction.type
+            || (nextProps.terrain.construction.type === "building"
+                && this.props.terrain.construction.type === "building"
+                && (nextProps.terrain.construction.blueprint !== this.props.terrain.construction.blueprint
+                    || nextProps.terrain.construction.team !== this.props.terrain.construction.team));
+    }
+
+    render() {
+
+        return <div
+            className={"terrain is-"
+            + terrainColor(this.props.terrain)
+            + (this.props.selected ? " selected" : "")}
+            style={{
+                width: `calc(${this.props.size}vmin - 1px)`,
+                height: `calc(${this.props.size}vmin - 1px)`,
+                top: `${this.props.terrain.position.row * this.props.size}vmin`,
+                left: `${this.props.terrain.position.col * this.props.size}vmin`,
+                opacity: 0.5
+            }}
+            onClick={() => this.props.select(this.props.terrain.position)}
+            onDoubleClick={() => this.props.select(this.props.terrain.position, "swarm")}>
+            {this.props.terrain.construction.type === "city" ?
+            <span className={"is-" + Team[this.props.terrain.construction.team]}
+                    style={{ fontSize: `${this.props.size / 1.5}vmin`, color: Team[this.props.terrain.construction.team] }}>
+                    🏙️&#xFE0F;
+                </span> :
+                this.props.terrain.construction.type === "building" ?
+                <span className={"building is-" + Team[this.props.terrain.construction.team]}
+                    style={{ fontSize: `${this.props.size / 1.5}vmin` }}>
+                    {buildingIcon(this.props.terrain.construction.blueprint)}&#xFE0F;
+                </span> : null}
+            </div>;
+    }
+}
+    
 export default Terrain;
